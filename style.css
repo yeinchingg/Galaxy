@@ -1,0 +1,25 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:monospace;color:#aef}
+#c{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1}
+#ui{position:fixed;top:0;left:0;width:220px;height:100vh;background:rgba(0,4,14,0.9);border-right:1px solid #0a2040;overflow-y:auto;padding:10px;z-index:10}
+#rp{position:fixed;top:0;right:0;width:195px;height:100vh;background:rgba(0,4,14,0.9);border-left:1px solid #0a2040;overflow-y:auto;padding:10px;z-index:10}
+#hud{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,8,22,0.85);border:1px solid #0a3060;padding:4px 14px;font-size:10px;color:#4af;z-index:10;white-space:nowrap}
+.tabs{display:flex;gap:2px;margin-bottom:8px;flex-wrap:wrap}
+.tab{flex:1;min-width:40px;padding:4px 2px;background:#000d20;border:1px solid #0a2040;color:#4af;font-size:9px;cursor:pointer;text-align:center;letter-spacing:1px}
+.tab.on{background:#0a2040;color:#0cf;border-color:#0cf}
+.pane{display:none}.pane.on{display:block}
+.sec{font-size:9px;color:#0af;letter-spacing:2px;text-transform:uppercase;margin:10px 0 5px;padding-bottom:3px;border-bottom:1px solid #0a2040}
+.sec:first-child{margin-top:0}
+.row{margin-bottom:8px}
+.lbl{display:flex;justify-content:space-between;font-size:10px;color:#8bc;margin-bottom:2px}
+.lbl b{color:#fc6}
+.desc{font-size:8px;color:#2a5070;margin-bottom:2px}
+input[type=range]{width:100%;cursor:pointer;display:block;accent-color:#0cf}
+select,button{width:100%;background:#000d20;border:1px solid #0a2040;color:#8bc;font-family:monospace;font-size:10px;padding:5px;cursor:pointer;margin-bottom:4px}
+button:hover{background:#0a2040;color:#0cf}
+.card{background:#000d20;border-left:2px solid #0af;padding:7px;margin-bottom:6px}
+.card.o{border-left-color:#f70}.card.g{border-left-color:#0d6}.card.r{border-left-color:#f44}.card.p{border-left-color:#a4f}
+.card h4{font-size:8px;color:#4af;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.cv{font-size:10px;margin-bottom:1px;color:#8bc}.cv span{color:#fc6}
+canvas.mini{width:100%;height:60px;display:block;margin-top:4px;background:#000d20;border:1px solid #0a2040}
+.leg{font-size:8px;color:#2a5070;margin-right:5px}
