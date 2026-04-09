@@ -10,211 +10,30 @@
 <canvas id="c"></canvas>
 
 <div id="ui">
-  <div class="tabs" id="ltabs">
-    <div class="tab on" data-target="ls">結構</div>
-    <div class="tab" data-target="lg">氣體</div>
-    <div class="tab" data-target="ld">動態</div>
-    <div class="tab" data-target="lo">觀測</div>
-  </div>
+  <div class="pane on">
+    <div class="sec">核心物理參數</div>
 
-  <div class="pane on" id="ls">
-    <div class="sec">暗物質暈 NFW</div>
-    <div class="row"><div class="lbl">log M_halo <b id="v-logM">12.5</b></div><div class="desc">暗物質暈總質量</div><input type="range" id="logM" min="10" max="15" step="0.1" value="12.5"></div>
-    <div class="row"><div class="lbl">集中度 c <b id="v-conc">8</b></div><div class="desc">NFW 輪廓集中度</div><input type="range" id="conc" min="2" max="20" step="0.5" value="8"></div>
-    <div class="row"><div class="lbl">自旋 λ <b id="v-spin">0.040</b></div><div class="desc">角動量自旋參數</div><input type="range" id="spin" min="0.01" max="0.15" step="0.005" value="0.04"></div>
-    <div class="row"><div class="lbl">橢圓率 ε <b id="v-ell">0.20</b></div><input type="range" id="ell" min="0" max="0.6" step="0.02" value="0.2"></div>
-    <div class="sec">核球 Hernquist</div>
-    <div class="row"><div class="lbl">B/D 比 <b id="v-bd">0.20</b></div><div class="desc">核球/盤質量比</div><input type="range" id="bd" min="0" max="2" step="0.05" value="0.2"></div>
-    <div class="row"><div class="lbl">核球半徑 <b id="v-br">0.8</b> kpc</div><input type="range" id="br" min="0.1" max="5" step="0.1" value="0.8"></div>
-    <div class="row"><div class="lbl">SMBH log M• <b id="v-smbh">7.5</b></div><div class="desc">超大質量黑洞質量</div><input type="range" id="smbh" min="6" max="10" step="0.1" value="7.5"></div>
-    <div class="sec">恆星盤</div>
-    <div class="row"><div class="lbl">Sérsic n <b id="v-sersic">1.5</b></div><div class="desc">1=指數盤 4=橢圓</div><input type="range" id="sersic" min="0.5" max="6" step="0.1" value="1.5"></div>
-    <div class="row"><div class="lbl">盤半徑 Rd <b id="v-rd">3.5</b> kpc</div><input type="range" id="rd" min="0.5" max="12" step="0.5" value="3.5"></div>
-    <div class="row"><div class="lbl">傾斜角 <b id="v-incl">25</b>°</div><input type="range" id="incl" min="0" max="90" step="1" value="25"></div>
-    <div class="row"><div class="lbl">盤厚度 <b id="v-thick">0.08</b></div><input type="range" id="thick" min="0.01" max="0.5" step="0.01" value="0.08"></div>
-    <div class="sec">星族</div>
-    <div class="row"><div class="lbl">g-r 色指數 <b id="v-gr">0.45</b></div><input type="range" id="gr" min="-0.1" max="0.9" step="0.01" value="0.45"></div>
-    <div class="row"><div class="lbl">log SFR <b id="v-sfr">0.5</b></div><input type="range" id="sfr" min="-2" max="3" step="0.1" value="0.5"></div>
-    <div class="row"><div class="lbl">Quenching <b id="v-qprob">0.20</b></div><input type="range" id="qprob" min="0" max="1" step="0.05" value="0.2"></div>
-    <div class="row"><div class="lbl">IMF</div><select id="imf"><option value="kroupa">Kroupa 2001</option><option value="salpeter">Salpeter 1955</option><option value="chabrier">Chabrier 2003</option></select></div>
-  </div>
+    <div class="row">
+      <div class="lbl">星系質量 <b id="v-logM">12.5</b></div>
+      <input type="range" id="logM" min="10" max="15" step="0.1" value="12.5">
+    </div>
 
-  <div class="pane" id="lg">
-    <div class="sec">中性氫 HI</div>
-    <div class="row"><div class="lbl">log M_HI <b id="v-mhi">9.5</b> M☉</div><div class="desc">中性氫氣體質量</div><input type="range" id="mhi" min="7" max="11" step="0.1" value="9.5"></div>
-    <div class="row"><div class="lbl">HI 盤半徑 <b id="v-rhi">6.0</b> kpc</div><div class="desc">HI 盤通常比恆星盤大</div><input type="range" id="rhi" min="1" max="25" step="0.5" value="6.0"></div>
-    <div class="sec">分子雲 H₂</div>
-    <div class="row"><div class="lbl">log M_H2 <b id="v-mh2">8.8</b> M☉</div><div class="desc">分子氣體質量</div><input type="range" id="mh2" min="6" max="11" step="0.1" value="8.8"></div>
-    <div class="row"><div class="lbl">H₂ 集中度 <b id="v-h2c">0.60</b></div><div class="desc">越高越集中於中央</div><input type="range" id="h2c" min="0.1" max="1" step="0.05" value="0.6"></div>
-    <div class="sec">反饋機制</div>
-    <div class="row"><div class="lbl">AGN 強度 <b id="v-agn">0.10</b></div><div class="desc">0=靜止 1=類星體</div><input type="range" id="agn" min="0" max="1" step="0.05" value="0.1"></div>
-    <div class="row"><div class="lbl">外流速度 <b id="v-vout">200</b> km/s</div><div class="desc">AGN+SN 驅動星系風</div><input type="range" id="vout" min="0" max="1500" step="50" value="200"></div>
-    <div class="row"><div class="lbl">SN 反饋效率 <b id="v-snfb">0.10</b></div><div class="desc">影響有效 SFR</div><input type="range" id="snfb" min="0" max="1" step="0.05" value="0.1"></div>
-    <div class="card g" style="margin-top:10px">
-      <h4>即時氣體量</h4>
-      <div class="cv">M_HI = <span id="g-mhi">—</span></div>
-      <div class="cv">M_H2 = <span id="g-mh2">—</span></div>
-      <div class="cv">f_gas = <span id="g-fg">—</span></div>
-      <div class="cv">耗盡時標 = <span id="g-tdep">—</span> Gyr</div>
-      <div class="cv">外流率 = <span id="g-mout">—</span> M☉/yr</div>
-      <div class="cv">載荷因子 η = <span id="g-eta">—</span></div>
+    <div class="row">
+      <div class="lbl">盤半徑 <b id="v-rd">3.5</b> kpc</div>
+      <input type="range" id="rd" min="0.5" max="12" step="0.5" value="3.5">
     </div>
-    <div class="sec">氣體剖面</div>
-    <canvas class="mini" id="gasplot" style="height:70px"></canvas>
-    <div style="margin-top:3px"><span class="leg" style="color:#4af">■ HI</span><span class="leg" style="color:#0d6">■ H₂</span><span class="leg" style="color:#f70">■ 恆星</span></div>
-  </div>
 
-  <div class="pane" id="ld">
-    <div class="sec">星系併合</div>
-    <div class="row"><div class="lbl">併合狀態</div><select id="merger"><option value="0">關閉</option><option value="1">靠近中</option><option value="2">首次穿越</option><option value="3">併合後</option></select></div>
-    <div class="row"><div class="lbl">質量比 μ <b id="v-mratio">0.30</b></div><div class="desc">M2/M1</div><input type="range" id="mratio" min="0.05" max="1" step="0.05" value="0.3"></div>
-    <div class="row"><div class="lbl">軌道傾角 <b id="v-morb">45</b>°</div><input type="range" id="morb" min="0" max="180" step="5" value="45"></div>
-    <div class="row"><div class="lbl">分離距離 <b id="v-msep">30</b> kpc</div><input type="range" id="msep" min="5" max="100" step="5" value="30"></div>
-    <div class="sec">化學演化</div>
-    <div class="row"><div class="lbl">[Fe/H] <b id="v-feh">-0.20</b></div><div class="desc">鐵豐度，0=太陽</div><input type="range" id="feh" min="-2.5" max="0.5" step="0.05" value="-0.2"></div>
-    <div class="row"><div class="lbl">[α/Fe] <b id="v-afe">0.10</b></div><div class="desc">α元素比，厚盤指標</div><input type="range" id="afe" min="-0.2" max="0.6" step="0.05" value="0.1"></div>
-    <div class="row"><div class="lbl">化學時標 τ_Z <b id="v-tauZ">5.0</b> Gyr</div><input type="range" id="tauZ" min="0.5" max="13" step="0.5" value="5"></div>
-    <div class="card p" style="margin-top:10px">
-      <h4>動態狀態</h4>
-      <div class="cv">Toomre Q = <span id="d-tq">—</span></div>
-      <div class="cv">併合狀態 = <span id="d-merger">—</span></div>
-      <div class="cv">潮汐特徵 = <span id="d-tidal">—</span></div>
-      <div class="cv">厚盤起源 = <span id="d-thick">—</span></div>
-      <div class="cv">盤形成時代 = <span id="d-diskage">—</span></div>
+    <div class="row">
+      <div class="lbl">恆星形成 <b id="v-sfr">0.5</b></div>
+      <input type="range" id="sfr" min="-2" max="3" step="0.1" value="0.5">
     </div>
-    <div class="sec">[Fe/H] − [α/Fe] 平面</div>
-    <canvas class="mini" id="chemplot" style="height:90px"></canvas>
-    <div style="margin-top:3px"><span class="leg" style="color:#6af">■薄盤</span><span class="leg" style="color:#fa6">■厚盤</span><span class="leg" style="color:#f46">■暈</span><span class="leg" style="color:#0f0">★現在</span></div>
-    <div class="sec">恆星形成歷史</div>
-    <canvas class="mini" id="sfhplot" style="height:65px"></canvas>
-    <div style="margin-top:3px"><span class="leg" style="color:#0cf">■ SFR(t)</span><span class="leg" style="color:#fc6">■ Z(t)</span></div>
-  </div>
 
-  <div class="pane" id="lo">
-    <div class="sec">望遠鏡 / 距離</div>
-    <div class="row"><div class="lbl">望遠鏡模式</div><select id="telmode"><option value="ideal">理想（無模糊）</option><option value="ground">地面 PSF~1"</option><option value="hst">Hubble PSF~0.1"</option><option value="jwst">JWST PSF~0.06"</option></select></div>
-    <div class="row"><div class="lbl">紅移 z <b id="v-redshift">0.05</b></div><div class="desc">影響角直徑與PSF</div><input type="range" id="redshift" min="0.001" max="2" step="0.01" value="0.05"></div>
-    <div class="sec">塵埃 / 消光</div>
-    <div class="row"><div class="lbl">A_V 消光 <b id="v-dust">0.30</b> mag</div><div class="desc">V-band 總消光量</div><input type="range" id="dust" min="0" max="5" step="0.1" value="0.3"></div>
-    <div class="sec">觀測波段</div>
-    <div class="row"><div class="lbl">波段</div><select id="band"><option value="optical">光學 B/V/R</option><option value="nir">近紅外 J/H/K</option><option value="uv">紫外 UV</option><option value="halpha">Hα 發射線</option></select></div>
-    <div class="row"><div class="lbl">IFU 速度場</div><select id="ifumode"><option value="0">關閉</option><option value="1">開啟</option></select></div>
-    <div class="card" style="margin-top:10px">
-      <h4>距離與角尺度</h4>
-      <div class="cv">D_L = <span id="o-dl">—</span> Mpc</div>
-      <div class="cv">D_A = <span id="o-da">—</span> Mpc</div>
-      <div class="cv">1" = <span id="o-as">—</span> kpc</div>
-      <div class="cv">PSF = <span id="o-psf">—</span> kpc</div>
+    <div class="row">
+      <div class="lbl">傾斜角 <b id="v-incl">25</b>°</div>
+      <input type="range" id="incl" min="0" max="90" step="1" value="25">
     </div>
-    <div class="card o">
-      <h4>消光修正</h4>
-      <div class="cv">A_V = <span id="o-av">—</span> mag</div>
-      <div class="cv">A_B = <span id="o-ab">—</span> mag</div>
-      <div class="cv">E(B-V) = <span id="o-ebv">—</span></div>
-      <div class="cv">有效 g-r = <span id="o-egr">—</span></div>
-    </div>
-    <div class="sec">IFU 視線速度圖</div>
-    <canvas class="mini" id="ifumap" style="height:90px"></canvas>
-    <div style="margin-top:3px"><span class="leg" style="color:#36f">■藍移</span><span class="leg" style="color:#888">■系統</span><span class="leg" style="color:#f43">■紅移</span></div>
-    <div class="cv" style="margin-top:4px">V_max = <span id="o-vmax">—</span> km/s</div>
-  </div>
 
-  <div style="margin-top:10px">
-    <select id="preset">
-      <option value="">— 選擇預設星系 —</option>
-      <optgroup label="本星系群">
-        <option value="mw">🌌 銀河系 Milky Way</option>
-        <option value="m31">🔭 M31 仙女座星系</option>
-        <option value="m33">🌀 M33 三角座星系</option>
-        <option value="lmc">☁️ 大麥哲倫雲 LMC</option>
-        <option value="smc">✨ 小麥哲倫雲 SMC</option>
-      </optgroup>
-      <optgroup label="特殊星系">
-        <option value="blackeye">👁️ 黑眼星系 M64</option>
-        <option value="ell">🟠 大橢圓星系</option>
-        <option value="sb">💥 星爆星系</option>
-        <option value="q">❄️ Quenched 紅序列</option>
-        <option value="agn">⚡ AGN 活躍星系</option>
-      </optgroup>
-    </select>
-    <button onclick="simulate()">▶ 重新模擬</button>
-    <button onclick="doRand()">⟳ 隨機星系</button>
-    <button id="btnA" onclick="toggleSpin()">◎ 自動旋轉</button>
-    <button onclick="resetCam()">⊕ 重設視角</button>
-  </div>
-</div>
-
-<div id="rp">
-  <div class="tabs" id="rtabs">
-    <div class="tab on" data-target="rph">物理</div>
-    <div class="tab" data-target="rch">化學</div>
-    <div class="tab" data-target="rob">觀測</div>
-  </div>
-  <div class="pane on" id="rph">
-    <div class="card"><h4>暗物質暈</h4>
-      <div class="cv">M_vir = <span id="r-mv">—</span></div>
-      <div class="cv">R_vir = <span id="r-rv">—</span> kpc</div>
-      <div class="cv">V_200 = <span id="r-vv">—</span> km/s</div>
-      <div class="cv">T_vir = <span id="r-tv">—</span></div>
-      <div class="cv">R_s = <span id="r-rs">—</span> kpc</div>
-    </div>
-    <div class="card p"><h4>核球 + SMBH</h4>
-      <div class="cv">M_bulge = <span id="r-mb">—</span></div>
-      <div class="cv">B/T = <span id="r-bt">—</span></div>
-      <div class="cv">M• = <span id="r-bh">—</span></div>
-      <div class="cv">M•/M_bulge = <span id="r-bhr">—</span></div>
-    </div>
-    <div class="card o"><h4>恆星盤</h4>
-      <div class="cv">M★ = <span id="r-ms">—</span></div>
-      <div class="cv">R_half = <span id="r-rh">—</span> kpc</div>
-      <div class="cv">IMF = <span id="r-imf">—</span></div>
-      <div class="cv">f_bar = <span id="r-fb">—</span></div>
-    </div>
-    <div class="card g"><h4>SFR / 族群</h4>
-      <div class="cv">SFR_eff = <span id="r-sfr">—</span> M☉/yr</div>
-      <div class="cv">sSFR = <span id="r-ss">—</span></div>
-      <div class="cv">族群 = <span id="r-pop">—</span></div>
-    </div>
-    <div class="sec">旋轉曲線</div>
-    <canvas class="mini" id="rotc" style="height:65px"></canvas>
-    <div style="margin-top:3px"><span class="leg" style="color:#38f">■DM</span><span class="leg" style="color:#f70">■盤</span><span class="leg" style="color:#0d6">■核球</span><span class="leg" style="color:#fff">■總計</span><span class="leg" style="color:#fc6">- TF</span></div>
-    <div class="cv" style="margin-top:3px">TF偏差 = <span id="r-tf">—</span></div>
-  </div>
-  <div class="pane" id="rch">
-    <div class="card"><h4>化學豐度</h4>
-      <div class="cv">[Fe/H] = <span id="c-feh">—</span></div>
-      <div class="cv">[α/Fe] = <span id="c-afe">—</span></div>
-      <div class="cv">Z/Z☉ = <span id="c-zmet">—</span></div>
-      <div class="cv">α增強 = <span id="c-aenh">—</span></div>
-    </div>
-    <div class="card o"><h4>演化時標</h4>
-      <div class="cv">τ_Z = <span id="c-tz">—</span> Gyr</div>
-      <div class="cv">厚盤形成 = <span id="c-td">—</span></div>
-      <div class="cv">盤年齡 = <span id="c-da">—</span></div>
-    </div>
-    <div class="card r"><h4>AGN + 外流</h4>
-      <div class="cv">AGN 光度 = <span id="c-la">—</span></div>
-      <div class="cv">外流質量率 = <span id="c-mo">—</span> M☉/yr</div>
-      <div class="cv">載荷因子 η = <span id="c-et">—</span></div>
-    </div>
-  </div>
-  <div class="pane" id="rob">
-    <div class="card"><h4>距離尺度</h4>
-      <div class="cv">D_L = <span id="ob-dl">—</span> Mpc</div>
-      <div class="cv">D_A = <span id="ob-da">—</span> Mpc</div>
-      <div class="cv">1" = <span id="ob-as">—</span> kpc</div>
-      <div class="cv">PSF大小 = <span id="ob-psf">—</span> kpc</div>
-    </div>
-    <div class="card o"><h4>消光</h4>
-      <div class="cv">A_V = <span id="ob-av">—</span> mag</div>
-      <div class="cv">E(B-V) = <span id="ob-ebv">—</span></div>
-      <div class="cv">有效 g-r = <span id="ob-egr">—</span></div>
-    </div>
-    <div class="card g"><h4>IFU 速度場</h4>
-      <div class="cv">V_max = <span id="ob-vm">—</span> km/s</div>
-      <div class="cv">速度梯度 = <span id="ob-vg">—</span></div>
-      <div class="cv">位置角 PA = <span id="ob-pa">—</span>°</div>
-    </div>
+    <button onclick="simulate()">▶ 更新星系</button>
   </div>
 </div>
 

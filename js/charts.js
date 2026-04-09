@@ -1,23 +1,3 @@
-// charts.js
-// ─────────────────────────────────────────────────────────────────────────────
-// 【View 層】Mini Canvas 圖表繪製
-//
-// 職責：接收「純數據」參數並繪製；不直接讀取全域 P 物件。
-//       圖表函數皆為 drawXxx(data) 形式，資料由 ui.js 的 updateReadout() 傳入。
-//
-// 圖表清單：
-//   drawRotCurve(ph)      — NFW+盤+核球旋轉曲線（含 Tully-Fisher 預測線）
-//   drawGasProfile(p)     — HI / H₂ / 恆星盤 radial profile
-//   drawChemPlot(p)       — [Fe/H]−[α/Fe] 相空間，含三族群散點
-//   drawSFH(ph, p)        — 恆星形成歷史 SFR(t) + 金屬豐度 Z(t)
-//   drawIFU(ph, p)        — 視線速度 IFU mock 色圖
-//
-// 設計原則：
-//   ✅ 每個函數只接受需要的參數（不讀取全域 P）
-//   ✅ miniCtx(id, h) 是私有輔助，負責清空畫布並回傳 context
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ── 私有輔助：取得畫布 context 並清空 ─────────────────────────────────────
 function miniCtx(id, h) {
   var c = document.getElementById(id);
   if (!c) return null;
