@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>實驗室 | 天文與恆星物理專題</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f7fb;
+            --nav-bg: #e2e2f5;
+            --card-bg: #ffffff;
+            --text-main: #1e1e2f;
+            --text-muted: #666677;
+            --accent: #5c5cd6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+        nav {
+            width: 100%;
+            height: 64px;
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #d0d0e8;
+        }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        .lab-container {
+            margin-top: 84px;
+            width: 100%;
+            max-width: 1440px;
+            display: grid;
+            grid-template-columns: 360px 1fr 280px;
+            gap: 20px;
+            padding: 0 20px 40px 20px;
+            transition: grid-template-columns 0.3s ease;
+        }
+        .lab-container.ai-collapsed {
+            grid-template-columns: 360px 1fr 40px;
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            border: 1px solid #e0e0ed;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .panel-title { font-weight: 700; font-size: 0.95rem; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .attributes-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 82vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .attributes-panel::-webkit-scrollbar { width: 6px; }
+        .attributes-panel::-webkit-scrollbar-track { background: #f1f1f5; border-radius: 4px; }
+        .attributes-panel::-webkit-scrollbar-thumb { background: #c5c5d5; border-radius: 4px; }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 12px;
+            background: #fafafc;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #eeedf5;
+        }
+        .slider-label { font-size: 0.8rem; font-weight: 600; color: #222; display: flex; justify-content: space-between; }
+        .slider-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; }
+
+        .simulation-viewport {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: var(--card-bg);
+            border: 1px solid #e0e0ed;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .canvas-box {
+            background-color: #03050a;
+            border-radius: 8px;
+            height: 560px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+        }
+        .canvas-box:active { cursor: grabbing; }
+
+        .ai-panel {
+            background-color: #fcfcfd;
+            border: 1px solid #e8e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            height: 620px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .ai-panel.collapsed {
+            padding: 16px 8px;
+            align-items: center;
+            background-color: #f0f0f5;
+        }
+        .ai-panel.collapsed .ai-body { display: none; }
+        .ai-panel.collapsed .ai-title-text { display: none; }
+        .toggle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .ai-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .ai-chat-box {
+            flex: 1;
+            background: #f4f4f8;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        .ai-input-box {
+            margin-top: 10px;
+            background: #fff;
+            border: 1px solid #dcdce6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-title">實驗室 物理數據模擬</div>
+        <ul class="nav-links">
+            <li><a href="index.html">教學平台</a></li>
+            <li><a href="lab.html" class="active">實驗室</a></li>
+            <li><a href="evolution.html">恆星演化史</a></li>
+            <li><a href="wiki.html">宇宙百科</a></li>
+            <li><a href="hr.html">赫羅圖觀測站</a></li>
+            <li><a href="index.html" style="color: var(--accent);">back &larr;</a></li>
+        </ul>
+    </nav>
+
+    <div class="lab-container" id="labContainer">
+        <!-- Left Panel -->
+        <div class="panel attributes-panel">
+            <div class="panel-title">參數控制面板</div>
+
+            <div>
+                <div class="section-subtitle">恆星物理屬性</div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>恆星質量</span><span id="v-mass">1.0 M☉</span></div>
+                    <input type="range" id="s-mass" min="0.1" max="50.0" step="0.1" value="1.0">
+                    <div class="slider-desc">影響 3D 星球的體積大小 (Scale) 與表面細節。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>核心熱核反應速率</span><span id="v-fusion">1.0x</span></div>
+                    <input type="range" id="s-fusion" min="0.1" max="10.0" step="0.1" value="1.0">
+                    <div class="slider-desc">影響星球的內部發光強度 (Emissive Glow) 與核心熾熱感。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>表面重力加速度</span><span id="v-gravity">274 m/s²</span></div>
+                    <input type="range" id="s-gravity" min="10" max="1000" step="10" value="274">
+                    <div class="slider-desc">影響星球外層大氣光暈的壓縮與張力。</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">星系與軌道力學</div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>萬有引力常數倍率</span><span id="v-gconst">1.0 G</span></div>
+                    <input type="range" id="s-gconst" min="0.5" max="3.0" step="0.1" value="1.0">
+                    <div class="slider-desc">影響星體周圍的重力扭曲感或自轉軌跡。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>暗物質密度</span><span id="v-dark">0.3 ρc</span></div>
+                    <input type="range" id="s-dark" min="0.0" max="2.0" step="0.05" value="0.3">
+                    <div class="slider-desc">影響外圍環繞的暗物質暈粒子濃度與透光度。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>軌道離心率</span><span id="v-ecc">0.02</span></div>
+                    <input type="range" id="s-ecc" min="0.0" max="0.9" step="0.01" value="0.02">
+                    <div class="slider-desc">影響模擬視窗中星體的橢圓軌道擺動。</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">時空與演化維度</div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>時間流逝速率</span><span id="v-time">1.0x</span></div>
+                    <input type="range" id="s-time" min="0.1" max="5.0" step="0.1" value="1.0">
+                    <div class="slider-desc">直接控制 3D 星球的自轉與動畫演化播放速度 (Time Delta)。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>空間曲率</span><span id="v-curve">0.00</span></div>
+                    <input type="range" id="s-curve" min="-1.0" max="1.0" step="0.05" value="0.00">
+                    <div class="slider-desc">影響畫面透視與相機的微幅扭曲變形。</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">視覺與光譜觀測</div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>電磁波譜觀測頻段</span><span id="v-spectrum">標準太陽 (G2V)</span></div>
+                    <input type="range" id="s-spectrum" min="1" max="4" step="1" value="1">
+                    <div class="slider-desc">切換不同波段觀測表面氣體與化學元素輻射特徵。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>宇宙塵埃遮蔽率</span><span id="v-dust">5%</span></div>
+                    <input type="range" id="s-dust" min="0" max="100" step="1" value="5">
+                    <div class="slider-desc">影響外層大氣與材質的透明度與黯淡感。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Panel -->
+        <div class="simulation-viewport">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #333;">物理模擬視窗 (真實太陽電漿對流與柔和冕層)</div>
+            <div class="canvas-box" id="webglContainer"></div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="panel ai-panel" id="aiPanel">
+            <div class="panel-title">
+                <span class="ai-title-text">AI小助理</span>
+                <button class="toggle-btn" id="aiToggleBtn" onclick="toggleAI()">◀</button>
+            </div>
+            <div class="ai-body">
+                <div class="ai-chat-box" id="aiChat">
+                    您好！我是您的天文物理專題 AI 助理。現在 3D 模型已調整為**柔和自然的天文恆星光澤與流體對流紋理**，擺脫了生硬的坑洞感！
+                </div>
+                <div class="ai-input-box">
+                    <span>問題？</span>
+                    <span>→</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        function toggleAI() {
+            const container = document.getElementById('labContainer');
+            const panel = document.getElementById('aiPanel');
+            const btn = document.getElementById('aiToggleBtn');
+            container.classList.toggle('ai-collapsed');
+            panel.classList.toggle('collapsed');
+            btn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        const container = document.getElementById('webglContainer');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 2;
+        controls.maxDistance = 15;
+
+        // **生成擬真、柔和的恆星對流米粒組織紋理 (取代生硬坑洞)**
+        function createSolarTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#b5b5b5';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製柔和的電漿雲團與米粒組織
+            for (let i = 0; i < 4000; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let r = Math.random() * 15 + 3;
+                let shade = Math.floor(Math.random() * 80 + 100);
+                ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            return texture;
+        }
+
+        const solarTexture = createSolarTexture();
+
+        // 恆星主體 (使用柔和的太陽黃金色與極輕微的顆粒起伏)
+        const geometry = new THREE.SphereGeometry(1.5, 128, 128);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0xffd27d,          // 自然的淡金黃色（類似真實太陽光譜）
+            roughness: 0.95,          // 消除塑膠反光
+            metalness: 0.0,
+            bumpMap: solarTexture,
+            bumpScale: 0.012,         // 降低起伏，讓表面變成細緻的微小對流感
+            emissive: 0xff6600,       // 溫暖的橘紅微光
+            emissiveIntensity: 0.2    // 自發光強度適中，柔和真實
+        });
+        const planet = new THREE.Mesh(geometry, material);
+        scene.add(planet);
+
+        // 雙層大氣冕層光暈 (Corona) - 營造真實太空中的大氣暈染
+        const glowGeo = new THREE.SphereGeometry(1.68, 64, 64);
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: 0xffaa33,
+            transparent: true,
+            opacity: 0.12,
+            side: THREE.BackSide
+        });
+        const atmosphere = new THREE.Mesh(glowGeo, glowMat);
+        scene.add(atmosphere);
+
+        // 溫和的太空光影
+        const ambientLight = new THREE.AmbientLight(0x444466, 1.2);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xfffaed, 2.0, 50);
+        pointLight.position.set(6, 4, 5);
+        scene.add(pointLight);
+
+        let baseRotSpeed = 0.003;
+        let timeMultiplier = 1.0;
+        let eccOffset = 0;
+        const aiChat = document.getElementById('aiChat');
+
+        // Sliders Logic
+        document.getElementById('s-mass').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-mass').textContent = val.toFixed(1) + ' M☉';
+            let scale = Math.pow(val, 0.33);
+            planet.scale.set(scale, scale, scale);
+            atmosphere.scale.set(scale, scale, scale);
+            aiChat.innerHTML = `<b>【恆星質量】</b>：質量設為 <b>${val} M☉</b>。影響 3D 星球的體積大小 (Scale) 與表面細節。`;
+        });
+
+        document.getElementById('s-fusion').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-fusion').textContent = val.toFixed(1) + 'x';
+            material.emissiveIntensity = val * 0.12;
+            aiChat.innerHTML = `<b>【核心熱核反應】</b>：速率 <b>${val}x</b>。影響星球的內部發光強度 (Emissive Glow) 與核心熾熱感。`;
+        });
+
+        document.getElementById('s-gravity').addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            document.getElementById('v-gravity').textContent = val + ' m/s²';
+            let distort = 1.0 + (val / 3000);
+            planet.scale.y = distort;
+            aiChat.innerHTML = `<b>【表面重力】</b>：重力 <b>${val} m/s²</b>。影響星球外層大氣光暈的壓縮與張力。`;
+        });
+
+        document.getElementById('s-gconst').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-gconst').textContent = val.toFixed(1) + ' G';
+            aiChat.innerHTML = `<b>【萬有引力常數】</b>：倍率 <b>${val} G</b>。影響星體周圍的重力扭曲感或自轉軌跡。`;
+        });
+
+        document.getElementById('s-dark').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-dark').textContent = val.toFixed(2) + ' ρc';
+            atmosphere.material.opacity = 0.1 + (val * 0.2);
+            aiChat.innerHTML = `<b>【暗物質密度】</b>：密度 <b>${val} ρc</b>。影響外圍環繞的暗物質暈粒子濃度與透光度。`;
+        });
+
+        document.getElementById('s-ecc').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-ecc').textContent = val.toFixed(2);
+            eccOffset = val;
+            aiChat.innerHTML = `<b>【軌道離心率】</b>：離心率 <b>${val}</b>。影響模擬視窗中星體的橢圓軌道擺動。`;
+        });
+
+        document.getElementById('s-time').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-time').textContent = val.toFixed(1) + 'x';
+            timeMultiplier = val;
+            aiChat.innerHTML = `<b>【時間流逝速率】</b>：速率 <b>${val}x</b>。直接控制 3D 星球的自轉與動畫演化播放速度 (Time Delta)。`;
+        });
+
+        document.getElementById('s-curve').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('v-curve').textContent = val.toFixed(2);
+            camera.position.z = 5 + (val * 1.5);
+            aiChat.innerHTML = `<b>【空間曲率】</b>：曲率 <b>${val}</b>。影響畫面透視與相機的微幅扭曲變形。`;
+        });
+
+        const specNames = ["標準太陽 (G2V)", "高能天體 (X-Ray)", "紅外熱輻射 (IR)", "強烈紫外線 (UV)"];
+        const specColors = [0xffd27d, 0x60a5fa, 0xf87171, 0x34d399];
+        const specEmissive = [0xff6600, 0x3b82f6, 0xd97706, 0x059669];
+        document.getElementById('s-spectrum').addEventListener('input', (e) => {
+            let idx = parseInt(e.target.value) - 1;
+            document.getElementById('v-spectrum').textContent = specNames[idx];
+            material.color.setHex(specColors[idx]);
+            material.emissive.setHex(specEmissive[idx]);
+            aiChat.innerHTML = `<b>【光譜觀測頻段】</b>：已切換至 <b>${specNames[idx]}</b>。波段色彩對應表面的電漿輻射溫度。`;
+        });
+
+        document.getElementById('s-dust').addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            document.getElementById('v-dust').textContent = val + '%';
+            material.bumpScale = 0.005 + (val / 800);
+            aiChat.innerHTML = `<b>【宇宙塵埃遮蔽率】</b>：遮蔽率 <b>${val}%</b>。影響外層大氣與材質的透明度與黯淡感。`;
+        });
+
+        // Render Loop
+        let clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            let currentSpeed = baseRotSpeed * timeMultiplier;
+            
+            planet.rotation.y += currentSpeed;
+            atmosphere.rotation.y += currentSpeed * 1.02;
+
+            if (eccOffset > 0) {
+                let time = clock.getElapsedTime() * timeMultiplier;
+                planet.position.x = Math.sin(time) * eccOffset * 0.8;
+                atmosphere.position.x = planet.position.x;
+            } else {
+                planet.position.x = 0;
+                atmosphere.position.x = 0;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    </script>
+</body>
+</html>

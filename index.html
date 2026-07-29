@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教學平台 | 天文與恆星物理專題</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f7fb;
+            --nav-bg: #e2e2f5;
+            --card-bg: #ececf3;
+            --text-main: #1e1e2f;
+            --text-muted: #666677;
+            --accent: #5c5cd6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+        /* Navigation Bar */
+        nav {
+            width: 100%;
+            height: 64px;
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #d0d0e8;
+        }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        /* Main Container */
+        .container {
+            margin-top: 64px;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding: 40px 20px;
+        }
+
+        .hero-section {
+            background-color: #ffffff;
+            border: 1px solid #e0e0ed;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .hero-section h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; color: #222; }
+        .hero-section p { font-size: 1rem; line-height: 1.6; color: var(--text-muted); }
+
+        .section-block {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title a { font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 500; }
+        .section-title a:hover { text-decoration: underline; }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, border-color 0.2s;
+            border: 1px solid transparent;
+        }
+        .card-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+        .card-circle {
+            width: 50px; height: 50px;
+            background-color: #d8d8e8;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .card-text h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; color: #222; }
+        .card-text p { font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); }
+
+        .image-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-title">教學平台</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">教學平台</a></li>
+            <li><a href="lab.html">實驗室</a></li>
+            <li><a href="evolution.html">恆星演化史</a></li>
+            <li><a href="wiki.html">宇宙百科</a></li>
+            <li><a href="hr.html">赫羅圖觀測站</a></li>
+            <li><a href="#">其他</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Welcome -->
+        <div class="hero-section">
+            <h1>welcome</h1>
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; color: #444;">天文每日一則天文知識</h2>
+            <p>即時動態數據庫：含暗黑暗暈、恆星軌跡、光譜與多維度物理模擬數據。</p>
+        </div>
+
+        <!-- Section 1: 科學小知識 -->
+        <div class="section-block">
+            <div class="section-title">科學小知識</div>
+            <div class="grid-2x2">
+                <div class="card-item">
+                    <div class="card-circle">📐</div>
+                    <div class="card-text">
+                        <h4>天測</h4>
+                        <p>精確測量天體位置與自行，利用 Gaia 空間望遠鏡數據，建構銀河系 3D 動態圖景。</p>
+                    </div>
+                </div>
+                <div class="card-item">
+                    <div class="card-circle">🌈</div>
+                    <div class="card-text">
+                        <h4>光譜</h4>
+                        <p>透過光譜分析恆星表面化學組成與金屬豐度，探討星系化學演化歷史。</p>
+                    </div>
+                </div>
+                <div class="card-item">
+                    <div class="card-circle">⚙️</div>
+                    <div class="card-text">
+                        <h4>代數與動力學</h4>
+                        <p>平坦的旋轉曲線揭示暗物質的存在與質量分佈，解析銀河系內部的重力場。</p>
+                    </div>
+                </div>
+                <div class="card-item">
+                    <div class="card-circle">🔭</div>
+                    <div class="card-text">
+                        <h4>觀測</h4>
+                        <p>結合地面與太空巡天數據，從光度與視差中探索宇宙的無限奧秘與演化。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. 實驗室功能介紹 -->
+        <div class="section-block">
+            <div class="section-title">
+                <span>實驗室功能介紹</span>
+                <a href="lab.html">進入實驗室 ➔</a>
+            </div>
+            <div class="grid-2x2">
+                <a href="lab.html" class="card-item">
+                    <div class="card-circle">🎛️</div>
+                    <div class="card-text">
+                        <h4>參數滑桿控制</h4>
+                        <p>位於左側的控制面板，可即時調整球狀星團、核心光度、表面重力與暗物質暈密度等物理參數。</p>
+                    </div>
+                </a>
+                <a href="lab.html" class="card-item">
+                    <div class="card-circle">🌌</div>
+                    <div class="card-text">
+                        <h4>模擬物理視窗</h4>
+                        <p>中央高畫質即時渲染視窗，動態展示星系軌跡、恆星動力學運動與系統演化。</p>
+                    </div>
+                </a>
+                <a href="lab.html" class="card-item">
+                    <div class="card-circle">🤖</div>
+                    <div class="card-text">
+                        <h4>伸縮式 AI 小助理</h4>
+                        <p>右側配備 AI 智慧助理，隨時提供即時數據解析與物理建議，支援點擊收縮放大畫面。</p>
+                    </div>
+                </a>
+                <a href="lab.html" class="card-item">
+                    <div class="card-circle">🔬</div>
+                    <div class="card-text">
+                        <h4>多波段光譜濾鏡</h4>
+                        <p>支援一鍵切換可見光、X射線、紅外線與紫外線等不同觀測視角與光譜資料。</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. 恆星演化史介紹 -->
+        <div class="section-block">
+            <div class="section-title">
+                <span>恆星演化史功能介紹</span>
+                <a href="evolution.html">進入恆星演化史 ➔</a>
+            </div>
+            <div class="grid-2x2">
+                <a href="evolution.html" class="card-item">
+                    <div class="card-circle">⭐</div>
+                    <div class="card-text">
+                        <h4>初始星雲參數</h4>
+                        <p>可自由設定初始質量、金屬豐度與星雲初始密度，孕育出不同特性的原恆星與星盤。</p>
+                    </div>
+                </a>
+                <a href="evolution.html" class="card-item">
+                    <div class="card-circle">⏱️</div>
+                    <div class="card-text">
+                        <h4>演化時間軸滑桿</h4>
+                        <p>透過中央時間軸百分比拉動，即時觀察恆星從主序星、紅巨星到緻密殘骸的生命歷程。</p>
+                    </div>
+                </a>
+                <a href="evolution.html" class="card-item">
+                    <div class="card-circle">💡</div>
+                    <div class="card-text">
+                        <h4>AI 隨身物理解析</h4>
+                        <p>AI 小助理隨時跟隨滑桿動作，即時解析當前階段物理狀態並推薦下一步變化建議。</p>
+                    </div>
+                </a>
+                <a href="evolution.html" class="card-item">
+                    <div class="card-circle">📜</div>
+                    <div class="card-text">
+                        <h4>歷史預設範本</h4>
+                        <p>內建宋朝客星（蟹狀星雲）、1987A 超新星與太陽未來演化等經典歷史案例快速載入。</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 3. 宇宙百科知識介紹 -->
+        <div class="section-block">
+            <div class="section-title">
+                <span>宇宙百科功能介紹</span>
+                <a href="wiki.html">進入宇宙百科 ➔</a>
+            </div>
+            <div class="grid-2x2">
+                <a href="wiki.html" class="card-item">
+                    <div class="card-circle">📚</div>
+                    <div class="card-text">
+                        <h4>名詞分類索引</h4>
+                        <p>將天測、光譜、暗物質與演化階段等所有核心學術名詞進行條理化分門別類。</p>
+                    </div>
+                </a>
+                <a href="wiki.html" class="card-item">
+                    <div class="card-circle">🔍</div>
+                    <div class="card-text">
+                        <h4>詳細學術解釋</h4>
+                        <p>提供深入淺出的名詞物理意義與數學概念，幫助專題研究與觀念釐清。</p>
+                    </div>
+                </a>
+                <a href="wiki.html" class="card-item">
+                    <div class="card-circle">🔗</div>
+                    <div class="card-text">
+                        <h4>全站超連結錨點</h4>
+                        <p>支援全站各頁面一鍵點擊跳轉，隨時連接至對應的百科段落查閱定義。</p>
+                    </div>
+                </a>
+                <a href="wiki.html" class="card-item">
+                    <div class="card-circle">🎓</div>
+                    <div class="card-text">
+                        <h4>專題知識庫</h4>
+                        <p>為三專與天文物理學習提供最扎實的理論依據與文獻參考支援。</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 4. 赫羅圖觀測站介紹 -->
+        <div class="section-block">
+            <div class="section-title">
+                <span>赫羅圖觀測站功能介紹</span>
+                <a href="hr.html">進入赫羅圖觀測站 ➔</a>
+            </div>
+            <div class="grid-2x2">
+                <a href="hr.html" class="card-item">
+                    <div class="card-circle">📈</div>
+                    <div class="card-text">
+                        <h4>互動式畫布點擊</h4>
+                        <p>可在赫羅圖上隨意點擊或拖曳觀測點，即時探索不同溫度與光度對應的天體類別。</p>
+                    </div>
+                </a>
+                <a href="hr.html" class="card-item">
+                    <div class="card-circle">🪐</div>
+                    <div class="card-text">
+                        <h4>即時 3D 模型圖</h4>
+                        <p>動態呈現對應的恆星物理狀態與圖標，直觀展現主序星、巨星或白矮星外觀。</p>
+                    </div>
+                </a>
+                <a href="hr.html" class="card-item">
+                    <div class="card-circle">📊</div>
+                    <div class="card-text">
+                        <h4>天體數值儀表板</h4>
+                        <p>動態更新絕對星等、總光度、有效溫度與光譜分類（如 G2V 太陽型）等精確數值。</p>
+                    </div>
+                </a>
+                <a href="hr.html" class="card-item">
+                    <div class="card-circle">⚡</div>
+                    <div class="card-text">
+                        <h4>百科快速傳送門</h4>
+                        <p>儀表板內嵌超連結，點擊即可直接連回宇宙百科查看赫羅圖的詳細物理定義。</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Large Image Card -->
+        <div class="image-card">
+            <div style="background: radial-gradient(circle, #1a153b 0%, #050510 100%); padding: 60px 20px; text-align: center; color: #fff;">
+                <div style="font-size: 4rem; margin-bottom: 15px;">☀️</div>
+                <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; color: #818cf8;">太陽與恆星大氣層動態模擬</h3>
+                <p style="font-size: 0.9rem; color: #94a3b8;">結合真實驗光譜與磁場對流方程式，即時展現日冕物質拋射與輻射壓動態。</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

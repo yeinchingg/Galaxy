@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赫羅圖觀測站 | 天文與恆星物理專題</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f7fb;
+            --nav-bg: #e2e2f5;
+            --card-bg: #ffffff;
+            --text-main: #1e1e2f;
+            --accent: #5c5cd6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+        nav {
+            width: 100%;
+            height: 64px;
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #d0d0e8;
+        }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #222; }
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #333; font-size: 0.95rem; font-weight: 600; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        .hr-container {
+            margin-top: 84px;
+            width: 100%;
+            max-width: 1440px;
+            display: grid;
+            grid-template-columns: 340px 1fr 340px;
+            gap: 20px;
+            padding: 0 20px 40px 20px;
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            border: 1px solid #dcdce8;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .panel-title { font-weight: 700; font-size: 1rem; color: #1a1a2e; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eaeaf5; padding-bottom: 6px; }
+
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background-color: #ffffff;
+            border: 1px solid #cdd0e0;
+            max-height: 82vh;
+            overflow-y: auto;
+        }
+        .section-subtitle {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #2b2b3d;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e2e2ee;
+            padding-bottom: 4px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+            background: #f0f0f7;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #d4d4e6;
+        }
+        .control-label { font-size: 0.82rem; font-weight: 700; color: #1e1e2f; display: flex; justify-content: space-between; }
+        .control-desc { font-size: 0.72rem; color: #4a4a5e; line-height: 1.3; font-weight: 500; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; cursor: pointer; }
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #b5b5cc;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #fff;
+            color: #1e1e2f;
+            cursor: pointer;
+        }
+
+        .viewport-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: var(--card-bg);
+            border: 1px solid #dcdce8;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .science-guide-banner {
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.82rem;
+            color: #1e1b4b;
+            line-height: 1.5;
+        }
+        .science-guide-banner b { color: var(--accent); }
+
+        .hr-main-canvas-box {
+            background-color: #060913;
+            border-radius: 8px;
+            height: 440px;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: grab; /* 支援按住拖曳的游標指示 */
+        }
+        .hr-main-canvas-box:active { cursor: grabbing; }
+        .hr-main-canvas-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .model-3d-panel {
+            background-color: #ffffff;
+            border: 1px solid #dcdce8;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .model-3d-box {
+            width: 100%;
+            height: 200px;
+            background: #03050a;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            cursor: grab;
+        }
+        .model-3d-box:active { cursor: grabbing; }
+        .model-3d-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        .ai-panel {
+            background-color: #fcfcfd;
+            border: 1px solid #dcdce8;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .ai-chat-box {
+            flex: 1;
+            background: #f0f0f5;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.82rem;
+            color: #333344;
+            line-height: 1.4;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-title">赫羅圖觀測站 (H-R Diagram)</div>
+        <ul class="nav-links">
+            <li><a href="index.html">教學平台</a></li>
+            <li><a href="lab.html">實驗室</a></li>
+            <li><a href="evolution.html">恆星演化史</a></li>
+            <li><a href="wiki.html">宇宙百科</a></li>
+            <li><a href="hr.html" class="active">赫羅圖觀測站</a></li>
+            <li><a href="index.html" style="color: var(--accent);">back &larr;</a></li>
+        </ul>
+    </nav>
+
+    <div class="hr-container">
+        <!-- 左側控制面板 -->
+        <div class="panel controls-panel">
+            <div class="panel-title">觀測站控制台</div>
+
+            <div>
+                <div class="section-subtitle">觀測星團資料來源</div>
+                <div class="control-group">
+                    <select id="datasetSelect" onchange="updateObservation()">
+                        <option value="gaia">Gaia 衛星全天恆星樣本</option>
+                        <option value="sdss">SDSS 光譜巡天資料庫</option>
+                        <option value="cluster">球狀星團 M13 樣本</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">物理參數調整</div>
+                <div class="control-group">
+                    <div class="control-label"><span>有效溫度 (K)</span><span id="v-temp">5778 K</span></div>
+                    <input type="range" id="s-temp" min="2500" max="40000" step="100" value="5778">
+                    <div class="control-desc">調整表面溫度，紅點將在圖表上橫向移動。</div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label"><span>絕對光度 (L☉)</span><span id="v-lum">1.0 L☉</span></div>
+                    <input type="range" id="s-lum" min="0.0001" max="100000" step="0.1" value="1.0">
+                    <div class="control-desc">調整光度大小，紅點將在圖表上縱向移動。</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">顯示選項</div>
+                <div class="control-group" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <span class="control-label" style="margin: 0;">顯示主序帶參考線</span>
+                    <input type="checkbox" id="showMainSequence" checked onchange="updateObservation()" style="width: 18px; height: 18px; accent-color: var(--accent);">
+                </div>
+            </div>
+        </div>
+
+        <!-- 中央：大張赫羅圖觀測主視窗（支援按住紅點拖曳互動） -->
+        <div class="viewport-panel">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #222; display: flex; justify-content: space-between;">
+                <span>赫羅圖分佈對應視窗</span>
+                <span style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">💡 提示：可直接「按住紅點並拖曳」來即時改變恆星狀態</span>
+            </div>
+
+            <div class="science-guide-banner">
+                <b>📌 為什麼赫羅圖 (H-R Diagram) 如此重要？</b><br>
+                赫羅圖將恆星的<b>表面溫度</b>（底部具備光譜顏色漸層與刻度）與<b>絕對光度</b>作圖。拖曳圖上的紅點，即可即時看出恆星在主序帶、紅巨星與白矮星區的轉變，並對應右上角的 <b>3D 實體模型</b>！
+            </div>
+
+            <div class="hr-main-canvas-box" id="hrCanvasBox">
+                <canvas id="mainHrCanvas" width="800" height="420"></canvas>
+            </div>
+        </div>
+
+        <!-- 右側欄：右上 3D 模型圖 + 右下 AI 助理 -->
+        <div class="right-column">
+            <!-- 右上：即時 3D 模型圖視窗 -->
+            <div class="model-3d-panel">
+                <div class="panel-title" style="margin-bottom: 8px; font-size: 0.9rem;">
+                    <span>即時連動 3D 恆星模型</span>
+                </div>
+                <div class="model-3d-box" id="model3dContainer"></div>
+                <div style="font-size: 0.72rem; color: #555; text-align: center; margin-top: 4px;">
+                    對應赫羅圖座標之 3D 體積與光譜顏色
+                </div>
+            </div>
+
+            <!-- 右下：AI 觀測助理 -->
+            <div class="panel ai-panel">
+                <div class="panel-title" style="font-size: 0.9rem;"><span>AI 觀測解析</span></div>
+                <div class="ai-chat-box" id="aiChat">
+                    歡迎來到赫羅圖觀測站！您可以<b>按住圖表上的紅點並任意拖曳</b>，右上角即會流暢同步呈現該座標的 3D 恆星立體結構！
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const modelContainer = document.getElementById('model3dContainer');
+        const mWidth = modelContainer.clientWidth || 300;
+        const mHeight = modelContainer.clientHeight || 200;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, mWidth / mHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(mWidth, mHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        modelContainer.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        const starGeo = new THREE.SphereGeometry(1.4, 64, 64);
+        const starMat = new THREE.MeshStandardMaterial({
+            color: 0xffd27d,
+            roughness: 0.9,
+            metalness: 0.0,
+            emissive: 0xff6600,
+            emissiveIntensity: 0.2
+        });
+        const star3d = new THREE.Mesh(starGeo, starMat);
+        scene.add(star3d);
+
+        const glowGeo = new THREE.SphereGeometry(1.52, 32, 32);
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: 0xffaa33,
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.BackSide
+        });
+        const atmosphere3d = new THREE.Mesh(glowGeo, glowMat);
+        scene.add(atmosphere3d);
+
+        scene.add(new THREE.AmbientLight(0x444466, 1.2));
+        const pLight = new THREE.PointLight(0xfffaed, 2.5, 50);
+        pLight.position.set(5, 3, 4);
+        scene.add(pLight);
+
+        const hrCanvas = document.getElementById('mainHrCanvas');
+        const hrCtx = hrCanvas.getContext('2d');
+        const hrBox = document.getElementById('hrCanvasBox');
+
+        let currentTemp = 5778;
+        let currentLum = 1.0;
+        let isDragging = false;
+
+        function drawMainHR() {
+            const w = hrCanvas.width;
+            const h = hrCanvas.height;
+            const showMS = document.getElementById('showMainSequence').checked;
+
+            hrCtx.fillStyle = '#060913';
+            hrCtx.fillRect(0, 0, w, h);
+
+            // 繪製底部溫度光譜色帶軸 (Temperature Color Gradient Bar)
+            const gradX1 = 80, gradX2 = w - 50, gradY = h - 35;
+            const grad = hrCtx.createLinearGradient(gradX1, 0, gradX2, 0);
+            grad.addColorStop(0.0, '#3b82f6'); // 30,000K 藍色 (O, B型)
+            grad.addColorStop(0.3, '#93c5fd'); // 15,000K 藍白
+            grad.addColorStop(0.5, '#ffffff'); // 10,000K 白色
+            grad.addColorStop(0.65, '#fef08a'); // 6,000K 黃色 (太陽)
+            grad.addColorStop(0.8, '#f97316');  // 4,000K 橙色 (K型)
+            grad.addColorStop(1.0, '#ef4444');  // 3,000K 紅色 (M型)
+
+            hrCtx.fillStyle = grad;
+            hrCtx.fillRect(gradX1, gradY, gradX2 - gradX1, 12);
+
+            // 繪製溫度刻度與標籤
+            hrCtx.fillStyle = '#cbd5e1';
+            hrCtx.font = '10px sans-serif';
+            const ticks = [
+                { temp: 30000, label: '30,000K' },
+                { temp: 15000, label: '15,000K' },
+                { temp: 10000, label: '10,000K' },
+                { temp: 6000, label: '6,000K (太陽)' },
+                { temp: 4000, label: '4,000K' },
+                { temp: 3000, label: '3,000K' }
+            ];
+            ticks.forEach(t => {
+                let tx = w - 80 - ((t.temp - 2500) / (40000 - 2500)) * (w - 150);
+                hrCtx.strokeStyle = '#94a3b8';
+                hrCtx.lineWidth = 1;
+                hrCtx.beginPath(); hrCtx.moveTo(tx, gradY + 12); hrCtx.lineTo(tx, gradY + 16); hrCtx.stroke();
+                hrCtx.fillText(t.label, tx - 18, gradY + 28);
+            });
+
+            // 網格線
+            hrCtx.strokeStyle = '#1e2538';
+            hrCtx.lineWidth = 1;
+            for (let x = 80; x < w - 50; x += 100) {
+                hrCtx.beginPath(); hrCtx.moveTo(x, 20); hrCtx.lineTo(x, h - 45); hrCtx.stroke();
+            }
+            for (let y = 40; y < h - 45; y += 70) {
+                hrCtx.beginPath(); hrCtx.moveTo(80, y); hrCtx.lineTo(w - 50, y); hrCtx.stroke();
+            }
+
+            hrCtx.fillStyle = '#94a3b8';
+            hrCtx.font = '11px sans-serif';
+            hrCtx.fillText("← 有效表面溫度 (Temperature)", w / 2 - 70, h - 4);
+            hrCtx.save();
+            hrCtx.translate(22, h / 2 + 20);
+            hrCtx.rotate(-Math.PI / 2);
+            hrCtx.fillText("絕對光度 (Luminosity, L☉)", 0, 0);
+            hrCtx.restore();
+
+            if (showMS) {
+                hrCtx.strokeStyle = '#38bdf8';
+                hrCtx.lineWidth = 4;
+                hrCtx.beginPath();
+                hrCtx.moveTo(120, 50);
+                hrCtx.bezierCurveTo(280, 120, 480, 240, 720, 340);
+                hrCtx.stroke();
+            }
+
+            // 背景真實恆星散點
+            hrCtx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+            for (let i = 0; i < 500; i++) {
+                let rx = 100 + Math.random() * 600;
+                let ry = 30 + Math.random() * 320;
+                hrCtx.fillRect(rx, ry, 2, 2);
+            }
+
+            // 計算目前座標在畫布上的位置
+            let nx = w - 80 - ((currentTemp - 2500) / (40000 - 2500)) * (w - 150);
+            let ny = 30 + (Math.log10(currentLum) - Math.log10(0.0001)) / (Math.log10(100000) - Math.log10(0.0001)) * (h - 75);
+            ny = h - 45 - (ny - 30);
+
+            // 繪製可互動拖曳的紅點（帶有外圈光暈提示）
+            hrCtx.strokeStyle = '#ffffff';
+            hrCtx.lineWidth = 2;
+            hrCtx.fillStyle = '#ef4444';
+            hrCtx.shadowColor = '#ef4444';
+            hrCtx.shadowBlur = 14;
+            hrCtx.beginPath();
+            hrCtx.arc(nx, ny, 9, 0, Math.PI * 2);
+            hrCtx.fill();
+            hrCtx.stroke();
+            hrCtx.shadowBlur = 0;
+        }
+
+        function updateObservation(syncSliders = true) {
+            if (syncSliders) {
+                currentTemp = parseFloat(document.getElementById('s-temp').value);
+                currentLum = parseFloat(document.getElementById('s-lum').value);
+            } else {
+                document.getElementById('s-temp').value = currentTemp;
+                document.getElementById('s-lum').value = currentLum;
+            }
+
+            document.getElementById('v-temp').textContent = Math.round(currentTemp) + ' K';
+            document.getElementById('v-lum').textContent = currentLum >= 1000 ? currentLum.toExponential(1) + ' L☉' : currentLum.toFixed(1) + ' L☉';
+
+            let scale = Math.pow(currentLum, 0.2);
+            if(scale > 2.5) scale = 2.5;
+            if(scale < 0.6) scale = 0.6;
+            star3d.scale.set(scale, scale, scale);
+            atmosphere3d.scale.set(scale * 1.1, scale * 1.1, scale * 1.1);
+
+            let colorHex = 0xffd27d;
+            if (currentTemp > 10000) colorHex = 0x60a5fa;
+            else if (currentTemp > 7500) colorHex = 0xfffaed;
+            else if (currentTemp > 6000) colorHex = 0xfef08a;
+            else if (currentTemp > 5000) colorHex = 0xfde047;
+            else if (currentTemp > 3800) colorHex = 0xf97316;
+            else colorHex = 0xef4444;
+
+            star3d.material.color.setHex(colorHex);
+
+            let aiChat = document.getElementById('aiChat');
+            if (currentLum > 1000 && currentTemp < 5000) {
+                aiChat.innerHTML = `<b>【紅巨星區】</b>：溫度 <b>${Math.round(currentTemp)} K</b>、光度 <b>${currentLum.toFixed(1)} L☉</b>。正位於紅巨星膨脹區！`;
+            } else if (currentLum < 0.01 && currentTemp > 8000) {
+                aiChat.innerHTML = `<b>【白矮星區】</b>：位於左下角高溫低光度區。`;
+            } else {
+                aiChat.innerHTML = `<b>【主序帶恆星】</b>：核心穩定進行氫融合中。`;
+            }
+
+            drawMainHR();
+        }
+
+        // 座標換算函數
+        function getCoordsFromEvent(e) {
+            const rect = hrCanvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            const w = hrCanvas.width;
+            const h = hrCanvas.height;
+
+            let normX = (w - 80 - clickX) / (w - 150);
+            if (normX < 0) normX = 0; if (normX > 1) normX = 1;
+            currentTemp = 2500 + normX * (40000 - 2500);
+
+            let canvasY = h - 45 - clickY;
+            let normY = (canvasY - 30) / (h - 75);
+            if (normY < 0) normY = 0; if (normY > 1) normY = 1;
+            let logLum = Math.log10(0.0001) + normY * (Math.log10(100000) - Math.log10(0.0001));
+            currentLum = Math.pow(10, logLum);
+
+            updateObservation(false);
+        }
+
+        // 滑鼠按住並拖曳 (Drag & Drop Interactivity)
+        hrCanvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            getCoordsFromEvent(e);
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                getCoordsFromEvent(e);
+            }
+        });
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        document.getElementById('s-temp').addEventListener('input', () => updateObservation(true));
+        document.getElementById('s-lum').addEventListener('input', () => updateObservation(true));
+
+        updateObservation(true);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            star3d.rotation.y += 0.003;
+            atmosphere3d.rotation.y += 0.0032;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            const nw = modelContainer.clientWidth || 300;
+            const nh = modelContainer.clientHeight || 200;
+            camera.aspect = nw / nh;
+            camera.updateProjectionMatrix();
+            renderer.setSize(nw, nh);
+        });
+    </script>
+</body>
+</html>

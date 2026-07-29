@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js 3D 星球即時連動</title>
+    <style> body { margin: 0; background: #000; overflow: hidden; } </style>
+</head>
+<body>
+
+    <!-- 放置滑桿控制介面 -->
+    <div style="position: absolute; top: 20px; left: 20px; z-index: 10; color: #fff; font-family: sans-serif;">
+        <label>3D 星球大小控制：</label><br>
+        <input type="range" id="scaleSlider" min="0.5" max="3.0" step="0.1" value="1.0">
+    </div>
+
+    <!-- 引入 Three.js 函式庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // 1. 基本場景設定 (Scene, Camera, Renderer)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. 建立一個 3D 球體 (SphereGeometry) 代表星球
+        const geometry = new THREE.SphereGeometry(2, 32, 32);
+        const material = new THREE.MeshStandardMaterial({ 
+            color: 0x6366f1, 
+            roughness: 0.4,
+            metalness: 0.2
+        });
+        const planet = new THREE.Mesh(geometry, material);
+        scene.add(planet);
+
+        // 3. 加入環境燈光，讓 3D 立體感出來
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1.5);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        camera.position.z = 6;
+
+        // 4. 監聽滑桿，即時控制 3D 模型大小
+        const slider = document.getElementById('scaleSlider');
+        slider.addEventListener('input', (e) => {
+            let scaleVal = parseFloat(e.target.value);
+            planet.scale.set(scaleVal, scaleVal, scaleVal); // 即時改變 3D 尺寸
+        });
+
+        // 5. 動畫循環：讓星球自己旋轉
+        function animate() {
+            requestAnimationFrame(animate);
+            planet.rotation.y += 0.005; // 每一影格自動轉動
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 視窗縮放自動調整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

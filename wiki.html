@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇宙百科 | 天文與恆星物理專題</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f7fb;
+            --nav-bg: #e2e2f5;
+            --card-bg: #ffffff;
+            --text-main: #1e1e2f;
+            --text-muted: #666677;
+            --accent: #5c5cd6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+        nav {
+            width: 100%;
+            height: 64px;
+            background-color: var(--nav-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #d0d0e8;
+        }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        .wiki-container {
+            margin-top: 84px;
+            width: 100%;
+            max-width: 1440px;
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            gap: 20px;
+            padding: 0 20px 40px 20px;
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            border: 1px solid #e0e0ed;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .panel-title { font-weight: 700; font-size: 0.95rem; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 左側分類導覽 */
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .cat-btn {
+            background: #fafafc;
+            border: 1px solid #eeedf5;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #444;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        /* 中央百科詞條總覽 */
+        .wiki-content-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #dcdce6;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus { border-color: var(--accent); }
+
+        .wiki-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            max-height: 65vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .wiki-card {
+            background: #fafafc;
+            border: 1px solid #e8e8f2;
+            border-radius: 8px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .wiki-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(92,92,214,0.08);
+        }
+        .wiki-card-title { font-weight: 700; font-size: 0.9rem; color: var(--accent); margin-bottom: 4px; }
+        .wiki-card-tag { font-size: 0.7rem; background: #e2e2f5; color: #444; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
+        .wiki-card-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* 右側詳細解說與多媒體資源區 */
+        .detail-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #fcfcfd;
+            max-height: 82vh;
+            overflow-y: auto;
+        }
+        .detail-title { font-size: 1rem; font-weight: 700; color: #333; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+        .detail-body {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            background: #f4f4f8;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        /* 專屬延伸資源與照片放置區 */
+        .media-resource-box {
+            border-top: 1px solid #e0e0ed;
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .media-box-title { font-size: 0.82rem; font-weight: 700; color: #333; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* 照片放置容器 */
+        .photo-placeholder {
+            width: 100%;
+            height: 140px;
+            background: #e8e8f0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 0.78rem;
+            border: 1px dashed #c5c5d5;
+            text-align: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+        .photo-placeholder img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+
+        /* 外部連結清單 */
+        .external-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .ext-link {
+            font-size: 0.78rem;
+            color: var(--accent);
+            text-decoration: none;
+            background: #eef2ff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #d8e0ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .ext-link:hover { background: #e0e8ff; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-title">宇宙百科全書</div>
+        <ul class="nav-links">
+            <li><a href="index.html">教學平台</a></li>
+            <li><a href="lab.html">實驗室</a></li>
+            <li><a href="evolution.html">恆星演化史</a></li>
+            <li><a href="wiki.html" class="active">宇宙百科</a></li>
+            <li><a href="hr.html">赫羅圖觀測站</a></li>
+            <li><a href="index.html" style="color: var(--accent);">back &larr;</a></li>
+        </ul>
+    </nav>
+
+    <div class="wiki-container">
+        <!-- 左側：分類導覽 -->
+        <div class="panel">
+            <div class="panel-title">百科分類索引</div>
+            <div class="category-list">
+                <button class="cat-btn active" onclick="filterCategory('all')">📚 全部名詞檢索</button>
+                <button class="cat-btn" onclick="filterCategory('physics')">⚡ 恆星物理與結構</button>
+                <button class="cat-btn" onclick="filterCategory('dynamics')">🌌 星系與動力學</button>
+                <button class="cat-btn" onclick="filterCategory('evolution')">⏳ 演化階段與殘骸</button>
+                <button class="cat-btn" onclick="filterCategory('observation')">🔭 光譜與觀測數據</button>
+                <button class="cat-btn" onclick="filterCategory('cosmology')">🪐 宇宙學與適居性</button>
+            </div>
+        </div>
+
+        <!-- 中央：搜尋與詞條卡片區 -->
+        <div class="panel wiki-content-panel">
+            <div class="panel-title">平台知識庫 (含核心與進階天文名詞)</div>
+            <input type="text" class="search-box" id="searchBox" placeholder="輸入關鍵字搜尋（例如：赫羅圖、暗物質、主序星、光譜型...）" oninput="handleSearch()">
+            <div class="wiki-grid" id="wikiGrid">
+                <!-- 動態生成詞條卡片 -->
+            </div>
+        </div>
+
+        <!-- 右側：詳細解釋與延伸多媒體資源區 -->
+        <div class="panel detail-panel">
+            <div class="detail-title" id="detailTitle">詞條詳細解析</div>
+            <div class="detail-body" id="detailBody">
+                請點擊中央的任一詞條卡片，即可在此處檢視該名詞的完整學術定義與物理意義。
+            </div>
+
+            <!-- 下方：留給您放照片或連接 NASA 等外部網站的專屬區塊 -->
+            <div class="media-resource-box">
+                <div class="media-box-title">
+                    <span>📷 延伸多媒體與文獻</span>
+                    <span style="font-size: 0.7rem; color: #888;">可自由替換內容</span>
+                </div>
+                
+                <!-- 照片放置區 (可將下方 div 內容換成 <img src="您的照片路徑.jpg">) -->
+                <div class="photo-placeholder" id="mediaPhotoContainer">
+                    [ 點擊詞條時此處可自動載入對應天文照片、Blender 渲染圖或光譜圖 ]
+                </div>
+
+                <!-- 外部權威網站與資料庫快速連結 -->
+                <div class="external-links">
+                    <a href="https://www.nasa.gov" target="_blank" class="ext-link"><span>🌐 NASA 官方天文網站</span><span>➔</span></a>
+                    <a href="https://www.sdss.org" target="_blank" class="ext-link"><span>🔭 SDSS 史隆數位巡天數據庫</span><span>➔</span></a>
+                    <a href="https://gea.esac.esa.int/archive/" target="_blank" class="ext-link"><span>✨ Gaia 恆星天文科學資料庫</span><span>➔</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 擴充後的完整百科名詞資料庫（包含專題提及與教育平台必備知識）
+        const wikiData = [
+            // 恆星物理與結構
+            { id: 1, cat: 'physics', name: '恆星質量 (Stellar Mass)', tag: '物理屬性', desc: '決定恆星體積大小 (Scale)、表面重力與最終演化命運的基準單位（以太陽質量 M☉ 計算）。', imgText: '☀️ 太陽質量與恆星階級對照示意圖' },
+            { id: 2, cat: 'physics', name: '核心熱核反應速率', tag: '物理屬性', desc: '控制恆星內部氫融合反應強度的參數，直接影響發光強度 (Emissive Glow) 與核心熾熱感。', imgText: '⚛️ 核心核融合反應與能量輻射圖' },
+            { id: 3, cat: 'physics', name: '表面重力加速度', tag: '物理屬性', desc: '影響星球外層大氣光暈張力與表面氣體壓縮程度的物理量（標準太陽約 274 m/s²）。', imgText: '🌍 重力加速度與大氣張力模擬圖' },
+            { id: 4, cat: 'physics', name: '恆星風強度 (Stellar Wind)', tag: '物理屬性', desc: '決定恆星大氣質量流失率與冕層擴散範圍的關鍵流體參數。', imgText: '💨 恆星風吹散星周物質示意圖' },
+            { id: 5, cat: 'physics', name: '表面磁場活動 (Magnetic Activity)', tag: '物理屬性', desc: '影響表面對流斑塊深度與局部熱輻射耀斑強度的磁流體動力學指標。', imgText: '🧲 恆星磁場與閃焰耀斑觀測圖' },
+            { id: 6, cat: 'physics', name: '流體靜力平衡 (Hydrostatic Equilibrium)', tag: '物理屬性', desc: '恆星內部向外的輻射氣體壓力與向內的萬有引力達到完美抗衡的穩定狀態。', imgText: '⚖️ 壓力與重力平衡物理模型' },
+
+            // 星系與動力學
+            { id: 7, cat: 'dynamics', name: '萬有引力常數倍率', tag: '軌道力學', desc: '模擬星體周圍重力扭曲感、自轉軌跡與星系束縛力的調整係數。', imgText: '🪐 雙星與多體重力場模擬畫面' },
+            { id: 8, cat: 'dynamics', name: '暗物質密度 (Dark Matter Density)', tag: '軌道力學', desc: '影響外圍環繞的暗物質暈粒子濃度、透光度與星系旋轉曲線平坦性的關鍵因數。', imgText: '🌌 星系外圍暗物質暈分佈圖' },
+            { id: 9, cat: 'dynamics', name: '軌道離心率 (Eccentricity)', tag: '軌道力學', desc: '描述天體運行軌道橢圓偏心程度的指標，影響模擬視窗中星體的軌道擺動。', imgText: '🔄 橢圓軌道與克卜勒定律圖解' },
+            { id: 10, cat: 'dynamics', name: '恆星自轉速度 (Rotation)', tag: '軌道力學', desc: '高速自轉會因離心力產生赤道隆起效應（Oblateness），改變天體外觀扁率。', imgText: '💫 高速自轉天體赤道隆起圖' },
+            { id: 11, cat: 'dynamics', name: '星系旋轉曲線 (Rotation Curve)', tag: '軌道力學', desc: '顯示星系中恆星繞行速度與中心距離關係的曲線，成為證明暗物質存在的直接證據。', imgText: '📈 星系旋轉曲線觀測數據圖' },
+
+            // 演化階段與殘骸
+            { id: 12, cat: 'evolution', name: '星雲塌縮 (Nebular Collapse)', tag: '演化階段', desc: '恆星生命週期的起點 (0%)，巨大冷氣體與塵埃在自身重力下向中心凝聚旋轉。', imgText: '☁️ 巨大分子雲與恆星誕生區 (JWST)' },
+            { id: 13, cat: 'evolution', name: '原恆星階段 (Protostar)', tag: '演action階段', desc: '核心溫度與壓力持續升高，內部熱核反應尚未完全點燃的過渡期。', imgText: '🔥 原恆星周遭吸積盤渲染圖' },
+            { id: 14, cat: 'evolution', name: '主序星平衡 (Main Sequence)', tag: '演化階段', desc: '核心穩定進行氫融合反應，輻射壓與重力達到完美流體靜力平衡的漫長時期。', imgText: '⭐ 標準主序星剖面結構圖' },
+            { id: 15, cat: 'evolution', name: '紅巨星膨脹 (Red Giant)', tag: '演化階段', desc: '核心氫耗盡收縮、外層包層受熱劇烈膨脹的階段，表面溫度下降但光度大幅增加。', imgText: '🔴 紅巨星與行星吞噬示意圖' },
+            { id: 16, cat: 'evolution', name: '緻密殘骸 (White Dwarf / Remnant)', tag: '演化階段', desc: '演化終了後形成的白矮星或中子星，具備極高密度與簡併壓力。', imgText: '💎 高密度白矮星與星雲殘骸' },
+            { id: 17, cat: 'evolution', name: '超新星爆炸 (Supernova)', tag: '演化階段', desc: '大質量恆星演化末期核心崩潰所產生的極高能量爆炸，會散布重元素並留下中子星或黑洞。', imgText: '💥 超新星遺蹟觀測照片 (NASA)' },
+
+            // 光譜與觀測技術
+            { id: 18, cat: 'observation', name: '電磁波譜觀測頻段', tag: '觀測技術', desc: '切換可見光、X射線、紅外線與紫外線等不同波段，觀測表面氣體與化學元素輻射特徵。', imgText: '📡 全波段天文望遠鏡觀測對照' },
+            { id: 19, cat: 'observation', name: '宇宙塵埃遮蔽率', tag: '觀測技術', desc: '影響外層大氣與材質透明度、黯淡感及地表侵蝕起伏感的觀測干擾項。', imgText: '🌫️ 星際塵埃消光效應示意圖' },
+            { id: 20, cat: 'observation', name: '金屬豐度 [Fe/H]', tag: '觀測技術', desc: '衡量恆星重元素含量的指標，影響原恆星內部不透明度與赫羅圖分佈軌跡。', imgText: '🔬 恒星光譜分析與化學豐度圖' },
+            { id: 21, cat: 'observation', name: '赫羅圖 (H-R Diagram)', tag: '觀測技術', desc: '恆星光度與表面有效溫度（或光譜型）的散佈圖，用以追蹤恆星演化軌跡的核心工具。', imgText: '📊 標準赫羅圖與主序帶分佈' },
+            { id: 22, cat: 'observation', name: '恆星光譜型 (Spectral Type)', tag: '觀測技術', desc: '依據表面溫度將恆星分為 O, B, A, F, G, K, M 七大主要類型的分類系統。', imgText: '🌈 OBAFGKM 恆星光譜與顏色對照' },
+
+            // 宇宙學與適居性
+            { id: 23, cat: 'cosmology', name: '行星適居帶 (Habitable Zone)', tag: '宇宙學', desc: '恆星周圍允許液態水存在的 orbital 區域，是評估系外行星生命存在可能性的重要指標。', imgText: '💧 恆星適居帶與液態水範圍' },
+            { id: 24, cat: 'cosmology', name: '哈伯定律 (Hubble\'s Law)', tag: '宇宙學', desc: '宇宙膨脹的基礎定律，星系離我們的距離與其退行速度成正比。', imgText: '🔭 宇宙膨脹與紅移現象圖解' }
+        ];
+
+        let currentCategory = 'all';
+
+        function renderWiki(data) {
+            const grid = document.getElementById('wikiGrid');
+            grid.innerHTML = '';
+            if (data.length === 0) {
+                grid.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #888; padding: 20px;">沒有找到相關名詞</div>';
+                return;
+            }
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'wiki-card';
+                card.onclick = () => showDetail(item);
+                card.innerHTML = `
+                    <div class="wiki-card-title">${item.name}</div>
+                    <div class="wiki-card-tag">${item.tag}</div>
+                    <div class="wiki-card-desc">${item.desc}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            handleSearch();
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            let filtered = wikiData.filter(item => {
+                const matchCat = currentCategory === 'all' || item.cat === currentCategory;
+                const matchQuery = item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query) || item.tag.toLowerCase().includes(query);
+                return matchCat && matchQuery;
+            });
+            renderWiki(filtered);
+        }
+
+        function showDetail(item) {
+            document.getElementById('detailTitle').textContent = item.name;
+            document.getElementById('detailBody').innerHTML = `
+                <p><b>分類標籤：</b>${item.tag}</p><br>
+                <p><b>詳細解析：</b>${item.desc}</p>
+            `;
+            // 即時更新下方照片區域的提示文字（未來可替換為真實圖片網址）
+            document.getElementById('mediaPhotoContainer').innerHTML = `📷 <b>${item.imgText}</b><br><span style="font-size: 0.7rem; color: #888;">(可於此處嵌入專題圖片或 Blender 截圖)</span>`;
+        }
+
+        // 初始化載入全部
+        renderWiki(wikiData);
+    </script>
+</body>
+</html>
