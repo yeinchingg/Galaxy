@@ -1,15 +1,16 @@
 import os
 import collections
-from typing import Optional, AsyncGenerator
+from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+import httpx
+
 from rag_engine import AstronomyRAGEngine
 from star_engine import StarSimulator
 import storage
-import httpx
 
 load_dotenv()
 storage.init_db()
@@ -36,7 +37,7 @@ rag = AstronomyRAGEngine(
     pinecone_api_key=PINECONE_API_KEY,
     index_name=INDEX_NAME
 )
-star_sim = StarSimulator()  # 修正：名稱對齊下方呼叫
+star_sim = StarSimulator()
 
 
 @app.get("/")
@@ -55,8 +56,8 @@ def ask_astronomy(payload: QuestionRequest):
         raise HTTPException(status_code=400, detail="問題內容不能為空")
 
     result = rag.ask(payload.question, top_k=payload.top_k)
-    if result["status"] == "error":
-        raise HTTPException(status_code=500, detail=result["message"])
+    if result.get("status") == "error":
+        raise HTTPException(status_code=500, detail=result.get("message"))
 
     return result
 
@@ -158,8 +159,8 @@ def ask_topic(payload: TopicQuestionRequest):
 
     result = rag.ask_topic(
         payload.question, payload.topic, top_k=payload.top_k)
-    if result["status"] == "error":
-        raise HTTPException(status_code=500, detail=result["message"])
+    if result.get("status") == "error":
+        raise HTTPException(status_code=500, detail=result.get("message"))
     return result
 
 # =====================================================================
@@ -218,7 +219,7 @@ def narrate_3d(payload: NarrateRequest):
     return {"status": "success", "hint": hint}
 
 # =====================================================================
-# 6. NASA / 太空新聞 API
+# 6. NASA / 太空新聞 API (原汁原味 + 備援機制)
 # =====================================================================
 
 
@@ -245,6 +246,7 @@ async def get_daily_knowledge():
 
         return {"status": "success", "data": news_list}
     except Exception as e:
+        print(f"新聞 API 讀取超時或失敗，使用 Fallback 資料: {e}")
         return {
             "status": "fallback",
             "data": [

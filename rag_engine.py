@@ -1,199 +1,157 @@
-# rag_engine.py
 import os
+import random
+from typing import Generator, List, Dict, Any
 from google import genai
-from google.genai import types
 from pinecone import Pinecone
 
 
 class AstronomyRAGEngine:
+    def __init__(self, gemini_api_key: str, pinecone_api_key: str, index_name: str, target_dimension: int = 768):
+        # 1. 解析多組 Gemini API Key (自動切分並清理空白)
+        if isinstance(gemini_api_key, str):
+            self.api_keys = [k.strip()
+                             for k in gemini_api_key.split(",") if k.strip()]
+        elif isinstance(gemini_api_key, list):
+            self.api_keys = [str(k).strip()
+                             for k in gemini_api_key if str(k).strip()]
+        else:
+            self.api_keys = []
 
-    def __init__(self, gemini_api_key: str, pinecone_api_key: str, index_name: str,
-                 # text-embedding-004 已於 2026/1/14 停用
-                 embedding_model: str = "gemini-embedding-001",
-                 generation_model: str = "gemini-flash-latest",  # 別名，Google 會自動指向目前最新的 Flash 模型
-                 target_dimension: int = 768):
+        if not self.api_keys:
+            raise ValueError("未提供有效的 GEMINI_API_KEY！")
 
-        self.embedding_model = embedding_model
-        self.generation_model = generation_model
+        self.current_key_index = 0
+        self.embedding_model = "text-embedding-004"
         self.target_dimension = target_dimension
 
-        self.client = genai.Client(api_key=gemini_api_key)
+        # 2. 初始化 Pinecone
+        self.pc = Pinecone(
+            api_key=pinecone_api_key) if pinecone_api_key else None
+        self.index = self.pc.Index(
+            index_name) if self.pc and index_name else None
 
-        self.pc = Pinecone(api_key=pinecone_api_key)
-        self.index = self.pc.Index(index_name)
+    def _get_next_client(self) -> genai.Client:
+        """取得當前輪播的 Gemini Client，並將指針移至下一組"""
+        current_key = self.api_keys[self.current_key_index]
+        self.current_key_index = (
+            self.current_key_index + 1) % len(self.api_keys)
+        return genai.Client(api_key=current_key)
 
-    def _get_embedding(self, text: str) -> list:
+    def _execute_with_retry(self, func):
+        """通用自動重試機制：若遇到 401 或 API 失敗，自動切換下一組 Key"""
+        last_exception = None
+        for _ in range(len(self.api_keys)):
+            try:
+                client = self._get_next_client()
+                return func(client)
+            except Exception as e:
+                print(f"⚠️ Gemini API Key 呼叫失敗 ({e})，正在自動切換下一組 API Key 重試...")
+                last_exception = e
+        raise RuntimeError(f"所有 Gemini API Keys 皆無效或呼叫失敗: {last_exception}")
+
+    def _get_embedding(self, text: str) -> List[float]:
+        """包覆輪播機制的向量轉換方法 (修復 401 崩潰點)"""
         try:
-            response = self.client.models.embed_content(
-                model=self.embedding_model,
-                contents=text,
-                config=types.EmbedContentConfig(
-                    output_dimensionality=self.target_dimension)
+            embed_res = self._execute_with_retry(
+                lambda client: client.models.embed_content(
+                    model=self.embedding_model,
+                    contents=text,
+                    config={"output_dimensionality": self.target_dimension}
+                )
             )
-            vector = response.embeddings[0].values
-            return vector
+            return embed_res.embedding.values
         except Exception as e:
-            raise Exception(f"向量轉換失敗: {str(e)}")
+            print(f"❌ 所有 Key 轉換向量皆失敗: {e}")
+            raise e
 
-    def retrieve_context(self, question: str, top_k: int = 3) -> list:
-        query_vector = self._get_embedding(question)
-        results = self.index.query(
-            vector=query_vector,
-            top_k=top_k,
-            include_metadata=True
-        )
-
-        retrieved_items = []
-        for match in results.get("matches", []):
-            retrieved_items.append({
-                "text": match["metadata"]["text"],
-                "source": match["metadata"]["source"],
-                "score": round(match["score"], 4)
-            })
-        return retrieved_items
-
-    def generate_answer(self, question: str, retrieved_items: list) -> str:
-        context_blocks = []
-        for idx, item in enumerate(retrieved_items):
-            context_blocks.append(
-                f"[文獻 {idx+1} | 來源: {item['source']}]\n{item['text']}")
-        context_str = "\n\n---\n\n".join(context_blocks)
-
-        prompt = f"""你是一位專業的天文學專家。請根據下方提供的【參考文獻】回答使用者的【問題】。
-若文獻中無相關資訊，請回答「根據現有知識庫資料無法回答此問題」，不可胡亂虛構。
-
-【參考文獻】：
-{context_str}
-
-【問題】：
-{question}
-
-請詳細且條理清晰地回答："""
-
+    def retrieve_context(self, question: str, top_k: int = 3) -> List[str]:
+        """從 Pinecone 檢索相關上下文"""
+        if not self.index:
+            return []
         try:
-            response = self.client.models.generate_content(
-                model=self.generation_model,
-                contents=prompt,
-            )
-            return response.text
+            # 呼叫帶有輪播機制的 _get_embedding
+            query_vector = self._get_embedding(question)
+
+            # Pinecone 查詢
+            query_res = self.index.query(
+                vector=query_vector, top_k=top_k, include_metadata=True)
+            contexts = []
+            for match in query_res.matches:
+                if match.metadata and "text" in match.metadata:
+                    contexts.append(match.metadata["text"])
+            return contexts
         except Exception as e:
-            return f"❌ 【新版 SDK 報錯】: {str(e)}"
+            print(f"檢索失敗: {e}")
+            return []
 
-    def generate_stream(self, question: str, retrieved_items: list):
-        """跟 generate_answer 一樣的 prompt，但用串流方式一段一段吐出文字"""
-        context_blocks = []
-        for idx, item in enumerate(retrieved_items):
-            context_blocks.append(
-                f"[文獻 {idx+1} | 來源: {item['source']}]\n{item['text']}")
-        context_str = "\n\n---\n\n".join(context_blocks)
-
-        prompt = f"""你是一位專業的天文學專家。請根據下方提供的【參考文獻】回答使用者的【問題】。
-若文獻中無相關資訊，請回答「根據現有知識庫資料無法回答此問題」，不可胡亂虛構。
-
-【參考文獻】：
-{context_str}
-
-【問題】：
-{question}
-
-請詳細且條理清晰地回答："""
-
-        stream = self.client.models.generate_content_stream(
-            model=self.generation_model,
-            contents=prompt,
-        )
-        for chunk in stream:
-            if chunk.text:
-                yield chunk.text
-
-    # 主題限定問答：*1~*3 這幾個固定主題，各自給一段系統提示詞把回答方向收斂住
-    TOPIC_PROMPTS = {
-        "physics_meaning": "請聚焦在恆星物理量的意義：顏色與溫度的關係、自轉速度對形狀的影響、金屬量對顏色的影響。",
-        "star_lifecycle": "請聚焦在恆星從誕生、主序星、演化到死亡（白矮星/中子星/黑洞）的整個生命週期。",
-        "chat": "請自由回答使用者的天文相關問題。",
-    }
-
-    def ask_topic(self, question: str, topic: str, top_k: int = 3) -> dict:
-        """跟 ask() 一樣，但依 topic 加上不同的引導提示詞，讓回答聚焦在該主題"""
-        topic_instruction = self.TOPIC_PROMPTS.get(
-            topic, self.TOPIC_PROMPTS["chat"])
+    def ask(self, question: str, top_k: int = 3) -> Dict[str, Any]:
+        """單次問答"""
         try:
-            retrieved = self.retrieve_context(question, top_k=top_k)
-            context_blocks = [
-                f"[文獻 {i+1} | 來源: {item['source']}]\n{item['text']}"
-                for i, item in enumerate(retrieved)
-            ]
-            context_str = "\n\n---\n\n".join(
-                context_blocks) if context_blocks else "（查無相關文獻）"
+            contexts = self.retrieve_context(question, top_k=top_k)
+            context_str = "\n".join(contexts)
+            prompt = f"請根據以下參考資訊回答問題。\n參考資訊：\n{context_str}\n\n問題：{question}"
 
-            prompt = f"""你是一位專業的天文學專家。{topic_instruction}
-請根據下方【參考文獻】回答【問題】，若無相關資訊請誠實告知，不可胡亂虛構。
-
-【參考文獻】：
-{context_str}
-
-【問題】：
-{question}
-
-請詳細且條理清晰地回答："""
-
-            response = self.client.models.generate_content(
-                model=self.generation_model,
-                contents=prompt,
+            response = self._execute_with_retry(
+                lambda client: client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
             )
-            return {
-                "status": "success",
-                "topic": topic,
-                "question": question,
-                "answer": response.text,
-                "sources": list(set(item["source"] for item in retrieved)),
-            }
+            return {"status": "success", "answer": response.text, "contexts": contexts}
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    def generate_short_hint(self, context_description: str) -> str:
-        """
-        給恆星模擬滑桿 / 3D 投影用：輸入目前畫面的數值狀態描述，
-        回傳一句簡短的自然語言提示（不做 RAG 檢索，純生成，速度快）。
-        前端請做 debounce（使用者停止拖曳滑桿一段時間後才呼叫），避免過度呼叫。
-        """
-        prompt = f"""你是天文教學助理。以下是使用者目前互動畫面的數值狀態：
-{context_description}
-
-請用一句話（30字以內、繁體中文、口語化）向使用者說明這個畫面現在呈現的重點是什麼，不要條列、不要客套話。"""
+    def ask_topic(self, question: str, topic: str, top_k: int = 3) -> Dict[str, Any]:
+        """特定主題問答"""
         try:
-            response = self.client.models.generate_content(
-                model=self.generation_model,
-                contents=prompt,
+            contexts = self.retrieve_context(
+                f"[{topic}] {question}", top_k=top_k)
+            context_str = "\n".join(contexts)
+            prompt = f"主題：{topic}\n參考資料：\n{context_str}\n\n問題：{question}"
+
+            response = self._execute_with_retry(
+                lambda client: client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+            )
+            return {"status": "success", "answer": response.text, "contexts": contexts}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    def generate_stream(self, question: str, contexts: List[str]) -> Generator[str, None, None]:
+        """串流生成 (以 Chunk 回傳)"""
+        context_str = "\n".join(contexts)
+        prompt = f"請根據以下參考資訊回答問題。\n參考資訊：\n{context_str}\n\n問題：{question}"
+
+        last_exception = None
+        for _ in range(len(self.api_keys)):
+            try:
+                client = self._get_next_client()
+                response_stream = client.models.generate_content_stream(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                for chunk in response_stream:
+                    if chunk.text:
+                        yield chunk.text
+                return
+            except Exception as e:
+                print(f"⚠️ 串流 API Key 呼叫失敗 ({e})，嘗試切換下一組 Key...")
+                last_exception = e
+
+        yield f"[錯誤] 所有 API Key 皆無法完成串流回應: {last_exception}"
+
+    def generate_short_hint(self, description: str) -> str:
+        """生成簡短提示"""
+        try:
+            prompt = f"請根據以下狀態描述，產生一句簡短的旁白解說 (30字以內)：\n{description}"
+            response = self._execute_with_retry(
+                lambda client: client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
             )
             return response.text.strip()
         except Exception as e:
-            return f"（提示生成失敗：{e}）"
-
-    def ask(self, question: str, top_k: int = 3) -> dict:
-        try:
-            retrieved = self.retrieve_context(question, top_k=top_k)
-            if not retrieved:
-                return {
-                    "status": "success",
-                    "question": question,
-                    "answer": "您的資料庫中目前沒有任何相關的內容喔！",
-                    "sources": [],
-                    "raw_retrieved": []
-                }
-
-            answer = self.generate_answer(question, retrieved)
-            sources = list(set([item["source"] for item in retrieved]))
-
-            return {
-                "status": "success",
-                "question": question,
-                "answer": answer,
-                "sources": sources,
-                "raw_retrieved": retrieved
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+            return "無法取得動態旁白。"
