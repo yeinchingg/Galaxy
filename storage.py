@@ -9,13 +9,17 @@ SQLite 檔案在正式環境建議換成 Postgres，但介面/呼叫方式可以
 之後要換資料庫只需要改這支檔案。
 """
 
+import os
 import sqlite3
 import json
 import time
 import uuid
 from contextlib import contextmanager
 
-DB_PATH = "astro_platform.db"
+# 改用絕對路徑：避免用 uvicorn 從不同目錄啟動時，
+# 意外在別的資料夾建立/讀取到另一份 astro_platform.db。
+DB_PATH = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), "astro_platform.db")
 
 
 @contextmanager

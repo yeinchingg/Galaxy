@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教學平台 | 天文與恆星物理專題</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #f7f7fb;
@@ -16,21 +14,8 @@
             --text-muted: #666677;
             --accent: #5c5cd6;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
 
         /* Navigation Bar */
         nav {
@@ -46,31 +31,22 @@
             z-index: 100;
             border-bottom: 1px solid #d0d0e8;
         }
+        .nav-left { display: flex; align-items: center; gap: 14px; }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
-        .nav-title {
+        /* 系統連線狀態徽章 */
+        .badge {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 12px;
             font-weight: 700;
-            font-size: 1.1rem;
-            color: #333;
+            background-color: #dff5e4;
+            color: #2c8a4b;
         }
-
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #444;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--accent);
-        }
+        .badge.badge-offline { background-color: #fde2e2; color: #c23b3b; }
 
         /* Main Container */
         .container {
@@ -88,28 +64,62 @@
             border: 1px solid #e0e0ed;
             border-radius: 12px;
             padding: 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .hero-section h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; color: #222; }
+        .hero-section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; color: #444; }
+        .hero-section p { font-size: 1rem; line-height: 1.6; color: var(--text-muted); }
+
+        /* 個人化推薦 */
+        #outline-recommendation {
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: var(--accent);
+            background-color: #f1f1fb;
+            border-radius: 8px;
+            padding: 10px 14px;
         }
 
-        .hero-section h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #222;
+        /* 今日天文新聞：沿用 card-item 的視覺語言（白底、圓角、陰影），
+           而不是另外做一套獨立的 slider 元件系統 */
+        .news-scroll {
+            margin-top: 22px;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
         }
+        .news-scroll::-webkit-scrollbar { height: 6px; }
+        .news-scroll::-webkit-scrollbar-thumb { background-color: #d0d0e8; border-radius: 4px; }
 
-        .hero-section p {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: var(--text-muted);
+        .news-card {
+            flex: 0 0 260px;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, border-color 0.2s;
         }
+        .news-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .news-card img { width: 100%; height: 130px; object-fit: cover; background-color: var(--card-bg); }
+        .news-card-body { padding: 12px 14px; }
+        .news-card-body h4 { font-size: 0.9rem; font-weight: 700; color: #222; line-height: 1.35; margin-bottom: 6px; }
+        .news-card-body p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
+        .news-empty { font-size: 0.85rem; color: var(--text-muted); padding: 4px 2px; }
 
         .section-block {
             background-color: var(--card-bg);
             border-radius: 12px;
             padding: 30px;
         }
-
         .section-title {
             font-size: 1.1rem;
             font-weight: 700;
@@ -119,24 +129,14 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        .section-title a {
-            font-size: 0.85rem;
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .section-title a:hover {
-            text-decoration: underline;
-        }
+        .section-title a { font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 500; }
+        .section-title a:hover { text-decoration: underline; }
 
         .grid-2x2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
         .card-item {
             display: flex;
             gap: 16px;
@@ -144,168 +144,42 @@
             background: #ffffff;
             padding: 16px;
             border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             text-decoration: none;
             color: inherit;
             transition: transform 0.2s, border-color 0.2s;
             border: 1px solid transparent;
         }
-
         .card-item:hover {
             transform: translateY(-2px);
             border-color: var(--accent);
         }
-
         .card-circle {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             background-color: #d8d8e8;
             border-radius: 50%;
             flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem;
         }
-
-        .card-text h4 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: #222;
-        }
-
-        .card-text p {
-            font-size: 0.8rem;
-            line-height: 1.4;
-            color: var(--text-muted);
-        }
+        .card-text h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; color: #222; }
+        .card-text p { font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); }
 
         .image-card {
             background-color: #ffffff;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Banner */
-        .banner-section {
-            background-color: #ffffff;
-            border: 1px solid #e0e0ed;
-            border-radius: 12px;
-            padding: 30px 40px;
-        }
-
-        .banner-section h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        /* Dynamic Badge */
-        .badge {
-            background-color: #e0e0f8;
-            color: var(--accent);
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: bold;
-        }
-
-        /* 橫向滑動容器 */
-        .news-slider {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            /* 允許橫向滑動 */
-            padding-bottom: 12px;
-            scroll-snap-type: x mandatory;
-            /* 滾動時自動對齊卡片 */
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* 自訂滑動條樣式 */
-        .news-slider::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .news-slider::-webkit-scrollbar-thumb {
-            background-color: #d0d0e8;
-            border-radius: 4px;
-        }
-
-        /* 單張新聞卡片 */
-        .news-card {
-            flex: 0 0 280px;
-            /* 固定卡片寬度為 280px */
-            scroll-snap-align: start;
-            background: #ffffff;
-            border: 1px solid #e0e0ed;
-            border-radius: 10px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-            transition: transform 0.2s;
-        }
-
-        .news-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .news-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            /* 圖片自動裁切填滿，不變形 */
-        }
-
-        .news-card-content {
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            flex-grow: 1;
-        }
-
-        .news-card h4 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #222;
-            line-height: 1.3;
-        }
-
-        .news-card p {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-            margin-bottom: 12px;
-        }
-
-        /* 連結樣式修正 */
-        .simple-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: inline-block;
-            transition: color 0.2s;
-        }
-
-        .simple-link:hover {
-            color: #3b3be6;
-            text-decoration: underline;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
     </style>
 </head>
-
 <body>
 
     <nav>
-        <div class="nav-title">教學平台</div>
+        <div class="nav-left">
+            <div class="nav-title">教學平台</div>
+            <span id="user-status-tag" class="badge">連線中...</span>
+        </div>
         <ul class="nav-links">
             <li><a href="index.html" class="active">教學平台</a></li>
             <li><a href="lab.html">實驗室</a></li>
@@ -319,12 +193,16 @@
     <div class="container">
         <!-- Hero Welcome -->
         <div class="hero-section">
-            <h1 style="margin-bottom: 8px;">🌌 最新天文新聞</h1>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;"> 最新新聞</p>
+            <h1>welcome</h1>
+            <h2>天文每日一則天文知識</h2>
+            <p>即時動態數據庫：含暗黑暗暈、恆星軌跡、光譜與多維度物理模擬數據。</p>
 
-            <!-- 滑動容器 (Horizontal Slider Container) -->
-            <div id="news-slider" class="news-slider">
-                <p style="color: var(--text-muted);">載入中！</p>
+            <!-- 個人化課程大綱推薦：由 /api/outline/{user_id} 提供 -->
+            <div id="outline-recommendation"></div>
+
+            <!-- 今日天文新聞：由 /api/daily-knowledge 提供 -->
+            <div id="news-scroll" class="news-scroll">
+                <p class="news-empty">新聞載入中...</p>
             </div>
         </div>
 
@@ -370,28 +248,28 @@
                 <a href="lab.html">進入實驗室 ➔</a>
             </div>
             <div class="grid-2x2">
-                <a href="lab.html" class="card-item">
+                <a href="lab.html" class="card-item" data-topic="lab">
                     <div class="card-circle">🎛️</div>
                     <div class="card-text">
                         <h4>參數滑桿控制</h4>
                         <p>位於左側的控制面板，可即時調整球狀星團、核心光度、表面重力與暗物質暈密度等物理參數。</p>
                     </div>
                 </a>
-                <a href="lab.html" class="card-item">
+                <a href="lab.html" class="card-item" data-topic="lab">
                     <div class="card-circle">🌌</div>
                     <div class="card-text">
                         <h4>模擬物理視窗</h4>
                         <p>中央高畫質即時渲染視窗，動態展示星系軌跡、恆星動力學運動與系統演化。</p>
                     </div>
                 </a>
-                <a href="lab.html" class="card-item">
+                <a href="lab.html" class="card-item" data-topic="lab">
                     <div class="card-circle">🤖</div>
                     <div class="card-text">
                         <h4>伸縮式 AI 小助理</h4>
                         <p>右側配備 AI 智慧助理，隨時提供即時數據解析與物理建議，支援點擊收縮放大畫面。</p>
                     </div>
                 </a>
-                <a href="lab.html" class="card-item">
+                <a href="lab.html" class="card-item" data-topic="lab">
                     <div class="card-circle">🔬</div>
                     <div class="card-text">
                         <h4>多波段光譜濾鏡</h4>
@@ -408,28 +286,28 @@
                 <a href="evolution.html">進入恆星演化史 ➔</a>
             </div>
             <div class="grid-2x2">
-                <a href="evolution.html" class="card-item">
+                <a href="evolution.html" class="card-item" data-topic="star_lifecycle">
                     <div class="card-circle">⭐</div>
                     <div class="card-text">
                         <h4>初始星雲參數</h4>
                         <p>可自由設定初始質量、金屬豐度與星雲初始密度，孕育出不同特性的原恆星與星盤。</p>
                     </div>
                 </a>
-                <a href="evolution.html" class="card-item">
+                <a href="evolution.html" class="card-item" data-topic="star_lifecycle">
                     <div class="card-circle">⏱️</div>
                     <div class="card-text">
                         <h4>演化時間軸滑桿</h4>
                         <p>透過中央時間軸百分比拉動，即時觀察恆星從主序星、紅巨星到緻密殘骸的生命歷程。</p>
                     </div>
                 </a>
-                <a href="evolution.html" class="card-item">
+                <a href="evolution.html" class="card-item" data-topic="star_lifecycle">
                     <div class="card-circle">💡</div>
                     <div class="card-text">
                         <h4>AI 隨身物理解析</h4>
                         <p>AI 小助理隨時跟隨滑桿動作，即時解析當前階段物理狀態並推薦下一步變化建議。</p>
                     </div>
                 </a>
-                <a href="evolution.html" class="card-item">
+                <a href="evolution.html" class="card-item" data-topic="star_lifecycle">
                     <div class="card-circle">📜</div>
                     <div class="card-text">
                         <h4>歷史預設範本</h4>
@@ -446,28 +324,28 @@
                 <a href="wiki.html">進入宇宙百科 ➔</a>
             </div>
             <div class="grid-2x2">
-                <a href="wiki.html" class="card-item">
+                <a href="wiki.html" class="card-item" data-topic="wiki">
                     <div class="card-circle">📚</div>
                     <div class="card-text">
                         <h4>名詞分類索引</h4>
                         <p>將天測、光譜、暗物質與演化階段等所有核心學術名詞進行條理化分門別類。</p>
                     </div>
                 </a>
-                <a href="wiki.html" class="card-item">
+                <a href="wiki.html" class="card-item" data-topic="wiki">
                     <div class="card-circle">🔍</div>
                     <div class="card-text">
                         <h4>詳細學術解釋</h4>
                         <p>提供深入淺出的名詞物理意義與數學概念，幫助專題研究與觀念釐清。</p>
                     </div>
                 </a>
-                <a href="wiki.html" class="card-item">
+                <a href="wiki.html" class="card-item" data-topic="wiki">
                     <div class="card-circle">🔗</div>
                     <div class="card-text">
                         <h4>全站超連結錨點</h4>
                         <p>支援全站各頁面一鍵點擊跳轉，隨時連接至對應的百科段落查閱定義。</p>
                     </div>
                 </a>
-                <a href="wiki.html" class="card-item">
+                <a href="wiki.html" class="card-item" data-topic="wiki">
                     <div class="card-circle">🎓</div>
                     <div class="card-text">
                         <h4>專題知識庫</h4>
@@ -484,28 +362,28 @@
                 <a href="hr.html">進入赫羅圖觀測站 ➔</a>
             </div>
             <div class="grid-2x2">
-                <a href="hr.html" class="card-item">
+                <a href="hr.html" class="card-item" data-topic="hr">
                     <div class="card-circle">📈</div>
                     <div class="card-text">
                         <h4>互動式畫布點擊</h4>
                         <p>可在赫羅圖上隨意點擊或拖曳觀測點，即時探索不同溫度與光度對應的天體類別。</p>
                     </div>
                 </a>
-                <a href="hr.html" class="card-item">
+                <a href="hr.html" class="card-item" data-topic="hr">
                     <div class="card-circle">🪐</div>
                     <div class="card-text">
                         <h4>即時 3D 模型圖</h4>
                         <p>動態呈現對應的恆星物理狀態與圖標，直觀展現主序星、巨星或白矮星外觀。</p>
                     </div>
                 </a>
-                <a href="hr.html" class="card-item">
+                <a href="hr.html" class="card-item" data-topic="hr">
                     <div class="card-circle">📊</div>
                     <div class="card-text">
                         <h4>天體數值儀表板</h4>
                         <p>動態更新絕對星等、總光度、有效溫度與光譜分類（如 G2V 太陽型）等精確數值。</p>
                     </div>
                 </a>
-                <a href="hr.html" class="card-item">
+                <a href="hr.html" class="card-item" data-topic="hr">
                     <div class="card-circle">⚡</div>
                     <div class="card-text">
                         <h4>百科快速傳送門</h4>
@@ -517,137 +395,14 @@
 
         <!-- Large Image Card -->
         <div class="image-card">
-            <div
-                style="background: radial-gradient(circle, #1a153b 0%, #050510 100%); padding: 60px 20px; text-align: center; color: #fff;">
+            <div style="background: radial-gradient(circle, #1a153b 0%, #050510 100%); padding: 60px 20px; text-align: center; color: #fff;">
                 <div style="font-size: 4rem; margin-bottom: 15px;">☀️</div>
                 <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; color: #818cf8;">太陽與恆星大氣層動態模擬</h3>
                 <p style="font-size: 0.9rem; color: #94a3b8;">結合真實驗光譜與磁場對流方程式，即時展現日冕物質拋射與輻射壓動態。</p>
             </div>
         </div>
     </div>
-    <!-- API 對接與互動邏輯 -->
-    <script>
-        const API_BASE = "http://127.0.0.1:8000";
 
-        // 1. 取得或初始化 User ID (存於 localStorage)
-        function getUserId() {
-            let userId = localStorage.getItem("astronomy_user_id");
-            if (!userId) {
-                userId = "user_" + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem("astronomy_user_id", userId);
-            }
-            return userId;
-        }
-
-        const USER_ID = getUserId();
-
-        // 2. 頁面載入時呼叫後端 API
-        window.addEventListener("DOMContentLoaded", () => {
-            fetchDailyKnowledge();
-            fetchStatus();
-            fetchDynamicOutline();
-        });
-
-        // [API 測試] 測試後端運行狀態
-        async function fetchStatus() {
-            try {
-                const res = await fetch(`${API_BASE}/`);
-                const data = await res.json();
-                document.getElementById("user-status-tag").innerText = "系統連線正常";
-            } catch (err) {
-                document.getElementById("user-status-tag").innerText = "離線模式";
-            }
-        }
-
-        // [API] 每日天文新聞/知識
-        async function fetchDailyKnowledge() {
-            const sliderContainer = document.getElementById("news-slider");
-            try {
-                const res = await fetch(`${API_BASE}/api/daily-knowledge`);
-                const result = await res.json();
-
-                if (result.data && result.data.length > 0) {
-                    sliderContainer.innerHTML = ""; // 清除載入文字
-
-                    // 走訪新聞陣列，動態建立 HTML 卡片
-                    result.data.forEach(news => {
-                        const card = document.createElement("div");
-                        card.className = "news-card";
-
-                        card.innerHTML = `
-                        <img src="${news.image_url}" alt="news image" onerror="this.src='https://via.placeholder.com/300x180?text=Astronomy+News'">
-                        <div class="news-card-content">
-                            <div>
-                                <h4>${news.title}</h4>
-                                <p>${news.sub_title}</p>
-                            </div>
-                            <div>
-                                <a href="${news.url}" target="_blank" rel="noopener noreferrer" class="simple-link">
-                                    查看更多 ➔
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                        sliderContainer.appendChild(card);
-                    });
-                }
-            } catch (err) {
-                console.warn("新聞 API 呼叫失敗", err);
-                sliderContainer.innerHTML = "<p style='color: var(--text-muted);'>暫時無法載入最新新聞。</p>";
-            }
-        }
-
-        // [API: /api/outline/{user_id}] 取得動態課程大綱與推薦
-        async function fetchDynamicOutline() {
-            try {
-                const res = await fetch(`${API_BASE}/api/outline/${USER_ID}`);
-                const data = await res.json();
-
-                if (data.status === "success" && data.outline.length > 0) {
-                    const topTopic = data.outline[0];
-                    const recEl = document.getElementById("outline-recommendation");
-
-                    if (topTopic.visit_count > 0) {
-                        recEl.innerHTML = `根據您的瀏覽習慣，為您推薦重點探索：<strong>【${topTopic.title}】</strong> (已探索 ${topTopic.visit_count} 次)`;
-                    } else {
-                        recEl.innerHTML = "歡迎使用教學平台！點擊下方模組即可開啟探索，系統將為您紀錄學習歷程。";
-                    }
-                }
-            } catch (err) {
-                console.warn("大綱 API 載入失敗", err);
-            }
-        }
-
-        // [API: /api/track] 點擊卡片追蹤
-        async function trackAction(topic, action, params = {}) {
-            try {
-                await fetch(`${API_BASE}/api/track`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user_id: USER_ID,
-                        topic: topic,
-                        action: action,
-                        params: params
-                    })
-                });
-            } catch (err) {
-                console.warn("Track failed", err);
-            }
-        }
-
-        // 卡片點擊觸發事件
-        function handleCardClick(topic, action) {
-            trackAction(topic, action);
-            alert(`已記錄您的探索偏好：${action}`);
-        }
-
-        // 導向模組頁面並記錄行為
-        function navigateToModule(pageUrl, topic) {
-            trackAction(topic, "view_topic");
-            window.location.href = pageUrl;
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
-
 </html>
