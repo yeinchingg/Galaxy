@@ -7,20 +7,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f7f7fb;
-            --nav-bg: #e2e2f5;
-            --card-bg: #ffffff;
-            --text-main: #1e1e2f;
-            --text-muted: #666677;
-            --accent: #5c5cd6;
+            --bg-color: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.25);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        #spaceCanvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
 
         nav {
             width: 100%;
             height: 64px;
-            background-color: var(--nav-bg);
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -28,11 +46,11 @@
             position: fixed;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid #d0d0e8;
+            border-bottom: 1px solid var(--border-color);
         }
-        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
         .nav-links { display: flex; gap: 24px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
         .lab-container {
@@ -47,12 +65,13 @@
 
         .panel {
             background-color: var(--card-bg);
-            border: 1px solid #e0e0ed;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .panel-title { font-weight: 700; font-size: 0.95rem; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
 
         .attributes-panel {
             display: flex;
@@ -63,15 +82,15 @@
             padding-right: 4px;
         }
         .attributes-panel::-webkit-scrollbar { width: 6px; }
-        .attributes-panel::-webkit-scrollbar-track { background: #f1f1f5; border-radius: 4px; }
-        .attributes-panel::-webkit-scrollbar-thumb { background: #c5c5d5; border-radius: 4px; }
+        .attributes-panel::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        .attributes-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
         .section-subtitle {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #444;
+            color: #c7d2fe;
             margin-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 4px;
         }
         .preset-buttons {
@@ -81,8 +100,8 @@
             margin-bottom: 10px;
         }
         .preset-btn {
-            background: #f0f0f8;
-            border: 1px solid #d8d8e8;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
             padding: 6px 8px;
             border-radius: 6px;
             font-size: 0.75rem;
@@ -99,14 +118,14 @@
             flex-direction: column;
             gap: 4px;
             margin-bottom: 12px;
-            background: #fafafc;
+            background: rgba(255, 255, 255, 0.02);
             padding: 8px 10px;
             border-radius: 8px;
-            border: 1px solid #eeedf5;
+            border: 1px solid var(--border-color);
         }
-        .slider-label { font-size: 0.8rem; font-weight: 600; color: #222; display: flex; justify-content: space-between; align-items: center; }
-        .slider-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; }
+        .slider-label { font-size: 0.8rem; font-weight: 600; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .slider-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; margin-top: 2px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; cursor: pointer; }
 
         .play-btn {
             background: var(--accent);
@@ -125,10 +144,11 @@
             flex-direction: column;
             gap: 12px;
             background-color: var(--card-bg);
-            border: 1px solid #e0e0ed;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
         .viewport-header {
@@ -138,8 +158,8 @@
         }
         .view-mode-toggle {
             display: flex;
-            background: #f0f0f8;
-            border: 1px solid #d8d8e8;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 2px;
             gap: 2px;
@@ -150,7 +170,7 @@
             padding: 4px 10px;
             font-size: 0.75rem;
             font-weight: 600;
-            color: #555;
+            color: var(--text-muted);
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
@@ -161,12 +181,13 @@
         }
 
         .canvas-box {
-            background-color: #03050a;
+            background-color: #02040a;
             border-radius: 8px;
             height: 520px;
             width: 100%;
             position: relative;
             overflow: hidden;
+            border: 1px solid var(--border-color);
             cursor: grab;
         }
         .canvas-box:active { cursor: grabbing; }
@@ -182,17 +203,19 @@
             gap: 16px;
         }
         .ai-panel {
-            background-color: #fcfcfd;
-            border: 1px solid #e8e8f0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             height: 340px;
+            backdrop-filter: blur(8px);
         }
         .ai-chat-box {
             flex: 1;
-            background: #f4f4f8;
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 10px;
             font-size: 0.8rem;
@@ -206,10 +229,10 @@
             flex-direction: column;
             gap: 4px;
         }
-        .suggestion-title { font-size: 0.75rem; font-weight: 700; color: #444; }
+        .suggestion-title { font-size: 0.75rem; font-weight: 700; color: #fff; }
         .suggestion-btn {
-            background: #fff;
-            border: 1px solid #dcdce6;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 4px 8px;
             font-size: 0.72rem;
@@ -218,22 +241,24 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .suggestion-btn:hover { background: #eef2ff; }
+        .suggestion-btn:hover { background: rgba(129, 140, 248, 0.15); }
 
         .hr-mini-panel {
-            background-color: #fcfcfd;
-            border: 1px solid #e8e8f0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 8px;
+            backdrop-filter: blur(8px);
         }
         .hr-canvas-container {
             width: 100%;
             height: 180px;
-            background: #0b0f1a;
+            background: #02040a;
             border-radius: 6px;
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -249,6 +274,8 @@
 </head>
 <body>
 
+    <canvas id="spaceCanvas"></canvas>
+
     <nav>
         <div class="nav-title">恆星演化史 模擬器</div>
         <ul class="nav-links">
@@ -262,7 +289,6 @@
     </nav>
 
     <div class="lab-container">
-        <!-- 左側：8顆真實知名恆星導覽 -->
         <div class="panel attributes-panel">
             <div class="panel-title">真實恆星導覽與演化</div>
 
@@ -285,10 +311,12 @@
                 <div class="slider-group">
                     <div class="slider-label"><span>質量 (Mass)</span><span id="v-init-mass">1.0 M☉</span></div>
                     <input type="range" id="s-init-mass" min="0.2" max="40.0" step="0.2" value="1.0">
+                    <div class="slider-desc">決定恆星的引力強弱、壽命長短與最終命運（如白矮星或超新星）。</div>
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>金屬豐度 [Fe/H]</span><span id="v-metal">0.00</span></div>
                     <input type="range" id="s-metal" min="-2.0" max="0.5" step="0.05" value="0.00">
+                    <div class="slider-desc">影響恆星內部 opacity（不透明度）與光譜吸收特性。</div>
                 </div>
             </div>
 
@@ -297,14 +325,17 @@
                 <div class="slider-group">
                     <div class="slider-label"><span>恆星自轉速度 (Rotation)</span><span id="v-rot">1.0x</span></div>
                     <input type="range" id="s-rot" min="0.1" max="5.0" step="0.1" value="1.0">
+                    <div class="slider-desc">高速自轉會導致恆星因離心力而產生赤道微幅扁平化。</div>
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>恆星風強度 (Stellar Wind)</span><span id="v-wind">1.0x</span></div>
                     <input type="range" id="s-wind" min="0.5" max="10.0" step="0.5" value="1.0">
+                    <div class="slider-desc">控制恆星外層大氣向外吹拂的質量流失速率。</div>
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>表面磁場活動 (Magnetic)</span><span id="v-mag">1.0x</span></div>
                     <input type="range" id="s-mag" min="0.1" max="5.0" step="0.1" value="1.0">
+                    <div class="slider-desc">影響表面活躍紋理、耀斑與磁流體動力學特徵。</div>
                 </div>
             </div>
 
@@ -321,10 +352,9 @@
             </div>
         </div>
 
-        <!-- 中央：3D 模擬視窗 -->
         <div class="simulation-viewport">
             <div class="viewport-header">
-                <div style="font-size: 0.95rem; font-weight: 700; color: #333;" id="viewportTitle">恆星 3D 結構與演化即時渲染視窗 (外部觀測視角)</div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: #fff;" id="viewportTitle">恆星 3D 結構與演化即時渲染視窗 (外部觀測視角)</div>
                 <div class="view-mode-toggle">
                     <button class="view-btn active" id="btnSurface" onclick="switchViewMode('surface')">🌍 外部觀測</button>
                     <button class="view-btn" id="btnCore" onclick="switchViewMode('core')">🔬 內部剖面</button>
@@ -333,7 +363,6 @@
             <div class="canvas-box" id="webglContainer"></div>
         </div>
 
-        <!-- 右側欄：AI 助理 + 赫羅圖 -->
         <div class="right-column">
             <div class="panel ai-panel">
                 <div class="panel-title"><span class="ai-title-text">AI 演化解析</span></div>
@@ -359,19 +388,95 @@
         </div>
     </div>
 
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for (let i = 0; i < 80; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+
+        const trailParticles = [];
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 2; i++) {
+                trailParticles.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: Math.random() * 2 + 1,
+                    alpha: 0.8,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5
+                });
+            }
+        });
+
+        function animateSpace() {
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.fillStyle = '#ffffff';
+            particles.forEach(p => {
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.y -= p.speed;
+                if (p.y < 0) {
+                    p.y = height;
+                    p.x = Math.random() * width;
+                }
+            });
+
+            for (let i = trailParticles.length - 1; i >= 0; i--) {
+                let tp = trailParticles[i];
+                ctx.globalAlpha = tp.alpha;
+                ctx.fillStyle = '#818cf8';
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                tp.x += tp.vx;
+                tp.y += tp.vy;
+                tp.alpha -= 0.03;
+
+                if (tp.alpha <= 0) {
+                    trailParticles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+    </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
         const container = document.getElementById('webglContainer');
-        const width = container.clientWidth || 600;
-        const height = container.clientHeight || 520;
+        const cWidth = container.clientWidth > 0 ? container.clientWidth : 600;
+        const cHeight = container.clientHeight > 0 ? container.clientHeight : 520;
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(50, cWidth / cHeight, 0.1, 1000);
         camera.position.z = 6.5;
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(width, height);
+        renderer.setSize(cWidth, cHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
@@ -427,7 +532,6 @@
         const atmosphere = new THREE.Mesh(glowGeo, glowMat);
         scene.add(atmosphere);
 
-        // 新增：專屬裝飾物群組（例如織女星的周遭塵埃吸積盤 / Debris Disk）
         const debrisGeo = new THREE.RingGeometry(2.2, 3.8, 64);
         const debrisMat = new THREE.MeshBasicMaterial({
             color: 0x93c5fd,
@@ -502,7 +606,7 @@
         const hrCtx = hrCanvas.getContext('2d');
 
         function drawHRDiagram(normStage) {
-            hrCtx.fillStyle = '#0b0f1a';
+            hrCtx.fillStyle = '#02040a';
             hrCtx.fillRect(0, 0, hrCanvas.width, hrCanvas.height);
             hrCtx.strokeStyle = '#1e293b';
             hrCtx.lineWidth = 1;
@@ -549,12 +653,11 @@
             let vStage = document.getElementById('v-stage');
             let aiChat = document.getElementById('aiChat');
             
-            // 針對不同真實恆星賦予專屬的 3D 體積放大係數與視覺特徵
             let baseSize = 1.0;
-            if (activeStarKey === 'proxima') baseSize = 0.55; // 紅矮星較小
-            else if (activeStarKey === 'sirius' || activeStarKey === 'vega') baseSize = 1.3; // 中大型主序星
-            else if (activeStarKey === 'betelgeuse' || activeStarKey === 'deneb') baseSize = 2.1; // 超巨星
-            else if (activeStarKey === 'uyscuti') baseSize = 2.6; // 極端巨星
+            if (activeStarKey === 'proxima') baseSize = 0.55;
+            else if (activeStarKey === 'sirius' || activeStarKey === 'vega') baseSize = 1.3;
+            else if (activeStarKey === 'betelgeuse' || activeStarKey === 'deneb') baseSize = 2.1;
+            else if (activeStarKey === 'uyscuti') baseSize = 2.6;
 
             let massFactor = Math.pow(currentMass, 0.33) * baseSize;
             let oblateness = 1.0 - (currentRot * 0.035); 
@@ -562,7 +665,6 @@
 
             surfaceMat.bumpScale = 0.012 * currentMag;
 
-            // 織女星特有：顯示周遭吸積盤
             debrisDisk.visible = (activeStarKey === 'vega' && currentViewMode === 'surface');
 
             let isCurrentTime = false;
@@ -615,10 +717,9 @@
                 surfaceStar.scale.set(s, s * oblateness, s);
                 atmosphere.scale.set(s * (1.12 + currentWind*0.03), (s * oblateness) * (1.12 + currentWind*0.03), s * (1.12 + currentWind*0.03));
                 
-                // 依真實恆星特性賦予專屬光譜顏色
                 let starColor = 0xffd27d;
-                if (activeStarKey === 'proxima') starColor = 0xef4444; // 紅矮星暗紅
-                else if (activeStarKey === 'sirius' || activeStarKey === 'vega') starColor = 0x60a5fa; // 藍白星
+                if (activeStarKey === 'proxima') starColor = 0xef4444;
+                else if (activeStarKey === 'sirius' || activeStarKey === 'vega') starColor = 0x60a5fa;
                 else if (activeStarKey === 'deneb') starColor = 0x93c5fd;
                 else starColor = (currentMass > 10 ? 0x60a5fa : (currentMass > 2 ? 0xfffaed : 0xffd27d));
 
@@ -726,7 +827,7 @@
             document.getElementById('v-mag').textContent = mag.toFixed(1) + 'x';
 
             document.getElementById('s-timeline').value = timelineVal;
-            switchViewMode('surface'); // 切回外部觀測以呈現專屬特徵
+            switchViewMode('surface');
             updateEvolution();
         }
 
@@ -781,7 +882,7 @@
             let spin = 0.002 * currentRot;
             surfaceStar.rotation.y += spin;
             atmosphere.rotation.y += spin * 1.05;
-            debrisDisk.rotation.z += spin * 0.5; // 吸積盤緩慢旋轉
+            debrisDisk.rotation.z += spin * 0.5;
             coreGroup.rotation.y += spin;
 
             controls.update();
@@ -790,17 +891,19 @@
         animate();
 
         window.addEventListener('load', () => {
-            if (container.clientWidth > 0 && container.clientHeight > 0) {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            }
+            const w = container.clientWidth > 0 ? container.clientWidth : 600;
+            const h = container.clientHeight > 0 ? container.clientHeight : 520;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
         });
 
         window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
+            const w = container.clientWidth > 0 ? container.clientWidth : 600;
+            const h = container.clientHeight > 0 ? container.clientHeight : 520;
+            camera.aspect = w / h;
             camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(w, h);
         });
     </script>
 </body>

@@ -3,25 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教學平台 | 天文與恆星物理專題</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>天文與恆星物理專題研究平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f7f7fb;
-            --nav-bg: #e2e2f5;
-            --card-bg: #ececf3;
-            --text-main: #1e1e2f;
-            --text-muted: #666677;
-            --accent: #5c5cd6;
+            --bg-color: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.25);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; scroll-behavior: smooth; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
 
-        /* Navigation Bar */
+        #spaceCanvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 頂部導覽列 (對齊其他頁面與 Apple 風格) */
         nav {
             width: 100%;
             height: 64px;
-            background-color: var(--nav-bg);
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -29,310 +44,424 @@
             position: fixed;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid #d0d0e8;
+            border-bottom: 1px solid var(--border-color);
         }
-        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
-        .nav-links { display: flex; gap: 24px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-logo { font-weight: 700; font-size: 1.1rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .nav-logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 24px; list-style: none; align-items: center; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
-        /* Main Container */
-        .container {
-            margin-top: 64px;
+        /* 滿版區塊設定 */
+        .section {
             width: 100%;
-            max-width: 900px;
+            min-height: 85vh;
+            padding: 7rem 4vw 5rem 4vw;
             display: flex;
             flex-direction: column;
-            gap: 30px;
-            padding: 40px 20px;
+            align-items: center;
+            text-align: center;
+            justify-content: center;
         }
 
+        /* 第一屏 Banner */
         .hero-section {
-            background-color: #ffffff;
-            border: 1px solid #e0e0ed;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            padding-top: 9rem;
+            gap: 1.25rem;
         }
-        .hero-section h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; color: #222; }
-        .hero-section p { font-size: 1rem; line-height: 1.6; color: var(--text-muted); }
-
-        .section-block {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 30px;
+        .hero-badge {
+            background: rgba(129, 140, 248, 0.08);
+            border: 1px solid rgba(129, 140, 248, 0.25);
+            color: #c7d2fe;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
-        .section-title {
-            font-size: 1.1rem;
+        
+        .hero-title {
+            font-size: clamp(2.2rem, 4vw, 3.8rem);
             font-weight: 700;
-            margin-bottom: 20px;
-            color: #333;
+            line-height: 1.15;
+            white-space: nowrap;
+            background: linear-gradient(135deg, #ffffff 20%, #9ca3af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            max-width: 750px;
+            line-height: 1.5;
+        }
+
+        /* 無框化的極簡宇宙時鐘列 */
+        .universe-clock-bar {
             display: flex;
-            justify-content: space-between;
+            gap: 3rem;
+            margin: 0.5rem 0;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        .clock-item {
+            display: flex;
+            flex-direction: column;
             align-items: center;
         }
-        .section-title a { font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 500; }
-        .section-title a:hover { text-decoration: underline; }
+        .clock-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 2px; }
+        .clock-value { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 600; color: #e2e8f0; }
 
-        .grid-2x2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .cta-btn {
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card-item {
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(129, 140, 248, 0.5);
+        }
+
+        .section-title { font-size: 2.2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .section-subtitle { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+
+        /* Apple 風格滿版大卡片網格 */
+        .modules-grid {
+            width: 100%;
+            max-width: 1500px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        .module-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 4rem 3rem;
             display: flex;
-            gap: 16px;
-            align-items: flex-start;
-            background: #ffffff;
-            padding: 16px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
             text-decoration: none;
             color: inherit;
-            transition: transform 0.2s, border-color 0.2s;
-            border: 1px solid transparent;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .card-item:hover {
-            transform: translateY(-2px);
+        .module-card:nth-child(even) {
+            background: rgba(30, 27, 75, 0.5);
+        }
+        .module-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(129, 140, 248, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px var(--accent-glow);
+        }
+        .module-icon {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            width: 70px; height: 70px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+        }
+        .module-title { font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+        .module-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; max-width: 500px; margin-bottom: 2rem; }
+        .module-link-btn {
+            background: rgba(129, 140, 248, 0.15);
+            border: 1px solid rgba(129, 140, 248, 0.4);
+            color: #c7d2fe;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .module-card:hover .module-link-btn {
+            background: var(--accent);
+            color: #fff;
             border-color: var(--accent);
         }
-        .card-circle {
-            width: 50px; height: 50px;
-            background-color: #d8d8e8;
-            border-radius: 50%;
-            flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-        }
-        .card-text h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; color: #222; }
-        .card-text p { font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); }
 
-        .image-card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        /* 互動冷知識區塊 */
+        .fact-box {
+            width: 100%;
+            max-width: 1200px;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.4), rgba(17, 24, 39, 0.6));
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 24px;
+            padding: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            backdrop-filter: blur(12px);
+        }
+        .fact-tag {
+            font-size: 0.75rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .fact-text {
+            font-size: 1.15rem;
+            color: #e2e8f0;
+            line-height: 1.6;
+            max-width: 800px;
+            min-height: 50px;
+        }
+        .fact-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fact-btn:hover { background: var(--accent); color: #fff; }
+
+        footer {
+            padding: 3rem 4vw;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            .modules-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 900px) {
+            .hero-title { white-space: normal; font-size: 2.2rem; }
+            .universe-clock-bar { flex-direction: column; gap: 1rem; }
+            .nav-links { display: none; }
         }
     </style>
 </head>
 <body>
 
+    <canvas id="spaceCanvas"></canvas>
+
     <nav>
-        <div class="nav-title">教學平台</div>
+        <div class="nav-logo">🌌 <span>AstroResearch</span> 平台</div>
         <ul class="nav-links">
             <li><a href="index.html" class="active">教學平台</a></li>
             <li><a href="lab.html">實驗室</a></li>
             <li><a href="evolution.html">恆星演化史</a></li>
             <li><a href="wiki.html">宇宙百科</a></li>
             <li><a href="hr.html">赫羅圖觀測站</a></li>
-            <li><a href="#">其他</a></li>
+            <li><a href="index.html" style="color: var(--accent);">back &larr;</a></li>
         </ul>
     </nav>
 
-    <div class="container">
-        <!-- Hero Welcome -->
-        <div class="hero-section">
-            <h1>welcome</h1>
-            <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; color: #444;">天文每日一則天文知識</h2>
-            <p>即時動態數據庫：含暗黑暗暈、恆星軌跡、光譜與多維度物理模擬數據。</p>
-        </div>
+    <section id="home" class="section hero-section">
+        <div class="hero-badge">Advanced Astronomy & Stellar Physics Lab</div>
+        <h1 class="hero-title">探索宇宙奧秘與恆星演化的沉浸式數位實驗室</h1>
+        <p class="hero-desc">
+            透過即時 3D WebGL 視覺化渲染與互動科學模型，帶您從星雲塌縮、主序星平衡到紅巨星膨脹與緻密殘骸，一窺宇宙天體的宏偉全貌。
+        </p>
 
-        <!-- Section 1: 科學小知識 -->
-        <div class="section-block">
-            <div class="section-title">科學小知識</div>
-            <div class="grid-2x2">
-                <div class="card-item">
-                    <div class="card-circle">📐</div>
-                    <div class="card-text">
-                        <h4>天測</h4>
-                        <p>精確測量天體位置與自行，利用 Gaia 空間望遠鏡數據，建構銀河系 3D 動態圖景。</p>
-                    </div>
-                </div>
-                <div class="card-item">
-                    <div class="card-circle">🌈</div>
-                    <div class="card-text">
-                        <h4>光譜</h4>
-                        <p>透過光譜分析恆星表面化學組成與金屬豐度，探討星系化學演化歷史。</p>
-                    </div>
-                </div>
-                <div class="card-item">
-                    <div class="card-circle">⚙️</div>
-                    <div class="card-text">
-                        <h4>代數與動力學</h4>
-                        <p>平坦的旋轉曲線揭示暗物質的存在與質量分佈，解析銀河系內部的重力場。</p>
-                    </div>
-                </div>
-                <div class="card-item">
-                    <div class="card-circle">🔭</div>
-                    <div class="card-text">
-                        <h4>觀測</h4>
-                        <p>結合地面與太空巡天數據，從光度與視差中探索宇宙的無限奧秘與演化。</p>
-                    </div>
-                </div>
+        <div class="universe-clock-bar">
+            <div class="clock-item">
+                <span class="clock-label">🌌 宇宙真實年齡估算</span>
+                <span class="clock-value" id="universeAgeTimer">138.0 億年</span>
+            </div>
+            <div class="clock-item">
+                <span class="clock-label">☀️ 太陽已燃燒時間</span>
+                <span class="clock-value" id="sunAgeTimer">46.0 億年</span>
             </div>
         </div>
 
-        <!-- 1. 實驗室功能介紹 -->
-        <div class="section-block">
-            <div class="section-title">
-                <span>實驗室功能介紹</span>
-                <a href="lab.html">進入實驗室 ➔</a>
-            </div>
-            <div class="grid-2x2">
-                <a href="lab.html" class="card-item">
-                    <div class="card-circle">🎛️</div>
-                    <div class="card-text">
-                        <h4>參數滑桿控制</h4>
-                        <p>位於左側的控制面板，可即時調整球狀星團、核心光度、表面重力與暗物質暈密度等物理參數。</p>
-                    </div>
-                </a>
-                <a href="lab.html" class="card-item">
-                    <div class="card-circle">🌌</div>
-                    <div class="card-text">
-                        <h4>模擬物理視窗</h4>
-                        <p>中央高畫質即時渲染視窗，動態展示星系軌跡、恆星動力學運動與系統演化。</p>
-                    </div>
-                </a>
-                <a href="lab.html" class="card-item">
-                    <div class="card-circle">🤖</div>
-                    <div class="card-text">
-                        <h4>伸縮式 AI 小助理</h4>
-                        <p>右側配備 AI 智慧助理，隨時提供即時數據解析與物理建議，支援點擊收縮放大畫面。</p>
-                    </div>
-                </a>
-                <a href="lab.html" class="card-item">
-                    <div class="card-circle">🔬</div>
-                    <div class="card-text">
-                        <h4>多波段光譜濾鏡</h4>
-                        <p>支援一鍵切換可見光、X射線、紅外線與紫外線等不同觀測視角與光譜資料。</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+        <a href="#features" class="cta-btn">開始探索核心功能 ↓</a>
+    </section>
 
-        <!-- 2. 恆星演化史介紹 -->
-        <div class="section-block">
-            <div class="section-title">
-                <span>恆星演化史功能介紹</span>
-                <a href="evolution.html">進入恆星演化史 ➔</a>
-            </div>
-            <div class="grid-2x2">
-                <a href="evolution.html" class="card-item">
-                    <div class="card-circle">⭐</div>
-                    <div class="card-text">
-                        <h4>初始星雲參數</h4>
-                        <p>可自由設定初始質量、金屬豐度與星雲初始密度，孕育出不同特性的原恆星與星盤。</p>
-                    </div>
-                </a>
-                <a href="evolution.html" class="card-item">
-                    <div class="card-circle">⏱️</div>
-                    <div class="card-text">
-                        <h4>演化時間軸滑桿</h4>
-                        <p>透過中央時間軸百分比拉動，即時觀察恆星從主序星、紅巨星到緻密殘骸的生命歷程。</p>
-                    </div>
-                </a>
-                <a href="evolution.html" class="card-item">
-                    <div class="card-circle">💡</div>
-                    <div class="card-text">
-                        <h4>AI 隨身物理解析</h4>
-                        <p>AI 小助理隨時跟隨滑桿動作，即時解析當前階段物理狀態並推薦下一步變化建議。</p>
-                    </div>
-                </a>
-                <a href="evolution.html" class="card-item">
-                    <div class="card-circle">📜</div>
-                    <div class="card-text">
-                        <h4>歷史預設範本</h4>
-                        <p>內建宋朝客星（蟹狀星雲）、1987A 超新星與太陽未來演化等經典歷史案例快速載入。</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+    <section id="features" class="section">
+        <h2 class="section-title">平台核心功能導覽</h2>
+        <p class="section-subtitle">四大獨立運作又完美串聯的物理與天文互動模組</p>
 
-        <!-- 3. 宇宙百科知識介紹 -->
-        <div class="section-block">
-            <div class="section-title">
-                <span>宇宙百科功能介紹</span>
-                <a href="wiki.html">進入宇宙百科 ➔</a>
-            </div>
-            <div class="grid-2x2">
-                <a href="wiki.html" class="card-item">
-                    <div class="card-circle">📚</div>
-                    <div class="card-text">
-                        <h4>名詞分類索引</h4>
-                        <p>將天測、光譜、暗物質與演化階段等所有核心學術名詞進行條理化分門別類。</p>
-                    </div>
-                </a>
-                <a href="wiki.html" class="card-item">
-                    <div class="card-circle">🔍</div>
-                    <div class="card-text">
-                        <h4>詳細學術解釋</h4>
-                        <p>提供深入淺出的名詞物理意義與數學概念，幫助專題研究與觀念釐清。</p>
-                    </div>
-                </a>
-                <a href="wiki.html" class="card-item">
-                    <div class="card-circle">🔗</div>
-                    <div class="card-text">
-                        <h4>全站超連結錨點</h4>
-                        <p>支援全站各頁面一鍵點擊跳轉，隨時連接至對應的百科段落查閱定義。</p>
-                    </div>
-                </a>
-                <a href="wiki.html" class="card-item">
-                    <div class="card-circle">🎓</div>
-                    <div class="card-text">
-                        <h4>專題知識庫</h4>
-                        <p>為三專與天文物理學習提供最扎實的理論依據與文獻參考支援。</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+        <div class="modules-grid">
+            <a href="lab.html" class="module-card">
+                <div class="module-icon">🔭</div>
+                <div class="module-title">3D 天文實驗室</div>
+                <div class="module-desc">互動式調整引力常數、暗物質密度與光譜波段，即時觀測天體運行與重力扭曲，深入探索星系動力學。</div>
+                <div class="module-link-btn">進入實驗室 <span>➔</span></div>
+            </a>
 
-        <!-- 4. 赫羅圖觀測站介紹 -->
-        <div class="section-block">
-            <div class="section-title">
-                <span>赫羅圖觀測站功能介紹</span>
-                <a href="hr.html">進入赫羅圖觀測站 ➔</a>
-            </div>
-            <div class="grid-2x2">
-                <a href="hr.html" class="card-item">
-                    <div class="card-circle">📈</div>
-                    <div class="card-text">
-                        <h4>互動式畫布點擊</h4>
-                        <p>可在赫羅圖上隨意點擊或拖曳觀測點，即時探索不同溫度與光度對應的天體類別。</p>
-                    </div>
-                </a>
-                <a href="hr.html" class="card-item">
-                    <div class="card-circle">🪐</div>
-                    <div class="card-text">
-                        <h4>即時 3D 模型圖</h4>
-                        <p>動態呈現對應的恆星物理狀態與圖標，直觀展現主序星、巨星或白矮星外觀。</p>
-                    </div>
-                </a>
-                <a href="hr.html" class="card-item">
-                    <div class="card-circle">📊</div>
-                    <div class="card-text">
-                        <h4>天體數值儀表板</h4>
-                        <p>動態更新絕對星等、總光度、有效溫度與光譜分類（如 G2V 太陽型）等精確數值。</p>
-                    </div>
-                </a>
-                <a href="hr.html" class="card-item">
-                    <div class="card-circle">⚡</div>
-                    <div class="card-text">
-                        <h4>百科快速傳送門</h4>
-                        <p>儀表板內嵌超連結，點擊即可直接連回宇宙百科查看赫羅圖的詳細物理定義。</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+            <a href="evolution.html" class="module-card">
+                <div class="module-icon">⏳</div>
+                <div class="module-title">恆星演化史模擬</div>
+                <div class="module-desc">搭載 8 顆知名真實恆星導覽與多維度物理參數，支援內部剖面、即時自轉與自動時間軸演化。</div>
+                <div class="module-link-btn">展開演化史 <span>➔</span></div>
+            </a>
 
-        <!-- Large Image Card -->
-        <div class="image-card">
-            <div style="background: radial-gradient(circle, #1a153b 0%, #050510 100%); padding: 60px 20px; text-align: center; color: #fff;">
-                <div style="font-size: 4rem; margin-bottom: 15px;">☀️</div>
-                <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; color: #818cf8;">太陽與恆星大氣層動態模擬</h3>
-                <p style="font-size: 0.9rem; color: #94a3b8;">結合真實驗光譜與磁場對流方程式，即時展現日冕物質拋射與輻射壓動態。</p>
-            </div>
-        </div>
-    </div>
+            <a href="hr.html" class="module-card">
+                <div class="module-icon">📊</div>
+                <div class="module-title">赫羅圖觀測站</div>
+                <div class="module-desc">支援按住紅點拖曳互動、對數座標光度對應與光譜顏色刻度，完美同步連動 3D 立體恆星模型。</div>
+                <div class="module-link-btn">進入觀測站 <span>➔</span></div>
+            </a>
 
+            <a href="wiki.html" class="module-card">
+                <div class="module-icon">📚</div>
+                <div class="module-title">宇宙百科全書</div>
+                <div class="module-desc">收錄所有核心天文物理名詞與進階學術知識，結合多媒體文獻與 NASA 權威資料庫快速檢索。</div>
+                <div class="module-link-btn">查閱百科 <span>➔</span></div>
+            </a>
+        </div>
+    </section>
+
+    <section id="trivia" class="section">
+        <h2 class="section-title">🌌 宇宙奇觀與物理冷知識</h2>
+        <p class="section-subtitle">點擊下方按鈕，隨機解鎖令人讚嘆的天文小知識！</p>
+
+        <div class="fact-box">
+            <div class="fact-tag">INTERACTIVE TRIVIA</div>
+            <div class="fact-text" id="factText">載入中...</div>
+            <button class="fact-btn" onclick="nextFact()">✨ 看下一個冷知識</button>
+        </div>
+    </section>
+
+    <footer>
+        &copy; 2026 天文與恆星物理專題研究平台 | Designed with Immersive Space Aesthetics.
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for (let i = 0; i < 80; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+
+        const trailParticles = [];
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 2; i++) {
+                trailParticles.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: Math.random() * 2 + 1,
+                    alpha: 0.8,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5
+                });
+            }
+        });
+
+        function animateSpace() {
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.fillStyle = '#ffffff';
+            particles.forEach(p => {
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.y -= p.speed;
+                if (p.y < 0) {
+                    p.y = height;
+                    p.x = Math.random() * width;
+                }
+            });
+
+            for (let i = trailParticles.length - 1; i >= 0; i--) {
+                let tp = trailParticles[i];
+                ctx.globalAlpha = tp.alpha;
+                ctx.fillStyle = '#818cf8';
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                tp.x += tp.vx;
+                tp.y += tp.vy;
+                tp.alpha -= 0.03;
+
+                if (tp.alpha <= 0) {
+                    trailParticles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+
+        let savedSeconds = localStorage.getItem('astro_visit_seconds');
+        let secondsElapsed = savedSeconds ? parseInt(savedSeconds) : 0;
+
+        setInterval(() => {
+            secondsElapsed++;
+            localStorage.setItem('astro_visit_seconds', secondsElapsed);
+
+            let universeYears = (138.0 + secondsElapsed * 0.00000005).toFixed(8);
+            let sunYears = (4.6 + secondsElapsed * 0.00000002).toFixed(8);
+
+            document.getElementById('universeAgeTimer').textContent = `${universeYears} 億年`;
+            document.getElementById('sunAgeTimer').textContent = `${sunYears} 億年`;
+        }, 1000);
+
+        const facts = [
+            "💡 「日落黃金時刻」不只在地球：在火星上因為微細塵埃散射的緣故，落日反而會呈現幽藍色的光芒！",
+            "💡 中子星的密度極其誇張：一茶匙（約 5 毫升）的中子星物質，在地球上的重量高達 60 億噸，相當於全人類總體重的數倍！",
+            "💡 宇宙中最孤獨的聲音：黑洞周圍其實會發出聲波，但因為頻率比人類聽覺極限低了 57 個八度音階，是宇宙中最低的音符（降 B 調）。",
+            "💡 鑽石雨的行星：在氣體巨行星「木星」與「土星」的內部深處，高壓環境會把甲烷分解並結晶成巨大的鑽石雨落下！",
+            "💡 時間在宇宙中過得不一樣：因為重力時間膨脹效應，離地球越遠、重力越小的太空衛星，時間過得比地面上還要快一點點！",
+            "💡 太陽質量佔了整個太陽系總質量的 99.86%，剩下僅 0.14% 的質量才分給了八大行星、小行星與彗星。"
+        ];
+
+        let currentFactIdx = 0;
+        function nextFact() {
+            currentFactIdx = (currentFactIdx + 1) % facts.length;
+            const factEl = document.getElementById('factText');
+            factEl.style.opacity = 0;
+            setTimeout(() => {
+                factEl.textContent = facts[currentFactIdx];
+                factEl.style.opacity = 1;
+            }, 200);
+        }
+
+        document.getElementById('factText').style.transition = 'opacity 0.2s ease';
+        document.getElementById('factText').textContent = facts[0];
+    </script>
 </body>
 </html>

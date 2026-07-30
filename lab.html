@@ -7,20 +7,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f7f7fb;
-            --nav-bg: #e2e2f5;
-            --card-bg: #ffffff;
-            --text-main: #1e1e2f;
-            --text-muted: #666677;
-            --accent: #5c5cd6;
+            --bg-color: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.25);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 背景微光星塵與游標跟隨軌跡畫布 */
+        #spaceCanvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
 
         nav {
             width: 100%;
             height: 64px;
-            background-color: var(--nav-bg);
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -28,11 +47,11 @@
             position: fixed;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid #d0d0e8;
+            border-bottom: 1px solid var(--border-color);
         }
-        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
         .nav-links { display: flex; gap: 24px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
         .lab-container {
@@ -51,12 +70,13 @@
 
         .panel {
             background-color: var(--card-bg);
-            border: 1px solid #e0e0ed;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .panel-title { font-weight: 700; font-size: 0.95rem; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
 
         .attributes-panel {
             display: flex;
@@ -67,15 +87,15 @@
             padding-right: 6px;
         }
         .attributes-panel::-webkit-scrollbar { width: 6px; }
-        .attributes-panel::-webkit-scrollbar-track { background: #f1f1f5; border-radius: 4px; }
-        .attributes-panel::-webkit-scrollbar-thumb { background: #c5c5d5; border-radius: 4px; }
+        .attributes-panel::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        .attributes-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
         .section-subtitle {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #444;
+            color: #c7d2fe;
             margin-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 4px;
         }
         .slider-group {
@@ -83,39 +103,41 @@
             flex-direction: column;
             gap: 4px;
             margin-bottom: 12px;
-            background: #fafafc;
+            background: rgba(255, 255, 255, 0.02);
             padding: 8px 10px;
             border-radius: 8px;
-            border: 1px solid #eeedf5;
+            border: 1px solid var(--border-color);
         }
-        .slider-label { font-size: 0.8rem; font-weight: 600; color: #222; display: flex; justify-content: space-between; }
+        .slider-label { font-size: 0.8rem; font-weight: 600; color: #e2e8f0; display: flex; justify-content: space-between; }
         .slider-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; cursor: pointer; }
 
         .simulation-viewport {
             display: flex;
             flex-direction: column;
             gap: 12px;
             background-color: var(--card-bg);
-            border: 1px solid #e0e0ed;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         .canvas-box {
-            background-color: #03050a;
+            background-color: #02040a;
             border-radius: 8px;
             height: 560px;
             width: 100%;
             position: relative;
             overflow: hidden;
+            border: 1px solid var(--border-color);
             cursor: grab;
         }
         .canvas-box:active { cursor: grabbing; }
 
         .ai-panel {
-            background-color: #fcfcfd;
-            border: 1px solid #e8e8f0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             display: flex;
@@ -123,12 +145,13 @@
             height: 620px;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(8px);
             transition: all 0.3s ease;
         }
         .ai-panel.collapsed {
             padding: 16px 8px;
             align-items: center;
-            background-color: #f0f0f5;
+            background-color: rgba(15, 23, 42, 0.9);
         }
         .ai-panel.collapsed .ai-body { display: none; }
         .ai-panel.collapsed .ai-title-text { display: none; }
@@ -150,7 +173,8 @@
         }
         .ai-chat-box {
             flex: 1;
-            background: #f4f4f8;
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
             font-size: 0.82rem;
@@ -160,12 +184,12 @@
         }
         .ai-input-box {
             margin-top: 10px;
-            background: #fff;
-            border: 1px solid #dcdce6;
+            background: rgba(3, 7, 18, 0.8);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 8px 12px;
             font-size: 0.85rem;
-            color: #999;
+            color: var(--text-muted);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -173,6 +197,8 @@
     </style>
 </head>
 <body>
+
+    <canvas id="spaceCanvas"></canvas>
 
     <nav>
         <div class="nav-title">實驗室 物理數據模擬</div>
@@ -187,7 +213,6 @@
     </nav>
 
     <div class="lab-container" id="labContainer">
-        <!-- Left Panel -->
         <div class="panel attributes-panel">
             <div class="panel-title">參數控制面板</div>
 
@@ -258,13 +283,11 @@
             </div>
         </div>
 
-        <!-- Center Panel -->
         <div class="simulation-viewport">
-            <div style="font-size: 0.95rem; font-weight: 700; color: #333;">物理模擬視窗 (真實太陽電漿對流與柔和冕層)</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #fff;">物理模擬視窗 (真實太陽電漿對流與柔和冕層)</div>
             <div class="canvas-box" id="webglContainer"></div>
         </div>
 
-        <!-- Right Panel -->
         <div class="panel ai-panel" id="aiPanel">
             <div class="panel-title">
                 <span class="ai-title-text">AI小助理</span>
@@ -281,6 +304,82 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for (let i = 0; i < 80; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+
+        const trailParticles = [];
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 2; i++) {
+                trailParticles.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: Math.random() * 2 + 1,
+                    alpha: 0.8,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5
+                });
+            }
+        });
+
+        function animateSpace() {
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.fillStyle = '#ffffff';
+            particles.forEach(p => {
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.y -= p.speed;
+                if (p.y < 0) {
+                    p.y = height;
+                    p.x = Math.random() * width;
+                }
+            });
+
+            for (let i = trailParticles.length - 1; i >= 0; i--) {
+                let tp = trailParticles[i];
+                ctx.globalAlpha = tp.alpha;
+                ctx.fillStyle = '#818cf8';
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                tp.x += tp.vx;
+                tp.y += tp.vy;
+                tp.alpha -= 0.03;
+
+                if (tp.alpha <= 0) {
+                    trailParticles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -310,7 +409,6 @@
         controls.minDistance = 2;
         controls.maxDistance = 15;
 
-        // **生成擬真、柔和的恆星對流米粒組織紋理 (取代生硬坑洞)**
         function createSolarTexture() {
             const canvas = document.createElement('canvas');
             canvas.width = 1024;
@@ -320,7 +418,6 @@
             ctx.fillStyle = '#b5b5b5';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 繪製柔和的電漿雲團與米粒組織
             for (let i = 0; i < 4000; i++) {
                 let x = Math.random() * canvas.width;
                 let y = Math.random() * canvas.height;
@@ -340,21 +437,19 @@
 
         const solarTexture = createSolarTexture();
 
-        // 恆星主體 (使用柔和的太陽黃金色與極輕微的顆粒起伏)
         const geometry = new THREE.SphereGeometry(1.5, 128, 128);
         const material = new THREE.MeshStandardMaterial({
-            color: 0xffd27d,          // 自然的淡金黃色（類似真實太陽光譜）
-            roughness: 0.95,          // 消除塑膠反光
+            color: 0xffd27d,
+            roughness: 0.95,
             metalness: 0.0,
             bumpMap: solarTexture,
-            bumpScale: 0.012,         // 降低起伏，讓表面變成細緻的微小對流感
-            emissive: 0xff6600,       // 溫暖的橘紅微光
-            emissiveIntensity: 0.2    // 自發光強度適中，柔和真實
+            bumpScale: 0.012,
+            emissive: 0xff6600,
+            emissiveIntensity: 0.2
         });
         const planet = new THREE.Mesh(geometry, material);
         scene.add(planet);
 
-        // 雙層大氣冕層光暈 (Corona) - 營造真實太空中的大氣暈染
         const glowGeo = new THREE.SphereGeometry(1.68, 64, 64);
         const glowMat = new THREE.MeshBasicMaterial({
             color: 0xffaa33,
@@ -365,7 +460,6 @@
         const atmosphere = new THREE.Mesh(glowGeo, glowMat);
         scene.add(atmosphere);
 
-        // 溫和的太空光影
         const ambientLight = new THREE.AmbientLight(0x444466, 1.2);
         scene.add(ambientLight);
         const pointLight = new THREE.PointLight(0xfffaed, 2.0, 50);
@@ -377,7 +471,6 @@
         let eccOffset = 0;
         const aiChat = document.getElementById('aiChat');
 
-        // Sliders Logic
         document.getElementById('s-mass').addEventListener('input', (e) => {
             let val = parseFloat(e.target.value);
             document.getElementById('v-mass').textContent = val.toFixed(1) + ' M☉';
@@ -454,7 +547,6 @@
             aiChat.innerHTML = `<b>【宇宙塵埃遮蔽率】</b>：遮蔽率 <b>${val}%</b>。影響外層大氣與材質的透明度與黯淡感。`;
         });
 
-        // Render Loop
         let clock = new THREE.Clock();
         function animate() {
             requestAnimationFrame(animate);
