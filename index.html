@@ -4,10 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天文與恆星物理專題研究平台</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
-        rel="stylesheet">
+    <title>探索太空之數位學習平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Iansui&family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_drop_down,arrow_left,arrow_right,bar_chart,school,science,public,menu_book,search_insights" />
+    <link rel="stylesheet" href="theme.css">
     <style>
         :root {
             --bg-color: #030712;
@@ -44,7 +47,7 @@
             pointer-events: none;
         }
 
-        /* 頂部導覽列 (對齊其他頁面與 Apple 風格) */
+        /* 頂部導覽列 */
         nav {
             width: 100%;
             height: 64px;
@@ -110,6 +113,8 @@
         .hero-section {
             padding-top: 9rem;
             gap: 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .hero-badge {
@@ -124,51 +129,119 @@
             text-transform: uppercase;
         }
 
+        /* 主標題大小（調小為較適中的響應式尺寸） */
         .hero-title {
-            font-size: clamp(2.2rem, 4vw, 3.8rem);
+            font-size: clamp(2rem, 3vw, 3rem);
             font-weight: 700;
-            line-height: 1.15;
-            white-space: nowrap;
+            line-height: 1.2;
+            white-space: normal;
             background: linear-gradient(135deg, #ffffff 20%, #9ca3af 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            max-width: 1000px;
         }
 
         .hero-desc {
-            font-size: 1.05rem;
+            font-size: 1rem;
             color: var(--text-muted);
             max-width: 750px;
             line-height: 1.5;
         }
 
-        /* 無框化的極簡宇宙時鐘列 */
-        .universe-clock-bar {
-            display: flex;
-            gap: 3rem;
-            margin: 0.5rem 0;
-            background: transparent;
-            border: none;
-            padding: 0;
+        /* Welcome 標題大小（調小為 1.8rem，看起來更精緻） */
+        .welcome-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #e9dcdc;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
         }
 
-        .clock-item {
+        .hero-section h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #e9dcdc;
+        }
+
+        #outline-recommendation {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+
+        .news-scroll {
+            margin-top: 18px;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            max-width: 900px;
+        }
+
+        .news-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .news-scroll::-webkit-scrollbar-thumb {
+            background-color: #d0d0e8;
+            border-radius: 4px;
+        }
+
+        .news-card {
+            flex: 0 0 260px;
+            scroll-snap-align: start;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, border-color 0.2s;
         }
 
-        .clock-label {
-            font-size: 0.75rem;
+        .news-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .news-card img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            background-color: var(--card-bg);
+        }
+
+        .news-card-body {
+            padding: 12px 14px;
+            text-align: left;
+        }
+
+        .news-card-body h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #f7f3f3;
+            line-height: 1.35;
+            margin-bottom: 6px;
+        }
+
+        .news-card-body p {
+            font-size: 0.78rem;
             color: var(--text-muted);
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
+            line-height: 1.4;
         }
 
-        .clock-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #e2e8f0;
+        .news-empty {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding: 4px 2px;
         }
 
         .cta-btn {
@@ -181,6 +254,10 @@
             font-size: 0.9rem;
             box-shadow: 0 0 20px var(--accent-glow);
             transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .cta-btn:hover {
@@ -352,65 +429,13 @@
 
         @media (max-width: 900px) {
             .hero-title {
-                white-space: normal;
-                font-size: 2.2rem;
-            }
-
-            .universe-clock-bar {
-                flex-direction: column;
-                gap: 1rem;
+                font-size: 1.8rem;
             }
 
             .nav-links {
                 display: none;
             }
         }
-        
-        .hero-section {
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-        .hero-section h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; color: #e9dcdc; }
-        .hero-section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; color: #e9dcdc; }
-        #outline-recommendation {
-            margin-top: 16px;
-            font-size: 0.9rem;
-            border-radius: 8px;
-            padding: 10px 14px;
-        }
-        .news-scroll {
-            margin-top: 22px;
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
-        .news-scroll::-webkit-scrollbar { height: 6px; }
-        .news-scroll::-webkit-scrollbar-thumb { background-color: #d0d0e8; border-radius: 4px; }
-
-        .news-card {
-            flex: 0 0 260px;
-            scroll-snap-align: start;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid transparent;
-            border-radius: 10px;
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .news-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-        .news-card img { width: 100%; height: 130px; object-fit: cover; background-color: var(--card-bg); }
-        .news-card-body { padding: 12px 14px; }
-        .news-card-body h4 { font-size: 0.9rem; font-weight: 700; color: #f7f3f3; line-height: 1.35; margin-bottom: 6px; }
-        .news-card-body p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
-        .news-empty { font-size: 0.85rem; color: var(--text-muted); padding: 4px 2px; }
-
     </style>
 </head>
 
@@ -421,33 +446,35 @@
     <nav>
         <div class="nav-logo">🌌 <span>AstroResearch</span> 平台</div>
         <ul class="nav-links">
-            <li><a href="index.html" class="active">教學平台</a></li>
-            <li><a href="lab.html">實驗室</a></li>
-            <li><a href="evolution.html">恆星演化史</a></li>
-            <li><a href="wiki.html">宇宙百科</a></li>
-            <li><a href="hr.html">赫羅圖觀測站</a></li>
-            <li><a href="index.html" style="color: var(--accent);">back &larr;</a></li>
+            <li><a href="index.html" class="active"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="lab.html"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="evolution.html"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
         </ul>
     </nav>
 
     <section id="home" class="section hero-section">
         <div class="hero-badge">Advanced Astronomy & Stellar Physics Lab</div>
-        <h1 class="hero-title">探索宇宙奧秘與恆星演化的沉浸式數位實驗室</h1>
+        <h1 class="hero-title">探索太空之數位學習平台</h1>
         <p class="hero-desc">
-           至今，宇宙以存活約138億年的時間，而太陽已燃燒約46億年。
+            至今，宇宙已存活約 138 億年的時間，而太陽已燃燒約 46 億年。
         </p>
-        <div class="hero-section">
-            <h1>welcome</h1>
-            <h2>天文每日一則天文知識</h2>
-            <!-- 個人化課程大綱推薦：由 /api/outline/{user_id} 提供 -->
-            <div id="outline-recommendation"></div>
-        
-            <!-- 今日天文新聞：由 /api/daily-knowledge 提供 -->
-            <div id="news-scroll" class="news-scroll">
-                <p class="news-empty">新聞載入中...</p>
-            </div>
+
+        <!-- 調小後的 Welcome 與標題 -->
+        <h1 class="welcome-title">Welcome!</h1>
+        <h2>每日一則天文新知</h2>
+
+        <!-- 個人化課程大綱推薦 -->
+        <div id="outline-recommendation"></div>
+
+        <!-- 今日天文新聞 -->
+        <div id="news-scroll" class="news-scroll">
+            <p class="news-empty">新聞載入中...</p>
         </div>
-        <a href="#features" class="cta-btn">開始探索核心功能 ↓</a>
+
+        <a href="#features" class="cta-btn">開始探索核心功能<span class="material-symbols-outlined icon-inline"
+                style="color:#fff;">arrow_drop_down</span></a>
     </section>
 
     <section id="features" class="section">
@@ -459,28 +486,32 @@
                 <div class="module-icon">🔭</div>
                 <div class="module-title">3D 天文實驗室</div>
                 <div class="module-desc">互動式調整引力常數、暗物質密度與光譜波段，即時觀測天體運行與重力扭曲，深入探索星系動力學。</div>
-                <div class="module-link-btn">進入實驗室 <span>➔</span></div>
+                <div class="module-link-btn">進入實驗室 <span
+                        class="material-symbols-outlined icon-inline">arrow_right</span></div>
             </a>
 
             <a href="evolution.html" class="module-card">
                 <div class="module-icon">⏳</div>
                 <div class="module-title">恆星演化史模擬</div>
                 <div class="module-desc">搭載 8 顆知名真實恆星導覽與多維度物理參數，支援內部剖面、即時自轉與自動時間軸演化。</div>
-                <div class="module-link-btn">展開演化史 <span>➔</span></div>
+                <div class="module-link-btn">展開演化史 <span
+                        class="material-symbols-outlined icon-inline">arrow_right</span></div>
             </a>
 
             <a href="hr.html" class="module-card">
                 <div class="module-icon">📊</div>
                 <div class="module-title">赫羅圖觀測站</div>
                 <div class="module-desc">支援按住紅點拖曳互動、對數座標光度對應與光譜顏色刻度，完美同步連動 3D 立體恆星模型。</div>
-                <div class="module-link-btn">進入觀測站 <span>➔</span></div>
+                <div class="module-link-btn">進入觀測站 <span
+                        class="material-symbols-outlined icon-inline">arrow_right</span></div>
             </a>
 
             <a href="wiki.html" class="module-card">
                 <div class="module-icon">📚</div>
                 <div class="module-title">宇宙百科全書</div>
                 <div class="module-desc">收錄所有核心天文物理名詞與進階學術知識，結合多媒體文獻與 NASA 權威資料庫快速檢索。</div>
-                <div class="module-link-btn">查閱百科 <span>➔</span></div>
+                <div class="module-link-btn">查閱百科 <span class="material-symbols-outlined icon-inline">arrow_right</span>
+                </div>
             </a>
         </div>
     </section>
@@ -575,20 +606,6 @@
         }
         animateSpace();
 
-        let savedSeconds = localStorage.getItem('astro_visit_seconds');
-        let secondsElapsed = savedSeconds ? parseInt(savedSeconds) : 0;
-
-        setInterval(() => {
-            secondsElapsed++;
-            localStorage.setItem('astro_visit_seconds', secondsElapsed);
-
-            let universeYears = (138.0 + secondsElapsed * 0.00000005).toFixed(8);
-            let sunYears = (4.6 + secondsElapsed * 0.00000002).toFixed(8);
-
-            document.getElementById('universeAgeTimer').textContent = `${universeYears} 億年`;
-            document.getElementById('sunAgeTimer').textContent = `${sunYears} 億年`;
-        }, 1000);
-
         const facts = [
             "💡 「日落黃金時刻」不只在地球：在火星上因為微細塵埃散射的緣故，落日反而會呈現幽藍色的光芒！",
             "💡 中子星的密度極其誇張：一茶匙（約 5 毫升）的中子星物質，在地球上的重量高達 60 億噸，相當於全人類總體重的數倍！",
@@ -614,4 +631,5 @@
     </script>
     <script src="fetch_news.js"></script>
 </body>
+
 </html>

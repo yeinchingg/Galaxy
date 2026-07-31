@@ -1,0 +1,189 @@
+/* ============================================================
+   theme.css — 全站「字體 / Icon / 顏色 / 尺寸」統一控制檔
+   ------------------------------------------------------------
+   給 index.html / lab.html / evolution.html / wiki.html / hr.html
+   共用引入。之後要調整全站字體、Icon 大小或配色，只需要改這一支檔案。
+   ============================================================ */
+
+/* ---------------- Google Fonts ---------------- */
+/* Material Symbols（Icon 字型）—— 原本用 Google Fonts 的 css2 動態端點載入，
+   但這個端點需要「先讀 css2 → 再讀裡面指到的實際字型檔」兩段式請求，
+   只要中間任一段被網路環境（防火牆／擋廣告套件／離線）擋掉，icon 就整組讀不到，
+   而且原本用 icon_names= 做子集化，未列進去的 icon 名稱也會直接顯示不出來。
+   已比照下方 Iceland / LXGW Marker Gothic 的做法，改成自架字體離線引入，
+   一次把完整圖示集都內含進來，不再依賴外部網路，也不用再維護 icon_names 白名單。 */
+/* @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_drop_down,arrow_left,arrow_right,bar_chart,school,science,public,menu_book,search_insights'); */
+
+/* Iansui / LXGW WenKai TC 目前站上沒有實際用到對應 class，
+   保留 Google Fonts 連結以備未來使用；Iceland 與 LXGW Marker Gothic
+   已改為下方「自架字體」，不再依賴這裡的雲端版本，避免字體讀取不到。 */
+@import url('https://fonts.googleapis.com/css2?family=Iansui&family=LXGW+WenKai+TC&display=swap');
+
+/* 原本各頁就有用到的字體，統一集中在這裡管理 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+
+/* ---------------- 自架字體（Self-hosted） ----------------
+   使用者實際提供的字體檔（Iceland-Regular.ttf / LXGWMarkerGothic-Regular.ttf），
+   直接放在 theme.css 同層的 fonts/ 資料夾內離線引入，
+   不會因為外部網路擋掉 Google Fonts 而讀不到字。 */
+@font-face {
+    font-family: "Iceland";
+    src: url("fonts/Iceland-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "LXGW Marker Gothic";
+    src: url("fonts/LXGWMarkerGothic-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Material Symbols Outlined";
+    src: url("fonts/MaterialSymbolsOutlined.woff2") format("woff2");
+    font-weight: 100 700;
+    /* 可變字重軸，配合 .material-symbols-outlined 的 font-variation-settings 使用 */
+    font-style: normal;
+    font-display: block;
+    /* icon 字型故意用 block，避免 icon 先以無樣式文字（如 "school"）短暫閃現 */
+}
+
+
+/* ---------------- 全站設計 Token ---------------- */
+:root {
+    /* 顏色（沿用五個頁面原本共用的變數，這裡當唯一真相來源） */
+    --bg-color: #030712;
+    --card-bg: rgba(17, 24, 39, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+    --accent: #818cf8;
+    --accent-glow: rgba(129, 140, 248, 0.25);
+
+    /* Icon 專用顏色（跟文字顏色脫鉤，方便單獨微調） */
+    --icon-color: var(--accent);
+    --icon-color-muted: var(--text-muted);
+    --icon-color-onaccent: #ffffff;
+
+    /* 字級 Token（維持跟原本各頁相近的視覺大小，只是集中管理） */
+    --fs-display: clamp(2.2rem, 4vw, 3.8rem);
+    --fs-h1: 2.2rem;
+    --fs-h2: 1.6rem;
+    --fs-h3: 1.1rem;
+    --fs-body: 0.95rem;
+    --fs-small: 0.82rem;
+    --fs-tiny: 0.72rem;
+
+    /* Icon 尺寸 Token：全站所有 Material Symbols 都從這裡取值 */
+    --icon-nav: 20px;
+    /* 導覽列項目前的小 icon */
+    --icon-inline: 18px;
+    /* 按鈕文字旁的行內 icon（箭頭等） */
+    --icon-button: 20px;
+    /* 獨立圓形/方形按鈕裡的 icon（例如 AI 分析鈕） */
+    --icon-module: 34px;
+    /* 首頁大卡片的模組 icon */
+}
+
+
+/* ---------------- 基礎字體套用 ---------------- */
+/* 中文預設：LXGW Marker Gothic（找不到字再退回 Noto Sans TC） */
+html body,
+html body * {
+    font-family: "LXGW Marker Gothic", "Noto Sans TC", sans-serif;
+}
+
+/* 工具類別：需要單獨套用時可直接加 class */
+.iceland-regular {
+    font-family: "Iceland", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.lxgw-marker-gothic-regular {
+    font-family: "LXGW Marker Gothic", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* 純英文 / 品牌字樣一律改用 Iceland（比 class 選擇器優先權更高，會蓋掉上面 * 的規則） */
+html body .en,
+html body .iceland-regular,
+html body .nav-logo span,
+html body .hero-badge,
+html body .fact-tag,
+html body .hr-subtitle-en,
+html body .lab-subtitle-en {
+    font-family: "Iceland", sans-serif;
+    letter-spacing: 0.5px;
+}
+
+/* 數字型監控數據（時鐘、座標軸刻度等）維持等寬字體，避免跳動 */
+html body .clock-value,
+html body .mono {
+    font-family: "JetBrains Mono", monospace;
+}
+
+
+/* ---------------- Material Symbols Icon 基礎樣式 ---------------- */
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: var(--icon-inline);
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-flex;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+    color: var(--icon-color);
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+}
+
+/* 導覽列 icon：預設灰色，hover / 目前頁面才點亮成 accent 紫色，跟文字連動 */
+.nav-links .material-symbols-outlined {
+    font-size: var(--icon-nav);
+    color: var(--icon-color-muted);
+    margin-right: 6px;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover .material-symbols-outlined,
+.nav-links a.active .material-symbols-outlined {
+    color: var(--accent);
+}
+
+.nav-links a {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 按鈕文字旁的行內小 icon（箭頭、下拉等） */
+.icon-inline {
+    font-size: var(--icon-inline);
+    margin-left: 6px;
+    vertical-align: -4px;
+}
+
+/* 獨立按鈕裡的 icon（例如 AI 智慧分析鈕） */
+.icon-button {
+    font-size: var(--icon-button);
+    color: var(--icon-color);
+}
+
+/* 首頁模組大卡片 icon 容器內的 icon（若改用 Material Symbols 取代 emoji 時可用） */
+.module-icon .material-symbols-outlined {
+    font-size: var(--icon-module);
+    color: var(--icon-color);
+}
