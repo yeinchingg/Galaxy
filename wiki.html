@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宇宙百科 | 天文與恆星物理專題</title>
+    <title>全宇宙天體與天文學專有名詞百科全書 | 專題研究平台</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,7 +26,6 @@
             min-height: 100vh;
         }
 
-        /* 背景微光星塵與游標跟隨軌跡畫布 */
         #spaceCanvas {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -54,36 +53,44 @@
         .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
+        /* 讓 3 個欄位在桌機頁面上具備完美的等比例/大面板呈現 */
         .wiki-container {
             margin-top: 84px;
             width: 100%;
-            max-width: 1440px;
+            max-width: 1560px;
             display: grid;
-            grid-template-columns: 280px 1fr 360px;
+            grid-template-columns: 320px 1.2fr 1fr;
             gap: 20px;
-            padding: 0 20px 40px 20px;
+            padding: 0 24px 40px 24px;
         }
 
         .panel {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            height: 82vh;
+            display: flex;
+            flex-direction: column;
         }
-        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-weight: 700; font-size: 1rem; color: #fff; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 
-        /* 左側分類導覽 */
         .category-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
+        .category-list::-webkit-scrollbar { width: 5px; }
+        .category-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
         .cat-btn {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border-color);
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
@@ -98,7 +105,6 @@
             border-color: var(--accent);
         }
 
-        /* 中央百科詞條總覽 */
         .wiki-content-panel {
             display: flex;
             flex-direction: column;
@@ -106,7 +112,7 @@
         }
         .search-box {
             width: 100%;
-            padding: 10px 14px;
+            padding: 12px 16px;
             background: rgba(3, 7, 18, 0.6);
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -114,6 +120,7 @@
             color: #fff;
             outline: none;
             transition: border-color 0.2s;
+            flex-shrink: 0;
         }
         .search-box::placeholder { color: var(--text-muted); }
         .search-box:focus { border-color: var(--accent); }
@@ -122,8 +129,8 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            max-height: 65vh;
             overflow-y: auto;
+            flex: 1;
             padding-right: 4px;
         }
         .wiki-grid::-webkit-scrollbar { width: 6px; }
@@ -136,6 +143,7 @@
             padding: 14px;
             cursor: pointer;
             transition: all 0.2s;
+            height: fit-content;
         }
         .wiki-card:hover {
             border-color: rgba(129, 140, 248, 0.5);
@@ -145,74 +153,29 @@
         }
         .wiki-card-title { font-weight: 700; font-size: 0.9rem; color: #c7d2fe; margin-bottom: 4px; }
         .wiki-card-tag { font-size: 0.7rem; background: rgba(129, 140, 248, 0.15); color: #c7d2fe; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
-        .wiki-card-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .wiki-card-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* 右側詳細解說與多媒體資源區 */
         .detail-panel {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             background-color: var(--card-bg);
-            max-height: 82vh;
-            overflow-y: auto;
             backdrop-filter: blur(8px);
         }
-        .detail-title { font-size: 1rem; font-weight: 700; color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+        .detail-title { font-size: 1.1rem; font-weight: 700; color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 8px; flex-shrink: 0; }
         .detail-body {
-            font-size: 0.85rem;
+            font-size: 0.92rem;
             color: var(--text-muted);
-            line-height: 1.5;
+            line-height: 1.7;
             background: rgba(3, 7, 18, 0.6);
             border: 1px solid var(--border-color);
-            padding: 12px;
+            padding: 18px;
             border-radius: 8px;
+            overflow-y: auto;
+            flex: 1;
         }
-
-        /* 專屬延伸資源與照片放置區 */
-        .media-resource-box {
-            border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .media-box-title { font-size: 0.82rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; }
-        
-        .photo-placeholder {
-            width: 100%;
-            height: 140px;
-            background: rgba(2, 4, 10, 0.6);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            font-size: 0.78rem;
-            border: 1px dashed var(--border-color);
-            text-align: center;
-            padding: 10px;
-            overflow: hidden;
-        }
-
-        .external-links {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .ext-link {
-            font-size: 0.78rem;
-            color: #c7d2fe;
-            text-decoration: none;
-            background: rgba(129, 140, 248, 0.08);
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid rgba(129, 140, 248, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.2s;
-        }
-        .ext-link:hover { background: rgba(129, 140, 248, 0.2); }
+        .detail-body::-webkit-scrollbar { width: 6px; }
+        .detail-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -220,7 +183,7 @@
     <canvas id="spaceCanvas"></canvas>
 
     <nav>
-        <div class="nav-title">宇宙百科全書</div>
+        <div class="nav-title">全宇宙天文百科全書</div>
         <ul class="nav-links">
             <li><a href="index.html">教學平台</a></li>
             <li><a href="lab.html">實驗室</a></li>
@@ -235,18 +198,18 @@
         <div class="panel">
             <div class="panel-title">百科分類索引</div>
             <div class="category-list">
-                <button class="cat-btn active" onclick="filterCategory('all')">📚 全部名詞檢索</button>
-                <button class="cat-btn" onclick="filterCategory('physics')">⚡ 恆星物理與結構</button>
-                <button class="cat-btn" onclick="filterCategory('dynamics')">🌌 星系與動力學</button>
-                <button class="cat-btn" onclick="filterCategory('evolution')">⏳ 演化階段與殘骸</button>
-                <button class="cat-btn" onclick="filterCategory('observation')">🔭 光譜與觀測數據</button>
-                <button class="cat-btn" onclick="filterCategory('cosmology')">🪐 宇宙學與適居性</button>
+                <button class="cat-btn active" onclick="filterCategory('all')">📚 全部名詞檢索 (70+)</button>
+                <button class="cat-btn" onclick="filterCategory('solarsystem')">🪐 太陽系天體與行星</button>
+                <button class="cat-btn" onclick="filterCategory('stellar')">⚡ 恆星物理與有名恆星</button>
+                <button class="cat-btn" onclick="filterCategory('galaxies')">🌌 星系、黑洞與大尺度</button>
+                <button class="cat-btn" onclick="filterCategory('physics')">⏳ 物理定律與宇宙學</button>
+                <button class="cat-btn" onclick="filterCategory('missions')">🔭 觀測儀器與太空任務</button>
             </div>
         </div>
 
         <div class="panel wiki-content-panel">
-            <div class="panel-title">平台知識庫 (含核心與進階天文名詞)</div>
-            <input type="text" class="search-box" id="searchBox" placeholder="輸入關鍵字搜尋（例如：赫羅圖、暗物質、主序星、光譜型...）" oninput="handleSearch()">
+            <div class="panel-title">平台知識庫 (完整收錄 70+ 頂級天文名詞)</div>
+            <input type="text" class="search-box" id="searchBox" placeholder="輸入關鍵字搜尋（例如：太陽、主序星、牛頓萬有引力、韋伯望遠鏡...）" oninput="handleSearch()">
             <div class="wiki-grid" id="wikiGrid">
                 </div>
         </div>
@@ -254,24 +217,7 @@
         <div class="panel detail-panel">
             <div class="detail-title" id="detailTitle">詞條詳細解析</div>
             <div class="detail-body" id="detailBody">
-                請點擊中央的任一詞條卡片，即可在此處檢視該名詞的完整學術定義與物理意義。
-            </div>
-
-            <div class="media-resource-box">
-                <div class="media-box-title">
-                    <span>📷 延伸多媒體與文獻</span>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">可自由替換內容</span>
-                </div>
-                
-                <div class="photo-placeholder" id="mediaPhotoContainer">
-                    [ 點擊詞條時此處可自動載入對應天文照片、Blender 渲染圖或光譜圖 ]
-                </div>
-
-                <div class="external-links">
-                    <a href="https://www.nasa.gov" target="_blank" class="ext-link"><span>🌐 NASA 官方天文網站</span><span>➔</span></a>
-                    <a href="https://www.sdss.org" target="_blank" class="ext-link"><span>🔭 SDSS 史隆數位巡天數據庫</span><span>➔</span></a>
-                    <a href="https://gea.esac.esa.int/archive/" target="_blank" class="ext-link"><span>✨ Gaia 恆星天文科學資料庫</span><span>➔</span></a>
-                </div>
+                請點擊中央的任一詞條卡片，即可在此處完整檢視該名詞的學術定義與深層物理意義。
             </div>
         </div>
     </div>
@@ -354,34 +300,93 @@
 
     <script>
         const wikiData = [
-            { id: 1, cat: 'physics', name: '恆星質量 (Stellar Mass)', tag: '物理屬性', desc: '決定恆星體積大小 (Scale)、表面重力與最終演化命運的基準單位（以太陽質量 M☉ 計算）。', imgText: '☀️ 太陽質量與恆星階級對照示意圖' },
-            { id: 2, cat: 'physics', name: '核心熱核反應速率', tag: '物理屬性', desc: '控制恆星內部氫融合反應強度的參數，直接影響發光強度 (Emissive Glow) 與核心熾熱感。', imgText: '⚛️ 核心核融合反應與能量輻射圖' },
-            { id: 3, cat: 'physics', name: '表面重力加速度', tag: '物理屬性', desc: '影響星球外層大氣光暈張力與表面氣體壓縮程度的物理量（標準太陽約 274 m/s²）。', imgText: '🌍 重力加速度與大氣張力模擬圖' },
-            { id: 4, cat: 'physics', name: '恆星風強度 (Stellar Wind)', tag: '物理屬性', desc: '決定恆星大氣質量流失率與冕層擴散範圍的關鍵流體參數。', imgText: '💨 恆星風吹散星周物質示意圖' },
-            { id: 5, cat: 'physics', name: '表面磁場活動 (Magnetic Activity)', tag: '物理屬性', desc: '影響表面對流斑塊深度與局部熱輻射耀斑強度的磁流體動力學指標。', imgText: '🧲 恆星磁場與閃焰耀斑觀測圖' },
-            { id: 6, cat: 'physics', name: '流體靜力平衡 (Hydrostatic Equilibrium)', tag: '物理屬性', desc: '恆星內部向外的輻射氣體壓力與向內的萬有引力達到完美抗衡的穩定狀態。', imgText: '⚖️ 壓力與重力平衡物理模型' },
+            // 🪐 1. 太陽系天體與行星
+            { id: 1, cat: 'solarsystem', name: '太陽 (The Sun)', tag: '太陽系天體／G型主序星', desc: '太陽是太陽系的中心天體，佔整個太陽系總質量的 99.8% 以上。它是一顆相當典型的 G2V 型主序星，半徑約為地球的 109 倍，體積可容納約 130 萬個地球。太陽主要由氫（約 73.4% 質量）和氦（約 25% 質量）組成，核心高溫達 1500 萬 K，透過質子－質子鏈反應將氫融合成氦並釋放巨大能量。' },
+            { id: 2, cat: 'solarsystem', name: '水星 (Mercury)', tag: '太陽系天體／類地行星', desc: '距離太陽最近的類地行星。其軌道半長軸約 0.39 AU，公轉週期僅 88 地球日，平均公轉速度達每秒 48 公里，是太陽系中移動最快的行星。水星沒有大氣層保溫且無天然衛星。' },
+            { id: 3, cat: 'solarsystem', name: '金星 (Venus)', tag: '太陽系天體／類地行星', desc: '距離太陽第二近的類地行星，軌道半長軸約 0.72 AU。金星擁有極其濃密且富含二氧化碳的大氣層，產生強烈的溫室效應，表面溫度超過 460 °C。在地球夜空中，金星是除月球外最明亮的天體（視星等可達 -4.4）。' },
+            { id: 4, cat: 'solarsystem', name: '地球 (Earth)', tag: '太陽系天體／類地行星', desc: '距離太陽第三近的類地行星，也是目前已知唯一存在生命的天體。地球距離太陽平均為 1 AU（約 1.496 億公里），擁有液態水海洋、氮氧大氣層以及由液態外核電流產生的地磁場，能阻擋太陽風高能粒子。' },
+            { id: 5, cat: 'solarsystem', name: '月球 (The Moon)', tag: '太陽系天體／天然衛星', desc: '地球唯一的天然衛星。月球繞地球公轉，其潮汐力引發了地球海洋的漲退潮。古人曾利用月球與地球直徑作為三角測量基線來估算天體距離。' },
+            { id: 6, cat: 'solarsystem', name: '火星 (Mars)', tag: '太陽系天體／類地行星', desc: '第四顆類地行星，軌道半長軸為 1.52 AU，公轉週期約 1.88 地球年。火星大氣稀薄，表面覆蓋氧化鐵沙塵呈現紅色。軌道與地貌特徵顯示其數十億年前曾擁有更溫暖潮濕的環境與液態水。' },
+            { id: 7, cat: 'solarsystem', name: '木星 (Jupiter)', tag: '太陽系天體／氣態巨行星', desc: '太陽系中體積與質量最大的行星，質量為地球的 318 倍（約太陽質量的 1/1000）。木星主要由氫與氦組成，其與土星的質量加總佔了太陽系非太陽質量的近 90%。木星擁有龐大的衛星系統（如四顆伽利略衛星）與微弱的行星環。' },
+            { id: 8, cat: 'solarsystem', name: '土星 (Saturn)', tag: '太陽系天體／氣態巨行星', desc: '距離太陽第六近的氣態巨行星，以其極度寬廣且明亮的冰質行星環系統聞名。土星密度小於水，主要成分為氫和氦，擁有土衛六（Titan）、土衛二（Enceladus）等多顆具備天體生物學潛力的衛星。' },
+            { id: 9, cat: 'solarsystem', name: '天王星 (Uranus)', tag: '太陽系天體／冰巨行星', desc: '距離太陽第七近的行星，1781 年由威廉·赫歇爾（William Herschel）首次透過望遠鏡發現。天王星大氣含有水、氨、甲烷等「冰」成分，自轉軸極度傾斜（幾乎橫躺著公轉）。' },
+            { id: 10, cat: 'solarsystem', name: '海王星 (Neptune)', tag: '太陽系天體／冰巨行星', desc: '太陽系八大行星中最外圍的一顆（軌道半長軸約 30 AU），1846 年由加勒根據亞當斯與勒維耶的重力攝動數學計算預測位置後直接發現，是天體力學的重大勝利。' },
+            { id: 11, cat: 'solarsystem', name: '穀神星 (Ceres)', tag: '太陽系天體／矮行星', desc: '位於小行星帶中最大的天體，半長軸為 2.77 AU。2006 年國際天文聯合會（IAU）將其歸類為矮行星，是小行星帶中唯一呈流體靜力平衡（球形）的天體。' },
+            { id: 12, cat: 'solarsystem', name: '冥王星 (Pluto)', tag: '太陽系天體／矮行星', desc: '位於柯伊伯帶的冰質矮行星，軌道傾角達 17°，離心率較高。2006 年前曾被列為九大行星之一，後因未能清空軌道周圍天體而被改分類為矮行星。' },
+            { id: 13, cat: 'solarsystem', name: '鬩神星 (Eris)', tag: '太陽系天體／矮行星', desc: '位於柯伊伯帶外圍的巨大矮行星，軌道傾角高達 44°。鬩神星的發現促使天文學家重新嚴格定義行星，進而將冥王星與鬩神星一同歸類為矮行星。' },
+            { id: 14, cat: 'solarsystem', name: '妊神星與鳥神星 (Haumea & Makemake)', tag: '太陽系天體／矮行星', desc: '兩顆位於海王星軌道外柯伊伯帶的正式登錄矮行星，主要由冰與岩石混合組成。' },
+            { id: 15, cat: 'solarsystem', name: '木衛二 歐羅巴 (Europa)', tag: '太陽系天體／木星衛星', desc: '木星的伽利略衛星之一。表面被厚厚的冰層覆蓋，下方因木星強烈潮汐引力加熱，存在一個深達數十至上百公里的全球性液態水海洋，是天體生物學尋找外星生命的核心目標。' },
+            { id: 16, cat: 'solarsystem', name: '木衛一 伊奧與木衛四 卡利斯多', tag: '太陽系天體／木星衛星', desc: '伊奧是太陽系中火山活動最劇烈的天體，源於木星潮汐引力的強烈拉扯；卡利斯多則是木星最外圍的伽利略衛星，表面佈滿古老的撞擊坑。' },
+            { id: 17, cat: 'solarsystem', name: '土衛六 泰坦 (Titan)', tag: '太陽系天體／土星衛星', desc: '土星最大的衛星，擁有比地球更濃密的氮氣大氣層，表面存在由液態甲烷與乙烷構成的河流、湖泊與沙丘，是研究前生物化學的天然實驗室。' },
+            { id: 18, cat: 'solarsystem', name: '土衛二 恩克拉多斯 (Enceladus)', tag: '太陽系天體／土星衛星', desc: '土星的一顆冰質小衛星，南極區域有巨型冰噴泉（羽流），將內部位於冰殼下的液態海洋物質以每秒 250 公里的速度噴射至太空。' },
+            { id: 19, cat: 'solarsystem', name: '小行星帶 (Asteroid Belt)', tag: '太陽系大尺度區域', desc: '位於火星與木星軌道之間（約 2.2 至 3.3 AU）的區域，聚集了數十萬顆太陽系形成早期殘留下來的岩質小天體。' },
+            { id: 20, cat: 'solarsystem', name: '柯伊伯帶 (Kuiper Belt)', tag: '太陽系大尺度區域', desc: '位於海王星軌道外側（約 30 至 50 AU）的扁平盤狀區域，由大量冰質小天體（如冥王星、鬩神星、短週期彗星）組成。' },
+            { id: 21, cat: 'solarsystem', name: '歐特雲 (Oort Cloud)', tag: '太陽系大尺度區域', desc: '理論上包覆整個太陽系的球殼狀彗星儲藏區，延伸範圍達 2,000 至 200,000 AU，是長週期彗星的主要來源。' },
+            { id: 22, cat: 'solarsystem', name: '日球層頂 / 太陽圈 (Heliopause)', tag: '太陽系邊界', desc: '由太陽風向外吹送高能等離子體粒子所形成的氣泡狀區域；當太陽風壓力與星際介質達到平衡的交界面稱為日球層頂（距離太陽約 75–90 AU）。' },
 
-            { id: 7, cat: 'dynamics', name: '萬有引力常數倍率', tag: '軌道力學', desc: '模擬星體周圍重力扭曲感、自轉軌跡與星系束縛力的調整係數。', imgText: '🪐 雙星與多體重力場模擬畫面' },
-            { id: 8, cat: 'dynamics', name: '暗物質密度 (Dark Matter Density)', tag: '軌道力學', desc: '影響外圍環繞的暗物質暈粒子濃度、透光度與星系旋轉曲線平坦性的關鍵因數。', imgText: '🌌 星系外圍暗物質暈分佈圖' },
-            { id: 9, cat: 'dynamics', name: '軌道離心率 (Eccentricity)', tag: '軌道力學', desc: '描述天體運行軌道橢圓偏心程度的指標，影響模擬視窗中星體的軌道擺動。', imgText: '🔄 橢圓軌道與克卜勒定律圖解' },
-            { id: 10, cat: 'dynamics', name: '恆星自轉速度 (Rotation)', tag: '軌道力學', desc: '高速自轉會因離心力產生赤道隆起效應（Oblateness），改變天體外觀扁率。', imgText: '💫 高速自轉天體赤道隆起圖' },
-            { id: 11, cat: 'dynamics', name: '星系旋轉曲線 (Rotation Curve)', tag: '軌道力學', desc: '顯示星系中恆星繞行速度與中心距離關係的曲線，成為證明暗物質存在的直接證據。', imgText: '📈 星系旋轉曲線觀測數據圖' },
+            // ⚡ 2. 恆星物理、類型與有名恆星
+            { id: 23, cat: 'stellar', name: '恆星 (Star)', tag: '恆星演化階段', desc: '由高溫氣體（主要為氫與氦）組成、藉由核心的核融合反應抵抗自身重力塌縮的巨大發光球體。恆星是宇宙中星系的基本組成單位，其質量決定了一生中的光度、溫度與最終的演化命運。可觀測宇宙中估計有高達一垓（10²⁴）顆恆星。' },
+            { id: 24, cat: 'stellar', name: '原恆星 (Protostar)', tag: '恆星演化階段', desc: '恆星誕生的「嬰兒」階段。當巨大分子雲中的高密度團塊在自身重力下塌縮生熱，尚未點燃核心氫融合反應前稱為原恆星，能量主要來自重力位能釋放。' },
+            { id: 25, cat: 'stellar', name: '主序星 (Main-Sequence Star)', tag: '恆星演化階段', desc: '恆星一生中最漫長且穩定的青壯年時期（約佔生命的 90%）。在此階段，恆星核心穩定地進行氫融合為氦的反應，產生的向外輻射壓與向內的重力吸引力達到完美的流體靜力平衡。' },
+            { id: 26, cat: 'stellar', name: '次巨星 (Subgiant)', tag: '恆星演化階段', desc: '核心氫燃料耗盡後，恆星離開主序帶、外層大氣開始膨脹且光度上升，介於主序星與紅巨星之間的過渡階段。' },
+            { id: 27, cat: 'stellar', name: '紅巨星 / 巨星 (Red Giant / Giant)', tag: '恆星演化階段', desc: '中低質量恆星（小於約 8 倍太陽質量）在核心的氫燃料耗盡後，核心收縮升溫，外層大氣劇烈膨脹與冷卻所形成的巨型恆星。核心後續會點燃 3氦過程（Triple-Alpha）將氦融合成碳與氧，表面溫度較低而呈現紅色。' },
+            { id: 28, cat: 'stellar', name: '紅超巨星 / 超巨星 (Red Supergiant / Supergiant)', tag: '恆星演化階段', desc: '大質量恆星（大於約 8–10 倍太陽質量）演化晚期的極度膨脹狀態。其體積極其龐大（半徑可達數個 AU），核心能依次進行碳、氧、氖、鎂至矽融合，直到生成鐵核心。' },
+            { id: 29, cat: 'stellar', name: '白矮星 (White Dwarf)', tag: '恆星殘骸／緻密星', desc: '中低質量恆星拋散行星狀星雲後留下的極高密度核心殘骸，體積與地球相當但質量與太陽相當。內部不再進行核融合，完全依靠電子簡併壓抗衡重力。' },
+            { id: 30, cat: 'stellar', name: '黑矮星 (Black Dwarf)', tag: '恆星殘骸理論終局', desc: '白矮星在經過數百億甚至數兆年的漫長歲月將所有內部殘餘熱能輻射殆盡後，不再發光冷卻形成的最終冷卻天體殘骸。' },
+            { id: 31, cat: 'stellar', name: '中子星 (Neutron Star)', tag: '恆星殘骸／緻密星', desc: '大質量恆星經歷超新星爆炸後形成的極高密度殘骸，質量約 1.4 至 3 倍太陽質量，直徑僅約 20 公里，依靠中子簡併壓對抗重力。每立方公分物質重達數億噸。' },
+            { id: 32, cat: 'stellar', name: '脈衝星 (Pulsar)', tag: '緻密星特徵', desc: '高速自轉且具備強烈磁場的中子星。其磁極向外發出聚焦的電波、可見光或 X 射線束，當光束隨自轉掃過地球時，會被觀測到極其精確的週期性脈衝。' },
+            { id: 33, cat: 'stellar', name: '磁星 (Magnetar)', tag: '緻密星特徵', desc: '一種擁有超強磁場的中子星（磁場強度可達地球磁場的 800 兆倍）。其外殼在強磁場應力下破裂會引發「星震」（Starquake），釋放出巨大的伽瑪射線與 X 射線暴發。' },
+            { id: 34, cat: 'stellar', name: '棕矮星 (Brown Dwarf)', tag: '失敗的恆星 / 次恆星天體', desc: '質量介於最大氣態行星與最小恆星之間（約 13 至 80 倍木星質量，或 0.012 至 0.075 倍太陽質量）的天體。核心溫度不足以點燃穩定的質子－質子鏈氫融合，僅能進行短暫的氘融合，被稱為「失敗的恆星」。' },
+            { id: 35, cat: 'stellar', name: 'T 金牛座型星 (T Tauri Star)', tag: '恆星演化階段', desc: '中低質量原恆星吸積完大部分物質後、即將進入主序帶之前的演化階段。展現出強烈的恆星風、高速噴流與圍繞在赤道四周的吸積盤。' },
+            { id: 36, cat: 'stellar', name: '造父變星 (Cepheid Variables)', tag: '變星類型／標準燭光', desc: '脈動週期在 3 至 50 天之間的黃色脈動超巨星。其脈動週期與真實光度成正比（週光關係），是量測河外星系距離的核心「標準燭光」。' },
+            { id: 37, cat: 'stellar', name: 'RR 琴座型變星 (RR Lyrae Variables)', tag: '變星類型／標準燭光', desc: '週期小於 1 天的年老脈動巨星，平均光度約為 50 倍太陽光度。常分布於球狀星團中，被天文學家作為測量銀河系內及近鄰星系距離的標準燈泡。' },
+            { id: 38, cat: 'stellar', name: '比鄰星 (Proxima Centauri)', tag: '特定恆星／紅矮星', desc: '距離太陽系最近的恆星（距離約 4.25 光年），屬於 M 型低光度紅矮星，無法用肉眼直接觀測。與半人馬座 α 星 A/B 組成三合星系統。' },
+            { id: 39, cat: 'stellar', name: '半人馬座 α 星 (Alpha Centauri A/B)', tag: '特定恆星／聯星系統', desc: '距離太陽系最近的聯星系統（距地球約 4.4 光年），由一顆與太陽極為相似的 G 型主序星（Alpha Centauri A）和一顆 K 型星（Alpha Centauri B）組成。' },
+            { id: 40, cat: 'stellar', name: '天狼星 A 與天狼星 B (Sirius A & B)', tag: '特定恆星／聯星系統', desc: '全天肉眼觀測最明亮的主序星天狼星 A（A 型藍白色星，視星等 -1.5），與人類歷史上記錄的第一顆白矮星伴星「天狼星 B」（俗稱「小狗星」，密度高達水的數十萬倍）組成的雙星系統。' },
+            { id: 41, cat: 'stellar', name: '織女星 (Vega) 與 牛郎星 (Altair)', tag: '特定恆星', desc: '織女星為琴座 A 型主序星，色指數與光度常被作為光度測量的基準校正星；牛郎星為天鷹座高速自轉星，快速自轉使其赤道隆起呈扁球狀。' },
+            { id: 42, cat: 'stellar', name: '參宿四 (Betelgeuse) 與 參宿七 (Rigel)', tag: '特定恆星／獵戶座', desc: '獵戶座兩顆最明亮的亮星。參宿四是一顆處於生命末期的紅超巨星，體積巨大到若置於太陽系中心將吞噬木星軌道；參宿七則是一顆極度明亮的藍超巨星。' },
+            { id: 43, cat: 'stellar', name: '北極星 (Polaris)', tag: '特定恆星 / 造父變星', desc: '小熊座最亮星，同時也是一顆脈動振幅逐漸減小的造父變星，週期約為 4 天，長期以來被人類作為夜空導航的定向座標。' },
+            { id: 44, cat: 'stellar', name: "巴納德星 (Barnard's Star)", tag: '特定恆星／紅矮星', desc: '全天已知自行速度最大的恆星（每年位移約 10.3 角秒），1916 年由 E. E. 巴納德發現，是一顆距離地球較近的低質量紅矮星。' },
+            { id: 45, cat: 'stellar', name: '大陵五 / 惡魔星 (Algol)', tag: '特定恆星／食雙星', desc: '英仙座最著名的食雙星，亮度會週期性因為兩星相互遮擋而變暗，古希臘人將其變化視為「美杜莎的惡魔之眼」。' },
+            { id: 46, cat: 'stellar', name: '心宿二 (Antares)', tag: '特定恆星／紅超巨星', desc: '天蠍座核心的紅超巨星，表面溫度較低呈現強烈紅色，周圍環繞著由自身拋射物質組成的反射塵埃雲。' },
 
-            { id: 12, cat: 'evolution', name: '星雲塌縮 (Nebular Collapse)', tag: '演化階段', desc: '恆星生命週期的起點 (0%)，巨大冷氣體與塵埃在自身重力下向中心凝聚旋轉。', imgText: '☁️ 巨大分子雲與恆星誕生區 (JWST)' },
-            { id: 13, cat: 'evolution', name: '原恆星階段 (Protostar)', tag: '演化階段', desc: '核心溫度與壓力持續升高，內部熱核反應尚未完全點燃的過渡期。', imgText: '🔥 原恆星周遭吸積盤渲染圖' },
-            { id: 14, cat: 'evolution', name: '主序星平衡 (Main Sequence)', tag: '演化階段', desc: '核心穩定進行氫融合反應，輻射壓與重力達到完美流體靜力平衡的漫長時期。', imgText: '⭐ 標準主序星剖面結構圖' },
-            { id: 15, cat: 'evolution', name: '紅巨星膨脹 (Red Giant)', tag: '演化階段', desc: '核心氫耗盡收縮、外層包層受熱劇烈膨脹的階段，表面溫度下降但光度大幅增加。', imgText: '🔴 紅巨星與行星吞噬示意圖' },
-            { id: 16, cat: 'evolution', name: '緻密殘骸 (White Dwarf / Remnant)', tag: '演化階段', desc: '演化終了後形成的白矮星或中子星，具備極高密度與簡併壓力。', imgText: '💎 高密度白矮星與星雲殘骸' },
-            { id: 17, cat: 'evolution', name: '超新星爆炸 (Supernova)', tag: '演化階段', desc: '大質量恆星演化末期核心崩潰所產生的極高能量爆炸，會散布重元素並留下中子星或黑洞。', imgText: '💥 超新星遺蹟觀測照片 (NASA)' },
+            // 🌌 3. 星系、黑洞、星雲與大尺度結構
+            { id: 47, cat: 'galaxies', name: '銀河系 (Milky Way Galaxy)', tag: '星系／棒旋星系', desc: '太陽系所在的家鄉星系，屬於棒旋星系。星盤直徑超過 10 萬光年，包含超過 1,000 億顆恆星，太陽約位於距離星系中心約 26,000 光年處的獵戶臂上。' },
+            { id: 48, cat: 'galaxies', name: '螺旋星系與橢圓星系', tag: '星系形態分類', desc: '螺旋星系具有中央核球、扁平星盤與旋臂結構，富含氣體與塵埃且新恆星形成活躍；橢圓星系呈圓球或橢球狀，主要由年老紅色恆星組成。' },
+            { id: 49, cat: 'galaxies', name: '不規則星系與矮星系', tag: '星系形態分類', desc: '不規則星系缺乏對稱或固定幾何形狀（如大小麥哲倫星雲）；矮星系規模遠小於標準星系，常作為衛星星系被重力吞噬。' },
+            { id: 50, cat: 'galaxies', name: '仙女座星系與本星系群', tag: '星系群與鄰近星系', desc: '仙女座星系（M31）是本星系群中規模最大的螺旋星系；本星系群包含銀河系、仙女座及約 60 個矮星系，跨越半徑約 300 萬光年。' },
+            { id: 51, cat: 'galaxies', name: '室女座星系團與超星系團', tag: '星系大尺度結構', desc: '室女座星系團包含數千個星系；室女座超星系團與拉尼亞凱亞超星系團則是更高階的宇宙大尺度重力結構。' },
+            { id: 52, cat: 'galaxies', name: '宇宙網與空洞 (Cosmic Web)', tag: '大尺度結構', desc: '宇宙中的星系與星系團在超大尺度上交織成類似海綿或蜘蛛網的絲狀結構，其間分布著幾乎沒有星系的巨大黑暗空洞。' },
+            { id: 53, cat: 'galaxies', name: '黑洞、事件視界與史瓦西半徑', tag: '緻密天體／極端時空', desc: '重力強大到連光也無法逃脫的天體。事件視界是其單向臨界面邊界，史瓦西半徑決定了其視界大小。' },
+            { id: 54, cat: 'galaxies', name: '奇點與義大利麵化', tag: '黑洞物理結構', desc: '奇點是密度無限大、體積為零的點；義大利麵化則是物質靠近黑洞時因極端潮汐力差而被縱向拉長、橫向擠壓的現象。' },
+            { id: 55, cat: 'galaxies', name: '吸積盤與超大質量黑洞', tag: '黑洞物理與天體', desc: '氣體與塵埃落入黑洞時形成的旋轉高溫發光盤；超大質量黑洞（如人馬座 A*、M87*、TON 618、天鵝座 X-1）質量可達太陽數十萬至數百億倍。' },
+            { id: 56, cat: 'galaxies', name: '星雲 (分子雲、發射、反射、暗、行星狀)', tag: '星雲類型', desc: '分子雲是恆星搖籃；發射與反射星雲展現絢麗光芒；暗星雲阻擋星光；行星狀星雲是晚期膨脹氣體；獵戶座與蟹狀星雲則是著名的星際奇觀。' },
+            { id: 57, cat: 'galaxies', name: '類星體 / 活動星系核 (Quasar / AGN)', tag: '極端天體', desc: '早期宇宙中極度明亮的外河外天體，中心超大質量黑洞劇烈吸積物質產生極高光度，釋放出強烈噴流與全波段輻射。' },
 
-            { id: 18, cat: 'observation', name: '電磁波譜觀測頻段', tag: '觀測技術', desc: '切換可見光、X射線、紅外線與紫外線等不同波段，觀測表面氣體與化學元素輻射特徵。', imgText: '📡 全波段天文望遠鏡觀測對照' },
-            { id: 19, cat: 'observation', name: '宇宙塵埃遮蔽率', tag: '觀測技術', desc: '影響外層大氣與材質透明度、黯淡感及地表侵蝕起伏感的觀測干擾項。', imgText: '🌫️ 星際塵埃消光效應示意圖' },
-            { id: 20, cat: 'observation', name: '金屬豐度 [Fe/H]', tag: '觀測技術', desc: '衡量恆星重元素含量的指標，影響原恆星內部不透明度與赫羅圖分佈軌跡。', imgText: '🔬 恒星光譜分析與化學豐度圖' },
-            { id: 21, cat: 'observation', name: '赫羅圖 (H-R Diagram)', tag: '觀測技術', desc: '恆星光度與表面有效溫度（或光譜型）的散佈圖，用以追蹤恆星演化軌跡的核心工具。', imgText: '📊 標準赫羅圖與主序帶分佈' },
-            { id: 22, cat: 'observation', name: '恆星光譜型 (Spectral Type)', tag: '觀測技術', desc: '依據表面溫度將恆星分為 O, B, A, F, G, K, M 七大主要類型的分類系統。', imgText: '🌈 OBAFGKM 恆星光譜與顏色對照' },
+            // ⏳ 4. 物理定律、力學與宇宙學
+            { id: 58, cat: 'physics', name: "牛頓萬有引力定律 (Newton's Law)", tag: '經典物理定律', desc: '1687 年牛頓提出的定律，指出宇宙中任意兩質點相互吸引，引力大小與質量乘積成正比，與距離平方成反比。' },
+            { id: 59, cat: 'physics', name: '四大基本作用力 (Four Fundamental Forces)', tag: '基礎物理學', desc: '主宰宇宙一切交互作用的四種力：重力、電磁力、強核力與弱核力，共同塑造了我們所處的宇宙大尺度與微觀結構。' },
+            { id: 60, cat: "physics", name: "克卜勒行星運動三大定律 (Kepler's Laws)", tag: '天體力學定律', desc: '第一定律（橢圓定律）、第二定律（面積定律，近日點快、遠日點慢）與第三定律（週期平方與半長軸立方成正比，P^2 = a^3）。' },
+            { id: 61, cat: 'physics', name: '活力公式 (Vis-Viva Equation)', tag: '天體力學公式', desc: '描述天體在軌道上任一點的機械能守恆公式，可用以推導圓軌道速度與逃逸速度。' },
+            { id: 62, cat: 'physics', name: '逃逸速度 (Escape Speed)', tag: '天體力學概念', desc: '天體克服某一重力場束縛所需的最小初始速度。地球表面逃逸速度約為 11.2 km/s。' },
+            { id: 63, cat: 'physics', name: '軌道根數 (Orbital Elements)', tag: '天體力學參數', desc: '完整描述天體三維克卜勒軌道姿態與位置所需的六個獨立參數（半長軸 a、離心率 e、軌道傾角 i、升交點經度 Ω 等）。' },
+            { id: 64, cat: 'physics', name: '霍曼轉移軌道與重力助推', tag: '航天軌道力學', desc: '霍曼轉移是消耗最少燃料的切向橢圓轉移軌道；重力助推則是利用行星重力場借力加速，節省推進燃料。' },
+            { id: 65, cat: 'physics', name: '廣義相對論與重力波', tag: '現代物理學與相對論', desc: '愛因斯坦將重力詮釋為時空彎曲的幾何效應；大質量天體加速運動時會產生以光速傳播的微小重力波漣漪。' },
+            { id: 66, cat: 'physics', name: '重力透鏡 (Gravitational Lensing)', tag: '相對論現象', desc: '大質量天體（如黑洞、星系團）的強大重力彎曲背景天體發出的光線，造成背景影像放大、扭曲成弧形或產生多重影像的現象。' },
+            { id: 67, cat: 'physics', name: '電子簡併壓與錢德拉塞卡極限', tag: '量子物理／恆星演化', desc: '基於包立不相容原理，高密度電子抗衡壓縮的量子力學壓力（支撐白矮星）。白矮星最大質量上限稱為錢德拉塞卡極限（約 1.4 倍太陽質量）。' },
+            { id: 68, cat: 'physics', name: '中子簡併壓 (Neutron Degeneracy Pressure)', tag: '量子物理／恆星演化', desc: '當核心質量超過錢德拉塞卡極限，電子與質子結合為中子，由中子產生的量子簡併壓力支撐中子星，抗衡重力塌縮。' },
+            { id: 69, cat: 'physics', name: '赫羅圖 (H-R Diagram)', tag: '恆星天文學工具', desc: '以表面溫度為橫軸、絕對光度為縱軸繪製的散布圖，能清晰揭示主序星、巨星、超巨星與白矮星的演化階段，被譽為天文學的元素週期表。' },
+            { id: 70, cat: 'physics', name: '視差、秒差距與星等', tag: '天文測量學', desc: '利用地球公轉基線推算距離的三角測量法（1 秒差距約 3.26 光年）；視星等代表肉眼明暗，絕對星等代表 10 秒差距處的真實發光度。' },
+            { id: 71, cat: 'physics', name: '都卜勒效應、紅移與哈伯定律', tag: '光譜學與宇宙學', desc: '光譜線因運動或宇宙膨脹而發生藍移或紅移；哈伯定律證明了宇宙空間正在均勻膨脹。' },
+            { id: 72, cat: 'physics', name: '暗物質與暗能量', tag: '宇宙學成分', desc: '暗物質透過重力影響星系自轉（佔 26.8%）；暗能量驅使宇宙加速膨脹（佔 68.5%）。涵蓋冷暗物質、WIMPs 與軸子等候選粒子理論。' },
+            { id: 73, cat: 'physics', name: '大霹靂、微波背景與宇宙暴脹', tag: '宇宙學創生模型', desc: '宇宙於約 138 億年前從極高溫狀態劇烈膨脹；CMB 是早期光子退耦留下的黑體輻射殘餘輝光（2.725 K）；暴脹則解釋了宇宙的均勻與平坦性。' },
+            { id: 74, cat: 'physics', name: '德雷克方程式與費米悖論', tag: '天體生物學', desc: '德雷克方程式估算銀河系中的智慧文明數量；費米悖論則探討「如果宇宙中充滿了外星生命，那麼他們究竟在哪裡？」' },
 
-            { id: 23, cat: 'cosmology', name: '行星適居帶 (Habitable Zone)', tag: '宇宙學', desc: '恆星周圍允許液態水存在的 orbital 區域，是評估系外行星生命存在可能性的重要指標。', imgText: '💧 恆星適居帶與液態水範圍' },
-            { id: 24, cat: 'cosmology', name: '哈伯定律 (Hubble\'s Law)', tag: '宇宙學', desc: '宇宙膨脹的基礎定律，星系離我們的距離與其退行速度成正比。', imgText: '🔭 宇宙膨脹與紅移現象圖解' }
+            // 🔭 5. 觀測儀器、天文台與太空任務
+            { id: 75, cat: 'missions', name: '哈伯與韋伯太空望遠鏡', tag: '太空望遠鏡', desc: '哈伯望遠鏡（HST）口徑 2.4 公尺涵蓋紫外與可見光；韋伯望遠鏡（JWST）主鏡 6.5 公尺專攻紅外線，運行於 L2 軌道深空觀測。' },
+            { id: 76, cat: 'missions', name: '事件視界望遠鏡 (EHT) 與 LIGO', tag: '地面精密觀測陣列', desc: 'EHT 結合全球電波望遠鏡利用 VLBI 技術拍下黑洞陰影；LIGO 利用雷射干涉成功直接偵測到雙黑洞合併產生的重力波。' },
+            { id: 77, cat: 'missions', name: '蓋亞衛星與史隆數位巡天 (SDSS)', tag: '大規模巡天計畫', desc: '蓋亞衛星精確測量超過 10 億顆恆星的三維位置與視差；SDSS 記錄了數億天體與數百萬星系光譜，成功繪製宇宙大尺度結構網格。' },
+            { id: 78, cat: 'missions', name: '航海家與帕克太陽探測器', tag: '深空與太陽探測器', desc: '航海家 1 號與 2 號已飛出太陽系進入星際空間，攜帶黃金唱片；帕克太陽探測器則直接穿透日冕實地測量太陽風。' }
         ];
 
         let currentCategory = 'all';
@@ -429,7 +434,6 @@
                 <p><b>分類標籤：</b>${item.tag}</p><br>
                 <p><b>詳細解析：</b>${item.desc}</p>
             `;
-            document.getElementById('mediaPhotoContainer').innerHTML = `📷 <b>${item.imgText}</b><br><span style="font-size: 0.7rem; color: var(--text-muted);">(可於此處嵌入專題圖片或 Blender 截圖)</span>`;
         }
 
         renderWiki(wikiData);

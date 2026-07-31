@@ -53,14 +53,15 @@
         .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
+        /* 與 hr.html 完美一致的三欄比例：左側控制台 (300px) | 中央 3D 視窗 (1fr) | 右側精簡欄位 (280px) */
         .lab-container {
             margin-top: 84px;
             width: 100%;
-            max-width: 1440px;
+            max-width: 1560px;
             display: grid;
-            grid-template-columns: 340px 1fr 300px;
+            grid-template-columns: 300px 1fr 280px;
             gap: 20px;
-            padding: 0 20px 40px 20px;
+            padding: 0 24px 40px 24px;
         }
 
         .panel {
@@ -70,26 +71,27 @@
             padding: 20px;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            height: 82vh;
+            display: flex;
+            flex-direction: column;
         }
-        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; flex-shrink: 0; }
 
         .attributes-panel {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            max-height: 82vh;
+            gap: 12px;
             overflow-y: auto;
             padding-right: 4px;
         }
-        .attributes-panel::-webkit-scrollbar { width: 6px; }
-        .attributes-panel::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        .attributes-panel::-webkit-scrollbar { width: 5px; }
         .attributes-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
         .section-subtitle {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 700;
             color: #c7d2fe;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 4px;
         }
@@ -97,14 +99,14 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .preset-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-color);
             padding: 6px 8px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--accent);
             cursor: pointer;
@@ -116,24 +118,24 @@
         .slider-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            margin-bottom: 12px;
+            gap: 3px;
+            margin-bottom: 8px;
             background: rgba(255, 255, 255, 0.02);
             padding: 8px 10px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
-        .slider-label { font-size: 0.8rem; font-weight: 600; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        .slider-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; margin-top: 2px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; cursor: pointer; }
+        .slider-label { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .slider-desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.2; margin-top: 1px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 4px; margin-top: 3px; cursor: pointer; }
 
         .play-btn {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             font-weight: 600;
         }
@@ -142,19 +144,21 @@
         .simulation-viewport {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            height: 82vh;
         }
 
         .viewport-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
         .view-mode-toggle {
             display: flex;
@@ -183,7 +187,7 @@
         .canvas-box {
             background-color: #02040a;
             border-radius: 8px;
-            height: 520px;
+            flex: 1;
             width: 100%;
             position: relative;
             overflow: hidden;
@@ -201,6 +205,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            height: 82vh;
         }
         .ai-panel {
             background-color: var(--card-bg);
@@ -209,8 +214,9 @@
             padding: 16px;
             display: flex;
             flex-direction: column;
-            height: 340px;
+            flex: 1.1;
             backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         .ai-chat-box {
             flex: 1;
@@ -218,24 +224,28 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 10px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             overflow-y: auto;
             line-height: 1.4;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
+        .ai-chat-box::-webkit-scrollbar { width: 5px; }
+        .ai-chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
         .ai-suggestions {
             display: flex;
             flex-direction: column;
             gap: 4px;
+            flex-shrink: 0;
         }
-        .suggestion-title { font-size: 0.75rem; font-weight: 700; color: #fff; }
+        .suggestion-title { font-size: 0.72rem; font-weight: 700; color: #fff; }
         .suggestion-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 0.72rem;
+            padding: 3px 6px;
+            font-size: 0.68rem;
             color: var(--accent);
             text-align: left;
             cursor: pointer;
@@ -252,10 +262,12 @@
             flex-direction: column;
             gap: 8px;
             backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            flex: 0.9;
         }
         .hr-canvas-container {
             width: 100%;
-            height: 180px;
+            flex: 1;
             background: #02040a;
             border-radius: 6px;
             border: 1px solid var(--border-color);
@@ -311,31 +323,31 @@
                 <div class="slider-group">
                     <div class="slider-label"><span>質量 (Mass)</span><span id="v-init-mass">1.0 M☉</span></div>
                     <input type="range" id="s-init-mass" min="0.2" max="40.0" step="0.2" value="1.0">
-                    <div class="slider-desc">決定恆星的引力強弱、壽命長短與最終命運（如白矮星或超新星）。</div>
+                    <div class="slider-desc">決定恆星引力、壽命與最終命運。</div>
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>金屬豐度 [Fe/H]</span><span id="v-metal">0.00</span></div>
                     <input type="range" id="s-metal" min="-2.0" max="0.5" step="0.05" value="0.00">
-                    <div class="slider-desc">影響恆星內部 opacity（不透明度）與光譜吸收特性。</div>
+                    <div class="slider-desc">影響內部不透明度與光譜特性。</div>
                 </div>
             </div>
 
             <div>
                 <div class="section-subtitle">進階物理參數</div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>恆星自轉速度 (Rotation)</span><span id="v-rot">1.0x</span></div>
+                    <div class="slider-label"><span>自轉速度 (Rotation)</span><span id="v-rot">1.0x</span></div>
                     <input type="range" id="s-rot" min="0.1" max="5.0" step="0.1" value="1.0">
-                    <div class="slider-desc">高速自轉會導致恆星因離心力而產生赤道微幅扁平化。</div>
+                    <div class="slider-desc">高速自轉導致赤道微幅扁平。</div>
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>恆星風強度 (Stellar Wind)</span><span id="v-wind">1.0x</span></div>
+                    <div class="slider-label"><span>恆星風強度 (Wind)</span><span id="v-wind">1.0x</span></div>
                     <input type="range" id="s-wind" min="0.5" max="10.0" step="0.5" value="1.0">
-                    <div class="slider-desc">控制恆星外層大氣向外吹拂的質量流失速率。</div>
+                    <div class="slider-desc">控制外層大氣流失速率。</div>
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>表面磁場活動 (Magnetic)</span><span id="v-mag">1.0x</span></div>
+                    <div class="slider-label"><span>表面磁場 (Magnetic)</span><span id="v-mag">1.0x</span></div>
                     <input type="range" id="s-mag" min="0.1" max="5.0" step="0.1" value="1.0">
-                    <div class="slider-desc">影響表面活躍紋理、耀斑與磁流體動力學特徵。</div>
+                    <div class="slider-desc">影響表面紋理與耀斑特徵。</div>
                 </div>
             </div>
 
@@ -343,11 +355,11 @@
                 <div class="section-subtitle">生命週期時間軸</div>
                 <div class="slider-group">
                     <div class="slider-label">
-                        <span id="v-stage">星雲塌縮 (Nebular Collapse)</span>
+                        <span id="v-stage" style="font-size:0.72rem;">星雲塌縮 (Nebular Collapse)</span>
                         <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ 自動撥放</button>
                     </div>
                     <input type="range" id="s-timeline" min="0" max="100" step="1" value="0">
-                    <div class="slider-desc">拖曳時間軸可觀賞恆星從誕生到死亡的全貌。</div>
+                    <div class="slider-desc">拖曳時間軸觀賞恆星誕生到死亡。</div>
                 </div>
             </div>
         </div>
@@ -365,7 +377,7 @@
 
         <div class="right-column">
             <div class="panel ai-panel">
-                <div class="panel-title"><span class="ai-title-text">AI 演化解析</span></div>
+                <div class="panel-title" style="font-size: 0.88rem;"><span class="ai-title-text">AI 演化解析</span></div>
                 <div class="ai-chat-box" id="aiChat">
                     您好！現在每顆真實恆星都具備了<b>專屬的 3D 視覺特徵</b>（例如織女星的塵埃吸積盤、參宿四與盾牌座UY的巨大紅超巨星體積、比鄰星的迷你紅矮星體型）。點擊左側感受牠們的獨特之處吧！
                 </div>
@@ -382,7 +394,7 @@
                     <a href="hr.html" style="font-size: 0.75rem; color: var(--accent); text-decoration: none;">放大 ➔</a>
                 </div>
                 <div class="hr-canvas-container">
-                    <canvas id="hrCanvas" width="260" height="180"></canvas>
+                    <canvas id="hrCanvas" width="240" height="160"></canvas>
                 </div>
             </div>
         </div>
@@ -468,7 +480,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
         const container = document.getElementById('webglContainer');
-        const cWidth = container.clientWidth > 0 ? container.clientWidth : 600;
+        const cWidth = container.clientWidth > 0 ? container.clientWidth : 700;
         const cHeight = container.clientHeight > 0 ? container.clientHeight : 520;
 
         const scene = new THREE.Scene();
@@ -664,7 +676,6 @@
             if(oblateness < 0.6) oblateness = 0.6;
 
             surfaceMat.bumpScale = 0.012 * currentMag;
-
             debrisDisk.visible = (activeStarKey === 'vega' && currentViewMode === 'surface');
 
             let isCurrentTime = false;
@@ -891,7 +902,7 @@
         animate();
 
         window.addEventListener('load', () => {
-            const w = container.clientWidth > 0 ? container.clientWidth : 600;
+            const w = container.clientWidth > 0 ? container.clientWidth : 700;
             const h = container.clientHeight > 0 ? container.clientHeight : 520;
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
@@ -899,7 +910,7 @@
         });
 
         window.addEventListener('resize', () => {
-            const w = container.clientWidth > 0 ? container.clientWidth : 600;
+            const w = container.clientWidth > 0 ? container.clientWidth : 700;
             const h = container.clientHeight > 0 ? container.clientHeight : 520;
             camera.aspect = w / h;
             camera.updateProjectionMatrix();

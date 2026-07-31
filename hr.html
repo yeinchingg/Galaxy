@@ -54,14 +54,15 @@
         .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
+        /* 調整欄位比例：放大中央圖表，縮小並精簡右側欄位 */
         .hr-container {
             margin-top: 84px;
             width: 100%;
-            max-width: 1440px;
+            max-width: 1560px;
             display: grid;
-            grid-template-columns: 340px 1fr 340px;
+            grid-template-columns: 300px 1fr 280px;
             gap: 20px;
-            padding: 0 20px 40px 20px;
+            padding: 0 24px 40px 24px;
         }
 
         .panel {
@@ -71,50 +72,48 @@
             padding: 20px;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            height: 82vh;
+            display: flex;
+            flex-direction: column;
         }
-        .panel-title { font-weight: 700; font-size: 1rem; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; flex-shrink: 0; }
 
         .controls-panel {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            max-height: 82vh;
+            gap: 12px;
             overflow-y: auto;
-            backdrop-filter: blur(8px);
         }
-        .controls-panel::-webkit-scrollbar { width: 6px; }
-        .controls-panel::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+        .controls-panel::-webkit-scrollbar { width: 5px; }
         .controls-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
         .section-subtitle {
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             font-weight: 700;
             color: #c7d2fe;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 4px;
         }
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 10px;
+            gap: 4px;
+            margin-bottom: 8px;
             background: rgba(255, 255, 255, 0.02);
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
-        .control-label { font-size: 0.82rem; font-weight: 700; color: #e2e8f0; display: flex; justify-content: space-between; }
-        .control-desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.3; font-weight: 500; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; cursor: pointer; }
+        .control-label { font-size: 0.78rem; font-weight: 700; color: #e2e8f0; display: flex; justify-content: space-between; }
+        .control-desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.2; font-weight: 500; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); height: 4px; margin-top: 3px; cursor: pointer; }
         select {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             background: rgba(3, 7, 18, 0.8);
             color: #fff;
@@ -124,30 +123,20 @@
         .viewport-panel {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            height: 82vh;
         }
-        
-        .science-guide-banner {
-            background: rgba(129, 140, 248, 0.08);
-            border: 1px solid rgba(129, 140, 248, 0.25);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 0.82rem;
-            color: #e2e8f0;
-            line-height: 1.5;
-        }
-        .science-guide-banner b { color: var(--accent); }
 
         .hr-main-canvas-box {
             background-color: #02040a;
             border-radius: 8px;
-            height: 440px;
+            flex: 1;
             width: 100%;
             position: relative;
             display: flex;
@@ -168,6 +157,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            height: 82vh;
         }
 
         .model-3d-panel {
@@ -180,10 +170,11 @@
             gap: 8px;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            flex: 1.1;
         }
         .model-3d-box {
             width: 100%;
-            height: 200px;
+            flex: 1;
             background: #02040a;
             border-radius: 6px;
             position: relative;
@@ -205,7 +196,7 @@
             padding: 16px;
             display: flex;
             flex-direction: column;
-            flex: 1;
+            flex: 0.9;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
@@ -215,12 +206,13 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             line-height: 1.4;
-            max-height: 140px;
             overflow-y: auto;
         }
+        .ai-chat-box::-webkit-scrollbar { width: 5px; }
+        .ai-chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -259,12 +251,12 @@
                 <div class="control-group">
                     <div class="control-label"><span>有效溫度 (K)</span><span id="v-temp">5778 K</span></div>
                     <input type="range" id="s-temp" min="2500" max="40000" step="100" value="5778">
-                    <div class="control-desc">調整表面溫度，紅點將在圖表上橫向移動。</div>
+                    <div class="control-desc">調整表面溫度，紅點橫向移動。</div>
                 </div>
                 <div class="control-group">
                     <div class="control-label"><span>絕對光度 (L☉)</span><span id="v-lum">1.0 L☉</span></div>
                     <input type="range" id="s-lum" min="0.0001" max="100000" step="0.1" value="1.0">
-                    <div class="control-desc">調整光度大小，紅點將在圖表上縱向移動。</div>
+                    <div class="control-desc">調整光度大小，紅點縱向移動。</div>
                 </div>
             </div>
 
@@ -272,7 +264,7 @@
                 <div class="section-subtitle">顯示選項</div>
                 <div class="control-group" style="flex-direction: row; align-items: center; justify-content: space-between;">
                     <span class="control-label" style="margin: 0;">顯示主序帶參考線</span>
-                    <input type="checkbox" id="showMainSequence" checked onchange="updateObservation()" style="width: 18px; height: 18px; accent-color: var(--accent);">
+                    <input type="checkbox" id="showMainSequence" checked onchange="updateObservation()" style="width: 16px; height: 16px; accent-color: var(--accent);">
                 </div>
             </div>
         </div>
@@ -280,32 +272,27 @@
         <div class="viewport-panel">
             <div style="font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between;">
                 <span>赫羅圖分佈對應視窗</span>
-                <span style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">💡 提示：可直接「按住紅點並拖曳」來即時改變恆星狀態</span>
-            </div>
-
-            <div class="science-guide-banner">
-                <b>📌 為什麼赫羅圖 (H-R Diagram) 如此重要？</b><br>
-                赫羅圖將恆星的<b>表面溫度</b>（底部具備光譜顏色漸層與刻度）與<b>絕對光度</b>作圖。拖曳圖上的紅點，即可即時看出恆星在主序帶、紅巨星與白矮星區的轉變，並對應右上角的 <b>3D 實體模型</b>！
+                <span style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">💡 提示：可直接「按住紅點並拖曳」改變恆星狀態</span>
             </div>
 
             <div class="hr-main-canvas-box" id="hrCanvasBox">
-                <canvas id="mainHrCanvas" width="800" height="420"></canvas>
+                <canvas id="mainHrCanvas" width="900" height="520"></canvas>
             </div>
         </div>
 
         <div class="right-column">
             <div class="model-3d-panel">
-                <div class="panel-title" style="margin-bottom: 8px; font-size: 0.9rem;">
+                <div class="panel-title" style="margin-bottom: 0; font-size: 0.88rem;">
                     <span>即時連動 3D 恆星模型</span>
                 </div>
                 <div class="model-3d-box" id="model3dContainer"></div>
-                <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">
                     對應赫羅圖座標之 3D 體積與光譜顏色
                 </div>
             </div>
 
             <div class="panel ai-panel">
-                <div class="panel-title" style="font-size: 0.9rem;"><span>AI 觀測解析</span></div>
+                <div class="panel-title" style="font-size: 0.88rem;"><span>AI 觀測解析</span></div>
                 <div class="ai-chat-box" id="aiChat">
                     歡迎來到赫羅圖觀測站！您可以<b>按住圖表上的紅點並任意拖曳</b>，右上角即會流暢同步呈現該座標的 3D 恆星立體結構！
                 </div>
@@ -393,8 +380,8 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
         const modelContainer = document.getElementById('model3dContainer');
-        const mWidth = modelContainer.clientWidth || 300;
-        const mHeight = modelContainer.clientHeight || 200;
+        const mWidth = modelContainer.clientWidth || 240;
+        const mHeight = modelContainer.clientHeight || 160;
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(50, mWidth / mHeight, 0.1, 1000);
@@ -436,7 +423,6 @@
 
         const hrCanvas = document.getElementById('mainHrCanvas');
         const hrCtx = hrCanvas.getContext('2d');
-        const hrBox = document.getElementById('hrCanvasBox');
 
         let currentTemp = 5778;
         let currentLum = 1.0;
@@ -503,14 +489,14 @@
                 hrCtx.lineWidth = 4;
                 hrCtx.beginPath();
                 hrCtx.moveTo(120, 50);
-                hrCtx.bezierCurveTo(280, 120, 480, 240, 720, 340);
+                hrCtx.bezierCurveTo(320, 120, 540, 240, 820, 340);
                 hrCtx.stroke();
             }
 
             hrCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             for (let i = 0; i < 500; i++) {
-                let rx = 100 + Math.random() * 600;
-                let ry = 30 + Math.random() * 320;
+                let rx = 100 + Math.random() * (w - 160);
+                let ry = 30 + Math.random() * (h - 90);
                 hrCtx.fillRect(rx, ry, 2, 2);
             }
 
@@ -618,8 +604,8 @@
         animate();
 
         window.addEventListener('resize', () => {
-            const nw = modelContainer.clientWidth || 300;
-            const nh = modelContainer.clientHeight || 200;
+            const nw = modelContainer.clientWidth || 240;
+            const nh = modelContainer.clientHeight || 160;
             camera.aspect = nw / nh;
             camera.updateProjectionMatrix();
             renderer.setSize(nw, nh);
