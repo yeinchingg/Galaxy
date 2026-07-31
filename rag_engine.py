@@ -1,24 +1,40 @@
+# rag_engine.py
+"""
+天文 RAG 引擎：檢索（Pinecone）+ 生成（Gemini）+ 人性化語氣包裝。
+
+Pipeline 拆成三個獨立、可各自調整的環節：
+  1. retrieve_context()  -> 依相關性分數分級、過濾雜訊、去重
+  2. _build_prompt()     -> 依「有沒有查到資料」+「對話歷史」動態組出不同的 prompt 模板
+  3. persona 模板         -> 語氣/格式規則集中管理，不散落各處
+
+之後要調整語氣、格式、fallback 話術，只需要改
+SYSTEM_PERSONA / NO_CONTEXT_TEMPLATE 這些常數，不用去改每一支呼叫 API 的函式。
+"""
+
 import os
 from typing import Generator, List, Dict, Any, Optional
 from google import genai
 from pinecone import Pinecone
 
-# ============================================================
-# 人性化回答的核心設計說明
-# ------------------------------------------------------------
-# 這不是單純多寫一句 "請用親切的語氣回答"。
-# 而是把 RAG pipeline 拆成三個獨立、可各自調整的環節：
+# ------------------------------------------------------------------
+# 生成模型設定
+# ------------------------------------------------------------------
+# 重要：不要把「特定版本號」寫死在程式碼裡（例如 gemini-2.0-flash）。
+# Google 會定期關閉舊版本端點 —— gemini-2.0-flash 已於 2026/06/01 正式下架，
+# 一旦端點下架，該模型在 free tier 的配額就會直接變成 0，
+# 這正是「429 RESOURCE_EXHAUSTED ... limit: 0」錯誤的根本原因：
+# 不是「用量真的超過」，而是這個模型本身已經不存在於免費層了。
 #
-#   1. retrieve_context()  -> 依相關性分數分級、過濾雜訊、去重
-#   2. _build_prompt()     -> 依「有沒有查到資料」+「對話歷史」
-#                              動態組出不同的 prompt 模板
-#   3. persona 模板         -> 語氣/格式規則集中管理，不散落各處
-#
-# 之後要調整語氣、格式、fallback 話術，只需要改
-# SYSTEM_PERSONA / NO_CONTEXT_TEMPLATE 這些常數，
-# 不用去改每一支呼叫 API 的函式。
-# ============================================================
-
+# 解法：
+#   1. 改用 Google 官方提供的「別名」(alias)，Google 會自動指向目前建議、
+#      仍在免費層供應的版本，未來 Google 換版本時不用再改程式碼。
+#   2. 清單中第一個模型若失敗（配額用盡、暫時性錯誤...），
+#      會依序往下嘗試清單中的其他模型，多一層備援，不只是同一模型換 Key 而已。
+GENERATION_MODELS = [
+    "gemini-flash-latest",    # 官方別名，永遠指向目前建議的 flash 版本
+    "gemini-2.5-flash-lite",  # 備援：另一個目前仍在 free tier 供應的輕量模型
+]
+EMBEDDING_MODEL = "gemini-embedding-001"
 
 # 相關性分數門檻（Pinecone cosine 相似度，依你的 embedding 模型調整）
 HIGH_RELEVANCE_THRESHOLD = 0.55
@@ -79,7 +95,7 @@ class AstronomyRAGEngine:
             raise ValueError("未提供有效的 GEMINI_API_KEY！")
 
         self.current_key_index = 0
-        self.embedding_model = "text-embedding-004"
+        self.embedding_model = EMBEDDING_MODEL
         self.target_dimension = target_dimension
 
         self.pc = Pinecone(
@@ -99,6 +115,7 @@ class AstronomyRAGEngine:
         return genai.Client(api_key=current_key)
 
     def _execute_with_retry(self, func):
+        """用於 embedding 等單一模型呼叫：把所有 api_keys 輪過一次重試。"""
         last_exception = None
         for _ in range(len(self.api_keys)):
             try:
@@ -109,6 +126,29 @@ class AstronomyRAGEngine:
                 last_exception = e
         raise RuntimeError(f"所有 Gemini API Keys 皆無效或呼叫失敗: {last_exception}")
 
+    def _generate_content(self, prompt: str):
+        """
+        文字生成專用：雙層重試。
+        外層跑過 GENERATION_MODELS 清單中每一個模型，
+        內層對每個模型都把所有 api_keys 輪過一次。
+        任一模型 + 任一 key 成功即回傳；全部失敗才拋出例外。
+        這樣即使某個模型被下架、或某個模型的配額用盡，
+        也能自動切換到清單中的下一個模型，不會整個服務打不通。
+        """
+        last_exception = None
+        for model_name in GENERATION_MODELS:
+            for _ in range(len(self.api_keys)):
+                try:
+                    client = self._get_next_client()
+                    return client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                    )
+                except Exception as e:
+                    print(f"⚠️ 模型 {model_name} 呼叫失敗 ({e})，切換下一組 Key / 模型重試...")
+                    last_exception = e
+        raise RuntimeError(f"所有模型與 API Key 組合皆呼叫失敗: {last_exception}")
+
     def _get_embedding(self, text: str) -> List[float]:
         try:
             embed_res = self._execute_with_retry(
@@ -118,7 +158,7 @@ class AstronomyRAGEngine:
                     config={"output_dimensionality": self.target_dimension}
                 )
             )
-            return embed_res.embedding.values
+            return embed_res.embeddings[0].values
         except Exception as e:
             print(f"❌ 所有 Key 轉換向量皆失敗: {e}")
             raise e
@@ -127,7 +167,7 @@ class AstronomyRAGEngine:
 
     def retrieve_context(self, question: str, top_k: int = 3) -> List[Dict[str, Any]]:
         """
-        回傳格式改為 List[Dict]，而不是 List[str]：
+        回傳格式為 List[Dict]，而不是 List[str]：
         [{"text": ..., "score": ..., "relevance": "high"/"low"}, ...]
         呼叫端可以依照 relevance 決定要不要用、要怎麼用。
         只過濾掉分數低於 LOW_RELEVANCE_THRESHOLD 的雜訊片段。
@@ -218,12 +258,7 @@ class AstronomyRAGEngine:
             contexts = self.retrieve_context(question, top_k=top_k)
             prompt = self._build_prompt(question, contexts, session_id)
 
-            response = self._execute_with_retry(
-                lambda client: client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt
-                )
-            )
+            response = self._generate_content(prompt)
             return {
                 "status": "success",
                 "answer": response.text.strip(),
@@ -240,12 +275,7 @@ class AstronomyRAGEngine:
                 f"[{topic}] {question}", top_k=top_k)
             prompt = self._build_prompt(question, contexts, session_id)
 
-            response = self._execute_with_retry(
-                lambda client: client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt
-                )
-            )
+            response = self._generate_content(prompt)
             return {
                 "status": "success",
                 "answer": response.text.strip(),
@@ -260,32 +290,29 @@ class AstronomyRAGEngine:
         prompt = self._build_prompt(question, contexts, session_id)
 
         last_exception = None
-        for _ in range(len(self.api_keys)):
-            try:
-                client = self._get_next_client()
-                response_stream = client.models.generate_content_stream(
-                    model="gemini-2.5-flash",
-                    contents=prompt
-                )
-                for chunk in response_stream:
-                    if chunk.text:
-                        yield chunk.text
-                return
-            except Exception as e:
-                print(f"⚠️ 串流 API Key 呼叫失敗 ({e})，嘗試切換下一組 Key...")
-                last_exception = e
+        for model_name in GENERATION_MODELS:
+            for _ in range(len(self.api_keys)):
+                try:
+                    client = self._get_next_client()
+                    response_stream = client.models.generate_content_stream(
+                        model=model_name,
+                        contents=prompt,
+                    )
+                    for chunk in response_stream:
+                        if chunk.text:
+                            yield chunk.text
+                    return
+                except Exception as e:
+                    print(
+                        f"⚠️ 串流模型 {model_name} 呼叫失敗 ({e})，嘗試切換下一組 Key / 模型...")
+                    last_exception = e
 
-        yield f"[錯誤] 所有 API Key 皆無法完成串流回應: {last_exception}"
+        yield f"[錯誤] 所有模型與 API Key 組合皆無法完成串流回應: {last_exception}"
 
     def generate_short_hint(self, description: str) -> str:
         try:
             prompt = HINT_TEMPLATE.format(description=description)
-            response = self._execute_with_retry(
-                lambda client: client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt
-                )
-            )
+            response = self._generate_content(prompt)
             return response.text.strip()
         except Exception as e:
             return "無法取得動態旁白。"

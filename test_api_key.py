@@ -52,7 +52,7 @@ print(f"    偵測到 {len(keys)} 把 Key（以逗號分隔）\n")
 # ------------------------------------------------------------------
 # 2. 實際打 API，確認 Key 有效，同時列出這把 Key 能用的 model 清單。
 #    這一步也能順便告訴你「哪些 model 名稱現在還能用」，
-#    因為 text-embedding-004 跟部分 gemini-2.5-flash 端點在 2026 上半年陸續被 Google 關閉了。
+#    因為 text-embedding-004 跟部分 gemini-2.0-flash 端點在 2026 上半年陸續被 Google 關閉了。
 # ------------------------------------------------------------------
 try:
     from google import genai
@@ -89,12 +89,13 @@ for i, key in enumerate(keys, start=1):
 
     # 2c. 實際打一次 embedding，用新的 embedding model
     try:
+        # ✅ 修改後的正確寫法
         embed_resp = client.models.embed_content(
             model="gemini-embedding-001",
             contents="測試向量化",
             config={"output_dimensionality": 768},
         )
-        vec_len = len(embed_resp.embedding.values)
+        vec_len = len(embed_resp.embeddings[0].values)
         print(f"  ✅ Embedding 測試成功，向量長度 = {vec_len}")
     except Exception as e:
         print(f"  ❌ Embedding 測試失敗: {e}")

@@ -1,26 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>實驗室 | 天文與恆星物理專題</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f7f7fb;
-            --nav-bg: #e2e2f5;
-            --card-bg: #ffffff;
-            --text-main: #1e1e2f;
-            --text-muted: #666677;
-            --accent: #5c5cd6;
+            --bg-color: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.25);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; align-items: center; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        #spaceCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
 
         nav {
             width: 100%;
             height: 64px;
-            background-color: var(--nav-bg);
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -28,122 +59,216 @@
             position: fixed;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid #d0d0e8;
+            border-bottom: 1px solid var(--border-color);
         }
-        .nav-left { display: flex; align-items: center; gap: 14px; }
-        .nav-title { font-weight: 700; font-size: 1.1rem; color: #333; }
-        .nav-links { display: flex; gap: 24px; list-style: none; }
-        .nav-links a { text-decoration: none; color: #444; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 
-        /* 系統連線狀態徽章（沿用 index.html 的樣式與 app.js 的 fetchStatus） */
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .nav-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent);
+        }
+
+        /* 系統連線狀態徽章（沿用 app.js 的 fetchStatus） */
         .badge {
             font-size: 0.75rem;
             padding: 3px 10px;
             border-radius: 12px;
             font-weight: 700;
-            background-color: #dff5e4;
-            color: #2c8a4b;
+            background-color: rgba(52, 211, 153, 0.15);
+            color: #6ee7b7;
+            border: 1px solid rgba(52, 211, 153, 0.3);
         }
-        .badge.badge-offline { background-color: #fde2e2; color: #c23b3b; }
+
+        .badge.badge-offline {
+            background-color: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
 
         .lab-container {
             margin-top: 84px;
             width: 100%;
-            max-width: 1440px;
+            max-width: 1560px;
             display: grid;
-            grid-template-columns: 360px 1fr 280px;
+            grid-template-columns: 300px minmax(400px, 1fr) 280px;
             gap: 20px;
-            padding: 0 20px 40px 20px;
-            transition: grid-template-columns 0.3s ease;
+            padding: 0 24px 40px 24px;
+            transition: grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .lab-container.ai-collapsed {
-            grid-template-columns: 360px 1fr 40px;
+            grid-template-columns: 300px minmax(400px, 1fr) 50px;
         }
 
         .panel {
             background-color: var(--card-bg);
-            border: 1px solid #e0e0ed;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            height: 82vh;
+            display: flex;
+            flex-direction: column;
         }
-        .panel-title { font-weight: 700; font-size: 0.95rem; color: #333; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .panel-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 6px; 
+            flex-shrink: 0;
+        }
 
         .attributes-panel {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             max-height: 82vh;
             overflow-y: auto;
             padding-right: 6px;
         }
-        .attributes-panel::-webkit-scrollbar { width: 6px; }
-        .attributes-panel::-webkit-scrollbar-track { background: #f1f1f5; border-radius: 4px; }
-        .attributes-panel::-webkit-scrollbar-thumb { background: #c5c5d5; border-radius: 4px; }
+
+        .attributes-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .attributes-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
 
         .section-subtitle {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 700;
-            color: #444;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            color: #c7d2fe;
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 4px;
         }
+
         .slider-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            margin-bottom: 12px;
-            background: #fafafc;
+            gap: 3px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.02);
             padding: 8px 10px;
             border-radius: 8px;
-            border: 1px solid #eeedf5;
+            border: 1px solid var(--border-color);
         }
-        .slider-label { font-size: 0.8rem; font-weight: 600; color: #222; display: flex; justify-content: space-between; }
-        .slider-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 5px; margin-top: 4px; }
+
+        .slider-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .slider-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            height: 4px;
+            margin-top: 3px;
+            cursor: pointer;
+        }
 
         .simulation-viewport {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             background-color: var(--card-bg);
-            border: 1px solid #e0e0ed;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
+
         .canvas-box {
-            background-color: #03050a;
+            background-color: #02040a;
             border-radius: 8px;
             height: 560px;
             width: 100%;
             position: relative;
             overflow: hidden;
+            border: 1px solid var(--border-color);
             cursor: grab;
         }
-        .canvas-box:active { cursor: grabbing; }
+
+        .canvas-box:active {
+            cursor: grabbing;
+        }
 
         .ai-panel {
-            background-color: #fcfcfd;
-            border: 1px solid #e8e8f0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 16px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             height: 620px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .ai-panel.collapsed {
-            padding: 16px 8px;
+            padding: 20px 4px;
             align-items: center;
-            background-color: #f0f0f5;
+            background-color: rgba(15, 23, 42, 0.95);
         }
-        .ai-panel.collapsed .ai-body { display: none; }
-        .ai-panel.collapsed .ai-title-text { display: none; }
+
+        .ai-panel.collapsed .ai-body {
+            display: none;
+        }
+
+        .ai-panel.collapsed .ai-title-text {
+            display: none;
+        }
+
         .toggle-btn {
             background: none;
             border: none;
@@ -152,6 +277,7 @@
             color: var(--accent);
             font-weight: 700;
         }
+
         .ai-body {
             flex: 1;
             display: flex;
@@ -161,18 +287,29 @@
             width: 100%;
             min-height: 0;
         }
+
         .ai-chat-box {
             flex: 1;
-            background: #f4f4f8;
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 10px;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             overflow-y: auto;
             line-height: 1.45;
             display: flex;
             flex-direction: column;
             gap: 8px;
+        }
+
+        .ai-chat-box::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .ai-chat-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
         }
 
         /* 聊天訊息泡泡 */
@@ -183,56 +320,108 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+
         .msg-ai {
             align-self: flex-start;
-            background: #ffffff;
-            border: 1px solid #e6e6f0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
             color: var(--text-main);
         }
+
         .msg-user {
             align-self: flex-end;
             background: var(--accent);
-            color: #fff;
+            color: #0b0f1a;
+            font-weight: 500;
         }
+
         .msg-hint {
             align-self: flex-start;
-            background: #eef0ff;
-            border: 1px solid #dcdcf5;
-            color: var(--text-main);
-            font-size: 0.78rem;
+            background: rgba(129, 140, 248, 0.12);
+            border: 1px solid rgba(129, 140, 248, 0.25);
+            color: #c7d2fe;
+            font-size: 0.75rem;
         }
 
         .ai-input-box {
             margin-top: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-shrink: 0;
         }
+
+        .analyze-btn {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(129, 140, 248, 0.12);
+            color: var(--accent);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .analyze-btn:hover {
+            background: rgba(129, 140, 248, 0.28);
+        }
+
+        .analyze-btn:active {
+            transform: scale(0.94);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .ai-input-box input {
             flex: 1;
-            background: #fff;
-            border: 1px solid #dcdce6;
+            min-width: 0;
+            background: rgba(3, 7, 18, 0.8);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 8px 12px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--text-main);
             outline: none;
         }
-        .ai-input-box input:focus { border-color: var(--accent); }
-        .ai-input-box button {
+
+        .ai-input-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .ai-input-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .ai-input-box button:not(.analyze-btn) {
             border: none;
             background: var(--accent);
-            color: #fff;
+            color: #e4e8f0;
             font-weight: 700;
             border-radius: 6px;
             padding: 8px 12px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
+            flex-shrink: 0;
         }
-        .ai-input-box button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .ai-input-box button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
+
 <body>
+
+    <canvas id="spaceCanvas"></canvas>
 
     <nav>
         <div class="nav-left">
@@ -335,9 +524,12 @@
             </div>
             <div class="ai-body">
                 <div class="ai-chat-box" id="aiChat">
-                    <div class="msg msg-ai">您好！我是您的天文物理專題 AI 助理。調整左側的參數滑桿後放開，我會依照目前的數據給您簡短說明；也可以直接在下方輸入框問我問題。</div>
+                    <div class="msg msg-ai">您好！我是您的天文物理專題 AI 助理。左側調整參數滑桿只會即時更新 3D 模型，不會自動打擾聊天室；想請我依目前的參數給分析，請按輸入框左邊的 📊
+                        按鈕。也可以直接在下方輸入框跟我聊天、問問題。</div>
                 </div>
                 <div class="ai-input-box">
+                    <button id="analyzeBtn" class="analyze-btn" title="針對目前滑桿數值即時分析"
+                        onclick="requestSliderNarration()">📊</button>
                     <input type="text" id="aiUserInput" placeholder="輸入問題，按 Enter 送出...">
                     <button id="aiSendBtn" onclick="sendChatMessage()">送出</button>
                 </div>
@@ -345,9 +537,85 @@
         </div>
     </div>
 
+    <script>
+        const spaceCanvas = document.getElementById('spaceCanvas');
+        const spaceCtx = spaceCanvas.getContext('2d');
+
+        let sw = spaceCanvas.width = window.innerWidth;
+        let sh = spaceCanvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            sw = spaceCanvas.width = window.innerWidth;
+            sh = spaceCanvas.height = window.innerHeight;
+        });
+
+        const starParticles = [];
+        for (let i = 0; i < 80; i++) {
+            starParticles.push({
+                x: Math.random() * sw,
+                y: Math.random() * sh,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+
+        const starTrail = [];
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 2; i++) {
+                starTrail.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: Math.random() * 2 + 1,
+                    alpha: 0.8,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5
+                });
+            }
+        });
+
+        function animateSpace() {
+            spaceCtx.clearRect(0, 0, sw, sh);
+
+            spaceCtx.fillStyle = '#ffffff';
+            starParticles.forEach(p => {
+                spaceCtx.globalAlpha = p.alpha;
+                spaceCtx.beginPath();
+                spaceCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                spaceCtx.fill();
+
+                p.y -= p.speed;
+                if (p.y < 0) {
+                    p.y = sh;
+                    p.x = Math.random() * sw;
+                }
+            });
+
+            for (let i = starTrail.length - 1; i >= 0; i--) {
+                let tp = starTrail[i];
+                spaceCtx.globalAlpha = tp.alpha;
+                spaceCtx.fillStyle = '#818cf8';
+                spaceCtx.beginPath();
+                spaceCtx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+                spaceCtx.fill();
+
+                tp.x += tp.vx;
+                tp.y += tp.vy;
+                tp.alpha -= 0.03;
+
+                if (tp.alpha <= 0) {
+                    starTrail.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+    </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="app.js"></script>
+    <script src="fetch_news.js"></script>
     <script>
         function toggleAI() {
             const container = document.getElementById('labContainer');
@@ -472,12 +740,14 @@
             return rows.map(([label, value]) => `${label}:${value}`).join(', ');
         }
 
-        // 滑桿放開後才呼叫後端（避免拖曳過程中瘋狂打 API），
+        // 只有使用者按下「📊 即時分析」按鈕才呼叫後端，
         // 由 AI 依「目前頁面上的完整數據」給一句簡短說明。
         let narrateInFlight = false;
         async function requestSliderNarration() {
             if (narrateInFlight) return;
+            const btn = document.getElementById('analyzeBtn');
             narrateInFlight = true;
+            if (btn) btn.disabled = true;
             const loadingEl = appendMessage('hint', 'AI 助理分析中...');
             try {
                 const res = await fetch(`${API_BASE}/api/3d/narrate`, {
@@ -492,12 +762,13 @@
                 loadingEl.textContent = '暫時無法連線到 AI 助理，請確認後端伺服器是否已啟動。';
             } finally {
                 narrateInFlight = false;
+                if (btn) btn.disabled = false;
                 scrollChatToBottom();
             }
         }
 
-        // Sliders：'input' 事件做即時視覺更新（拖曳中就要有反應），
-        // 'change' 事件（放開滑桿）才觸發後端 API 解說。
+        // Sliders：只掛 'input' 事件做即時 3D 視覺更新（拖曳中就要有反應）。
+        // 不會呼叫後端 AI 分析 API —— 那是「📊 即時分析」按鈕的工作（見下方）。
         document.getElementById('s-mass').addEventListener('input', (e) => {
             let val = parseFloat(e.target.value);
             document.getElementById('v-mass').textContent = val.toFixed(1) + ' M☉';
@@ -564,10 +835,9 @@
             material.bumpScale = 0.005 + (val / 800);
         });
 
-        // 幫所有滑桿統一掛上「放開時呼叫 API」的行為，不用每個滑桿各寫一次。
-        document.querySelectorAll('.attributes-panel input[type="range"]').forEach((el) => {
-            el.addEventListener('change', requestSliderNarration);
-        });
+        // 注意：拖曳/放開滑桿「不再」自動呼叫後端分析 API，也不會打擾聊天室。
+        // 使用者需要目前參數的 AI 分析時，請按輸入框左側的「📊 即時分析」按鈕
+        // （已綁定 requestSliderNarration，見上方 HTML 的 analyzeBtn onclick）。
 
         // ============================================================
         // AI 助理聊天室：串接 /api/chat/stream（有相關性分級 + 對話記憶
@@ -700,4 +970,5 @@
         });
     </script>
 </body>
+
 </html>

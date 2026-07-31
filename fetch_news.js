@@ -1,15 +1,3 @@
-/**
- * app.js — 前端共用的 API 嫁接邏輯
- * 同時給 index.html 與 lab.html 使用，只寫一次、兩邊共用，
- * 避免兩個頁面各自維護一份幾乎一樣的 fetch 邏輯。
- *
- * 對應後端（api_routes.py）：
- *   GET  /                        伺服器狀態
- *   GET  /api/daily-knowledge     今日天文新聞
- *   GET  /api/outline/{user_id}   個人化課程大綱推薦
- *   POST /api/track               使用者行為追蹤
- */
-
 const API_BASE = "http://127.0.0.1:8000";
 
 // ---------------------------------------------------------------
@@ -81,7 +69,7 @@ async function fetchDailyKnowledge() {
         });
     } catch (err) {
         console.warn("新聞 API 呼叫失敗", err);
-        container.innerHTML = `<p class="news-empty">暫時無法載入最新新聞，請確認後端伺服器是否已啟動。</p>`;
+        container.innerHTML = `<p class="news-empty">暫時無法載入最新新聞。</p>`;
     }
 }
 
@@ -100,7 +88,7 @@ async function fetchDynamicOutline() {
             const top = data.outline[0];
             recEl.textContent = top.visit_count > 0
                 ? `根據您的瀏覽習慣，為您推薦重點探索：【${top.title}】（已探索 ${top.visit_count} 次）`
-                : "歡迎使用教學平台！點擊下方模組即可開啟探索，系統將為您紀錄學習歷程。";
+                : " ";
         }
     } catch (err) {
         console.warn("大綱 API 載入失敗", err);
