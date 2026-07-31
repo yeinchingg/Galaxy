@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>恆星演化史 | 天文與恆星物理專題</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-color: #030712;
@@ -15,7 +18,14 @@
             --accent: #818cf8;
             --accent-glow: rgba(129, 140, 248, 0.25);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -28,7 +38,10 @@
 
         #spaceCanvas {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: -1;
             pointer-events: none;
         }
@@ -48,10 +61,31 @@
             z-index: 100;
             border-bottom: 1px solid var(--border-color);
         }
-        .nav-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
-        .nav-links { display: flex; gap: 24px; list-style: none; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        .nav-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent);
+        }
 
         /* 與 hr.html 完美一致的三欄比例：左側控制台 (300px) | 中央 3D 視窗 (1fr) | 右側精簡欄位 (280px) */
         .lab-container {
@@ -70,12 +104,24 @@
             border-radius: 12px;
             padding: 20px;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             height: 82vh;
             display: flex;
             flex-direction: column;
         }
-        .panel-title { font-weight: 700; font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; flex-shrink: 0; }
+
+        .panel-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            flex-shrink: 0;
+        }
 
         .attributes-panel {
             display: flex;
@@ -84,8 +130,15 @@
             overflow-y: auto;
             padding-right: 4px;
         }
-        .attributes-panel::-webkit-scrollbar { width: 5px; }
-        .attributes-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+        .attributes-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .attributes-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
 
         .section-subtitle {
             font-size: 0.82rem;
@@ -95,12 +148,14 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 4px;
         }
+
         .preset-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px;
             margin-bottom: 8px;
         }
+
         .preset-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-color);
@@ -113,7 +168,11 @@
             text-align: center;
             transition: all 0.2s;
         }
-        .preset-btn:hover { background: var(--accent); color: #fff; }
+
+        .preset-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
 
         .slider-group {
             display: flex;
@@ -125,9 +184,30 @@
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
-        .slider-label { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        .slider-desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.2; margin-top: 1px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); height: 4px; margin-top: 3px; cursor: pointer; }
+
+        .slider-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+            margin-top: 1px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            height: 4px;
+            margin-top: 3px;
+            cursor: pointer;
+        }
 
         .play-btn {
             background: var(--accent);
@@ -139,7 +219,10 @@
             cursor: pointer;
             font-weight: 600;
         }
-        .play-btn:hover { opacity: 0.9; }
+
+        .play-btn:hover {
+            opacity: 0.9;
+        }
 
         .simulation-viewport {
             display: flex;
@@ -150,7 +233,7 @@
             border-radius: 12px;
             padding: 24px;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             height: 82vh;
         }
 
@@ -160,6 +243,7 @@
             align-items: center;
             flex-shrink: 0;
         }
+
         .view-mode-toggle {
             display: flex;
             background: rgba(255, 255, 255, 0.04);
@@ -168,6 +252,7 @@
             padding: 2px;
             gap: 2px;
         }
+
         .view-btn {
             background: transparent;
             border: none;
@@ -179,6 +264,7 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .view-btn.active {
             background: var(--accent);
             color: #fff;
@@ -194,7 +280,11 @@
             border: 1px solid var(--border-color);
             cursor: grab;
         }
-        .canvas-box:active { cursor: grabbing; }
+
+        .canvas-box:active {
+            cursor: grabbing;
+        }
+
         .canvas-box canvas {
             width: 100% !important;
             height: 100% !important;
@@ -207,6 +297,7 @@
             gap: 16px;
             height: 82vh;
         }
+
         .ai-panel {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -216,8 +307,9 @@
             flex-direction: column;
             flex: 1.1;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
+
         .ai-chat-box {
             flex: 1;
             background: rgba(3, 7, 18, 0.6);
@@ -230,8 +322,15 @@
             line-height: 1.4;
             margin-bottom: 6px;
         }
-        .ai-chat-box::-webkit-scrollbar { width: 5px; }
-        .ai-chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+        .ai-chat-box::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .ai-chat-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
 
         .ai-suggestions {
             display: flex;
@@ -239,7 +338,13 @@
             gap: 4px;
             flex-shrink: 0;
         }
-        .suggestion-title { font-size: 0.72rem; font-weight: 700; color: #fff; }
+
+        .suggestion-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
         .suggestion-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-color);
@@ -251,7 +356,10 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .suggestion-btn:hover { background: rgba(129, 140, 248, 0.15); }
+
+        .suggestion-btn:hover {
+            background: rgba(129, 140, 248, 0.15);
+        }
 
         .hr-mini-panel {
             background-color: var(--card-bg);
@@ -262,9 +370,10 @@
             flex-direction: column;
             gap: 8px;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             flex: 0.9;
         }
+
         .hr-canvas-container {
             width: 100%;
             flex: 1;
@@ -277,6 +386,7 @@
             align-items: center;
             justify-content: center;
         }
+
         .hr-canvas-container canvas {
             width: 100% !important;
             height: 100% !important;
@@ -284,6 +394,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <canvas id="spaceCanvas"></canvas>
@@ -366,7 +477,8 @@
 
         <div class="simulation-viewport">
             <div class="viewport-header">
-                <div style="font-size: 0.95rem; font-weight: 700; color: #fff;" id="viewportTitle">恆星 3D 結構與演化即時渲染視窗 (外部觀測視角)</div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: #fff;" id="viewportTitle">恆星 3D 結構與演化即時渲染視窗
+                    (外部觀測視角)</div>
                 <div class="view-mode-toggle">
                     <button class="view-btn active" id="btnSurface" onclick="switchViewMode('surface')">🌍 外部觀測</button>
                     <button class="view-btn" id="btnCore" onclick="switchViewMode('core')">🔬 內部剖面</button>
@@ -604,7 +716,7 @@
 
             if (mode === 'surface') {
                 surfaceStar.visible = true; atmosphere.visible = true; coreGroup.visible = false;
-                if(activeStarKey === 'vega') debrisDisk.visible = true;
+                if (activeStarKey === 'vega') debrisDisk.visible = true;
                 btnSurf.classList.add('active'); btnCore.classList.remove('active');
                 titleEl.textContent = "恆星 3D 結構與演化即時渲染視窗 (外部觀測視角)";
             } else {
@@ -664,7 +776,7 @@
             let norm = val / 100.0;
             let vStage = document.getElementById('v-stage');
             let aiChat = document.getElementById('aiChat');
-            
+
             let baseSize = 1.0;
             if (activeStarKey === 'proxima') baseSize = 0.55;
             else if (activeStarKey === 'sirius' || activeStarKey === 'vega') baseSize = 1.3;
@@ -672,8 +784,8 @@
             else if (activeStarKey === 'uyscuti') baseSize = 2.6;
 
             let massFactor = Math.pow(currentMass, 0.33) * baseSize;
-            let oblateness = 1.0 - (currentRot * 0.035); 
-            if(oblateness < 0.6) oblateness = 0.6;
+            let oblateness = 1.0 - (currentRot * 0.035);
+            if (oblateness < 0.6) oblateness = 0.6;
 
             surfaceMat.bumpScale = 0.012 * currentMag;
             debrisDisk.visible = (activeStarKey === 'vega' && currentViewMode === 'surface');
@@ -703,7 +815,7 @@
                 surfaceMat.color.setHex(0x1e293b);
                 surfaceMat.emissive.setHex(0x0284c7);
                 surfaceMat.emissiveIntensity = 0.1 + (val / 15) * 0.2;
-                
+
                 envelopeMesh.scale.set(cloudScale, cloudScale, cloudScale);
                 hShellMesh.visible = false; heCoreMesh.visible = false; coCoreMesh.visible = false;
                 aiChat.innerHTML = `<b>【${getStarName(activeStarKey)} - 星雲塌縮】</b>：巨大分子雲在自身重力下向中心凝聚。`;
@@ -726,8 +838,8 @@
                 vStage.textContent = "主序星平衡 (Main Sequence)";
                 let s = 1.0 * massFactor;
                 surfaceStar.scale.set(s, s * oblateness, s);
-                atmosphere.scale.set(s * (1.12 + currentWind*0.03), (s * oblateness) * (1.12 + currentWind*0.03), s * (1.12 + currentWind*0.03));
-                
+                atmosphere.scale.set(s * (1.12 + currentWind * 0.03), (s * oblateness) * (1.12 + currentWind * 0.03), s * (1.12 + currentWind * 0.03));
+
                 let starColor = 0xffd27d;
                 if (activeStarKey === 'proxima') starColor = 0xef4444;
                 else if (activeStarKey === 'sirius' || activeStarKey === 'vega') starColor = 0x60a5fa;
@@ -881,7 +993,7 @@
         function animate(time) {
             requestAnimationFrame(animate);
 
-            if (isPlaying && time - lastTime > 180) { 
+            if (isPlaying && time - lastTime > 180) {
                 let slider = document.getElementById('s-timeline');
                 let val = parseInt(slider.value) + 1;
                 if (val > 100) val = 0;
@@ -917,6 +1029,6 @@
             renderer.setSize(w, h);
         });
     </script>
-    
 </body>
+
 </html>
