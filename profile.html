@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人帳號與 AI 聊天紀錄 | 天文與恆星物理專題</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=person" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-container {
+            margin-top: 100px;
+            width: 100%;
+            max-width: 1100px;
+            padding: 0 24px 60px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .profile-header-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-info-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(129, 140, 248, 0.15);
+            border: 1px solid rgba(129, 140, 248, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .user-details h2 {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .user-details p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            background: rgba(248, 113, 113, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: #f87171;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(248, 113, 113, 0.28);
+        }
+
+        /* 聊天紀錄收合卡片樣式 */
+        .chat-history-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-history-header {
+            font-size: 1.1rem;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 標題右側的清除按鈕容器 */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-history-content {
+            margin-top: 16px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .chat-history-content.expanded {
+            display: flex;
+        }
+
+        .chat-item {
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        .chat-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .chat-q {
+            color: #c7d2fe;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .chat-a {
+            color: var(--text-main);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            margin-bottom: 4px;
+        }
+
+        /* 將「刪除此則」移至單則對話框底部靠右，與時間分開，絕不遮蓋 */
+        .chat-footer {
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+
+        .delete-single-btn {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: #f87171;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .delete-single-btn:hover {
+            background: rgba(248, 113, 113, 0.25);
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            border-color: #f87171;
+            color: #f87171;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="spaceCanvas"></canvas>
+
+    <nav>
+        <div class="nav-brand">🌌 <span>AstroResearch</span> 個人資料中心</div>
+        <ul class="nav-links">
+            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
+        </ul>
+    </nav>
+
+    <div class="profile-container">
+        <!-- 用戶基本資料卡片 -->
+        <div class="profile-header-card">
+            <div class="user-info-group">
+                <div class="user-avatar">
+                    <span class="material-symbols-outlined" style="font-size: 36px; color: var(--accent);">person</span>
+                </div>
+                <div class="user-details">
+                    <h2 id="userNameDisplay">載入中...</h2>
+                    <p id="userTypeDisplay">身分驗證中...</p>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">登出帳號</button>
+        </div>
+
+        <!-- AI 聊天紀錄卡片 (預設收合) -->
+        <div class="chat-history-card">
+            <div class="chat-history-header" onclick="toggleChatHistory()">
+                <span>💬 與 AI 助理的歷史對話紀錄 </span>
+                <span id="toggleIcon">▼</span>
+            </div>
+            <div class="chat-history-content" id="chatHistoryContent">
+                <div class="action-bar" style="margin-bottom: 8px;">
+                    <button class="clear-btn" onclick="clearAllChatHistory()">清除所有對話</button>
+                </div>
+                <div id="chatListContainer">
+                    <!-- 動態插入聊天紀錄 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/auth.js"></script>
+    <script>
+        // 背景星空
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+        const particles = [];
+        for (let i = 0; i < 60; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+        function animateSpace() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#ffffff';
+            particles.forEach(p => {
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                p.y -= p.speed;
+                if (p.y < 0) {
+                    p.y = height;
+                    p.x = Math.random() * width;
+                }
+            });
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+
+        // 收合與展開切換
+        function toggleChatHistory() {
+            const content = document.getElementById('chatHistoryContent');
+            const icon = document.getElementById('toggleIcon');
+            content.classList.toggle('expanded');
+            icon.textContent = content.classList.contains('expanded') ? '▲' : '▼';
+        }
+
+        // 載入用戶資料與 AI 聊天紀錄
+        function loadProfileData() {
+            const sessionStr = localStorage.getItem("astro_user_session");
+            if (sessionStr) {
+                try {
+                    const session = JSON.parse(sessionStr);
+                    document.getElementById("userNameDisplay").textContent = session.userId;
+                    document.getElementById("userTypeDisplay").textContent = `帳號類型：${session.accountType} | 登入時間：${session.loginTime}`;
+                } catch (e) {
+                    document.getElementById("userNameDisplay").textContent = "未知用戶";
+                }
+            }
+
+            renderChatHistory();
+        }
+
+        function renderChatHistory() {
+                const container = document.getElementById('chatListContainer');
+                const chatHistory = JSON.parse(localStorage.getItem("astro_ai_chat_history") || "[]");
+
+                if (chatHistory.length === 0) {
+                    container.innerHTML = '<div class="empty-chat">目前尚無與 AI 的對話紀錄（可在 lab.html 實驗室中與 AI 互動）</div>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                chatHistory.slice().reverse().forEach((item, index) => {
+                    const originalIndex = chatHistory.length - 1 - index;
+                    const div = document.createElement('div');
+                    div.className = 'chat-item';
+                    div.innerHTML = `
+                    <div class="chat-meta">
+                        <span>${escapeHtml(item.time)}</span>
+                    </div>
+                    <div class="chat-q">Q: ${escapeHtml(item.question)}</div>
+                    <div class="chat-a">A: ${escapeHtml(item.answer)}</div>
+                    <div class="chat-footer">
+                        <button class="delete-single-btn" onclick="deleteSingleChat(${originalIndex})">刪除此則</button>
+                    </div>
+                `;
+                    container.appendChild(div);
+                });
+            }
+        function deleteSingleChat(index) {
+            let chatHistory = JSON.parse(localStorage.getItem("astro_ai_chat_history") || "[]");
+            chatHistory.splice(index, 1);
+            localStorage.setItem("astro_ai_chat_history", JSON.stringify(chatHistory));
+            renderChatHistory();
+        }
+
+        function clearAllChatHistory() {
+            if (confirm("確定要清除所有與 AI 的聊天紀錄嗎？")) {
+                localStorage.removeItem("astro_ai_chat_history");
+                renderChatHistory();
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function logout() {
+            if (confirm("確定要登出系統嗎？")) {
+                localStorage.removeItem("astro_user_session");
+                window.location.href = "/login";
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", loadProfileData);
+    </script>
+</body>
+
+</html>

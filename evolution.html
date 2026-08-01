@@ -7,7 +7,7 @@
     <title>恆星演化史 | 天文與恆星物理專題</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="/static/theme.css">
     <style>
         /* 本頁獨有：body 用 flex 直向排版置中內容 */
         body {
@@ -297,12 +297,13 @@
     <nav>
         <div class="nav-brand">恆星演化史 模擬器</div>
         <ul class="nav-links">
-            <li><a href="index.html"><span class="material-symbols-outlined">school</span>教學平台</a></li>
-            <li><a href="lab.html"><span class="material-symbols-outlined">science</span>實驗室</a></li>
-            <li><a href="evolution.html" class="active"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
-            <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
-            <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
-            <li><a href="quiz.html"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
         </ul>
     </nav>
 
@@ -398,7 +399,7 @@
             <div class="panel hr-mini-panel">
                 <div class="panel-title" style="margin-bottom: 4px; font-size: 0.85rem;">
                     <span>赫羅圖 (H-R) 即時對應</span>
-                    <a href="hr.html" style="font-size: 0.75rem; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center;">放大 <span class="material-symbols-outlined icon-inline">arrow_right</span></a>
+                    <a href="hr" style="font-size: 0.75rem; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center;">放大 <span class="material-symbols-outlined icon-inline">arrow_right</span></a>
                 </div>
                 <div class="hr-canvas-container">
                     <canvas id="hrCanvas" width="240" height="160"></canvas>
@@ -924,6 +925,7 @@
             renderer.setSize(w, h);
         });
     </script>
+    <script src="/static/auth.js"></script>
 </body>
 
 </html>

@@ -29,7 +29,7 @@
    不會因為外部網路擋掉 Google Fonts 而讀不到字。 */
 @font-face {
     font-family: "Iceland";
-    src: url("fonts/Iceland-Regular.ttf") format("truetype");
+    src: url("/static/fonts/Iceland-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -37,7 +37,7 @@
 
 @font-face {
     font-family: "LXGW Marker Gothic";
-    src: url("fonts/LXGWMarkerGothic-Regular.ttf") format("truetype");
+    src: url("/static/fonts/LXGWMarkerGothic-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -45,7 +45,7 @@
 
 @font-face {
     font-family: "Material Symbols Outlined";
-    src: url("fonts/MaterialSymbolsOutlined.woff2") format("woff2");
+    src: url("/static/fonts/MaterialSymbolsOutlined.woff2") format("woff2");
     font-weight: 100 700;
     /* 可變字重軸，配合 .material-symbols-outlined 的 font-variation-settings 使用 */
     font-style: normal;
@@ -71,13 +71,19 @@
     --icon-color-onaccent: #ffffff;
 
     /* 字級 Token（維持跟原本各頁相近的視覺大小，只是集中管理） */
-    --fs-display: clamp(2.2rem, 4vw, 3.8rem);
-    --fs-h1: 2.2rem;
-    --fs-h2: 1.6rem;
-    --fs-h3: 1.1rem;
-    --fs-body: 0.95rem;
-    --fs-small: 0.82rem;
-    --fs-tiny: 0.72rem;
+    --fs-display: clamp(2.5rem, 4.5vw, 4.2rem);
+    --fs-h1: 2.5rem;
+    /* 調大主標題 */
+    --fs-h2: 1.85rem;
+    /* 調大次標題 */
+    --fs-h3: 1.3rem;
+    /* 調大區塊標題 */
+    --fs-body: 1.08rem;
+    /* 調大內文（避免原本 0.95rem 太小而黏在一起） */
+    --fs-small: 1.00rem;
+    /* 調大一般小字／時間標籤 */
+    --fs-tiny: 0.82rem;
+    /* 調大極小標註 */
 
     /* Icon 尺寸 Token：全站所有 Material Symbols 都從這裡取值 */
     --icon-nav: 20px;

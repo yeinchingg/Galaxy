@@ -7,7 +7,7 @@
     <title>探索太空之數位學習平台</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="/static/theme.css">
     <style>
         /* 本頁獨有：body 使用 position:relative 讓 #spaceCanvas 定位錨定 */
         body {
@@ -359,12 +359,13 @@
     <nav>
         <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
         <ul class="nav-links">
-            <li><a href="index.html" class="active"><span class="material-symbols-outlined">school</span>教學平台</a></li>
-            <li><a href="lab.html"><span class="material-symbols-outlined">science</span>實驗室</a></li>
-            <li><a href="evolution.html"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
-            <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
-            <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
-            <li><a href="quiz.html"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
         </ul>
     </nav>
 
@@ -396,7 +397,7 @@
         <p class="section-desc">四大獨立運作又完美串聯的物理與天文互動模組</p>
 
         <div class="modules-grid">
-            <a href="lab.html" class="module-card">
+            <a href="lab" class="module-card">
                 <div class="module-icon">🔭</div>
                 <div class="module-title">3D 天文實驗室</div>
                 <div class="module-desc">互動式調整引力常數、暗物質密度與光譜波段，即時觀測天體運行與重力扭曲，深入探索星系動力學。</div>
@@ -404,7 +405,7 @@
                         class="material-symbols-outlined icon-inline">arrow_right</span></div>
             </a>
 
-            <a href="evolution.html" class="module-card">
+            <a href="evolution" class="module-card">
                 <div class="module-icon">⏳</div>
                 <div class="module-title">恆星演化史模擬</div>
                 <div class="module-desc">搭載 8 顆知名真實恆星導覽與多維度物理參數，支援內部剖面、即時自轉與自動時間軸演化。</div>
@@ -412,7 +413,7 @@
                         class="material-symbols-outlined icon-inline">arrow_right</span></div>
             </a>
 
-            <a href="hr.html" class="module-card">
+            <a href="hr" class="module-card">
                 <div class="module-icon">📊</div>
                 <div class="module-title">赫羅圖觀測站</div>
                 <div class="module-desc">支援按住紅點拖曳互動、對數座標光度對應與光譜顏色刻度，完美同步連動 3D 立體恆星模型。</div>
@@ -420,7 +421,7 @@
                         class="material-symbols-outlined icon-inline">arrow_right</span></div>
             </a>
 
-            <a href="wiki.html" class="module-card">
+            <a href="wiki" class="module-card">
                 <div class="module-icon">📚</div>
                 <div class="module-title">宇宙百科全書</div>
                 <div class="module-desc">收錄所有核心天文物理名詞與進階學術知識，結合多媒體文獻與 NASA 權威資料庫快速檢索。</div>
@@ -435,9 +436,8 @@
         <p class="section-desc">點擊下方按鈕，隨機解鎖令人讚嘆的天文小知識！</p>
 
         <div class="fact-box">
-            <div class="fact-tag">INTERACTIVE TRIVIA</div>
             <div class="fact-text" id="factText">載入中...</div>
-            <button class="fact-btn" onclick="nextFact()">✨ 看下一個冷知識</button>
+            <button class="fact-btn" onclick="nextFact()">下一個冷知識</button>
         </div>
     </section>
 
@@ -543,7 +543,8 @@
         document.getElementById('factText').style.transition = 'opacity 0.2s ease';
         document.getElementById('factText').textContent = facts[0];
     </script>
-    <script src="fetch_news.js"></script>
+    <script src="/static/fetch_news.js"></script>
+    <script src="/static/auth.js"></script>
 </body>
 
 </html>

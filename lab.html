@@ -7,7 +7,7 @@
     <title>實驗室 | 天文與恆星物理專題</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="/static/theme.css">
     <style>
         /* 本頁獨有：body 用 flex 直向排版置中內容 */
         body {
@@ -301,12 +301,13 @@
             <span id="user-status-tag" class="badge">連線中...</span>
         </div>
         <ul class="nav-links">
-            <li><a href="index.html"><span class="material-symbols-outlined">school</span>教學平台</a></li>
-            <li><a href="lab.html" class="active"><span class="material-symbols-outlined">science</span>實驗室</a></li>
-            <li><a href="evolution.html"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
-            <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
-            <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
-            <li><a href="quiz.html"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
         </ul>
     </nav>
 
@@ -400,7 +401,8 @@
                 </div>
                 <div class="ai-input-box">
                     <button id="analyzeBtn" class="analyze-btn" title="針對目前滑桿數值即時分析"
-                        onclick="requestSliderNarration()"><span class="material-symbols-outlined icon-button">bar_chart</span></button>
+                        onclick="requestSliderNarration()"><span
+                            class="material-symbols-outlined icon-button">bar_chart</span></button>
                     <input type="text" id="aiUserInput" placeholder="輸入問題，按 Enter 送出...">
                     <button id="aiSendBtn" onclick="sendChatMessage()">送出</button>
                 </div>
@@ -409,6 +411,9 @@
     </div>
 
     <script>
+        // 定義 API 基礎路徑（解決連線失敗問題）
+        const API_BASE = "";
+
         const spaceCanvas = document.getElementById('spaceCanvas');
         const spaceCtx = spaceCanvas.getContext('2d');
 
@@ -585,7 +590,6 @@
         }
 
         function appendMessage(kind, text) {
-            // kind: 'ai' | 'user' | 'hint'
             const el = document.createElement('div');
             el.className = kind === 'user' ? 'msg msg-user' : (kind === 'hint' ? 'msg msg-hint' : 'msg msg-ai');
             el.textContent = text;
@@ -594,7 +598,6 @@
             return el;
         }
 
-        // 蒐集「目前這一頁所有滑桿」的數據，組成給後端 /api/3d/narrate 的描述文字
         function gatherSliderState() {
             const rows = [
                 ['恆星質量', document.getElementById('v-mass').textContent],
@@ -611,8 +614,6 @@
             return rows.map(([label, value]) => `${label}:${value}`).join(', ');
         }
 
-        // 只有使用者按下「📊 即時分析」按鈕才呼叫後端，
-        // 由 AI 依「目前頁面上的完整數據」給一句簡短說明。
         let narrateInFlight = false;
         async function requestSliderNarration() {
             if (narrateInFlight) return;
@@ -638,8 +639,6 @@
             }
         }
 
-        // Sliders：只掛 'input' 事件做即時 3D 視覺更新（拖曳中就要有反應）。
-        // 不會呼叫後端 AI 分析 API —— 那是「📊 即時分析」按鈕的工作（見下方）。
         document.getElementById('s-mass').addEventListener('input', (e) => {
             let val = parseFloat(e.target.value);
             document.getElementById('v-mass').textContent = val.toFixed(1) + ' M☉';
@@ -706,13 +705,8 @@
             material.bumpScale = 0.005 + (val / 800);
         });
 
-        // 注意：拖曳/放開滑桿「不再」自動呼叫後端分析 API，也不會打擾聊天室。
-        // 使用者需要目前參數的 AI 分析時，請按輸入框左側的「📊 即時分析」按鈕
-        // （已綁定 requestSliderNarration，見上方 HTML 的 analyzeBtn onclick）。
-
         // ============================================================
-        // AI 助理聊天室：串接 /api/chat/stream（有相關性分級 + 對話記憶
-        // + persona 模板 + 誠實 fallback + 串流清理，皆由後端 rag_engine 處理）
+        // AI 助理聊天室：串接 /api/chat/stream ＆ 儲存紀錄至 profile
         // ============================================================
 
         const SESSION_KEY = 'astro_lab_session_id';
@@ -730,6 +724,8 @@
 
             appendMessage('user', question);
             const answerEl = appendMessage('ai', '思考中...');
+
+            let answer = '';
 
             try {
                 const res = await fetch(`${API_BASE}/api/chat/stream`, {
@@ -749,7 +745,6 @@
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
-                let answer = '';
                 let firstChunk = true;
 
                 while (true) {
@@ -758,7 +753,7 @@
 
                     buffer += decoder.decode(value, { stream: true });
                     const parts = buffer.split('\n\n');
-                    buffer = parts.pop(); // 留下還沒收完整的最後一塊
+                    buffer = parts.pop();
 
                     for (const part of parts) {
                         if (!part.trim()) continue;
@@ -777,7 +772,7 @@
                             labSessionId = data.trim();
                             localStorage.setItem(SESSION_KEY, labSessionId);
                         } else if (eventType === 'done') {
-                            // 串流結束，不需額外處理
+                            // 串流結束
                         } else {
                             if (data === '[DONE]') continue;
                             if (firstChunk) {
@@ -793,6 +788,25 @@
 
                 if (!answer.trim()) {
                     answerEl.textContent = '(AI 助理沒有回應內容，請再試一次)';
+                } else {
+                    // 【關鍵修正】將對話紀錄寫入 localStorage，確保 profile.html 能夠呈現
+                    const chatHistory = JSON.parse(localStorage.getItem("astro_ai_chat_history") || "[]");
+                    const sessionStr = localStorage.getItem("astro_user_session");
+                    let currentUserName = "訪客";
+                    if (sessionStr) {
+                        try {
+                            const session = JSON.parse(sessionStr);
+                            currentUserName = session.userId || "一般學員";
+                        } catch (e) { }
+                    }
+
+                    chatHistory.push({
+                        user: currentUserName,
+                        question: question,
+                        answer: answer.trim(),
+                        time: new Date().toLocaleString()
+                    });
+                    localStorage.setItem("astro_ai_chat_history", JSON.stringify(chatHistory));
                 }
             } catch (err) {
                 console.warn('chat/stream 失敗', err);
@@ -840,6 +854,7 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
         });
     </script>
+    <script src="auth.js"></script>
 </body>
 
 </html>
