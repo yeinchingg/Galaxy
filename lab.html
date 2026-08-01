@@ -7,112 +7,13 @@
     <title>實驗室 | 天文與恆星物理專題</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Iansui&family=LXGW+WenKai+TC&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_drop_down,arrow_left,arrow_right,bar_chart,school,science,public,menu_book,search_insights" />
     <link rel="stylesheet" href="theme.css">
     <style>
-        :root {
-            --bg-color: #030712;
-            --card-bg: rgba(17, 24, 39, 0.7);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --accent: #818cf8;
-            --accent-glow: rgba(129, 140, 248, 0.25);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-
+        /* 本頁獨有：body 用 flex 直向排版置中內容 */
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-
-        #spaceCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        nav {
-            width: 100%;
-            height: 64px;
-            background: rgba(3, 7, 18, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-            position: fixed;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .nav-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #fff;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--accent);
-        }
-
-        /* 系統連線狀態徽章（沿用 app.js 的 fetchStatus） */
-        .badge {
-            font-size: 0.75rem;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            background-color: rgba(52, 211, 153, 0.15);
-            color: #6ee7b7;
-            border: 1px solid rgba(52, 211, 153, 0.3);
-        }
-
-        .badge.badge-offline {
-            background-color: rgba(248, 113, 113, 0.15);
-            color: #f87171;
-            border-color: rgba(248, 113, 113, 0.3);
         }
 
         .lab-container {
@@ -128,31 +29,6 @@
 
         .lab-container.ai-collapsed {
             grid-template-columns: 300px minmax(400px, 1fr) 50px;
-        }
-
-        .panel {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            height: 82vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .panel-title {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #fff;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 6px; 
-            flex-shrink: 0;
         }
 
         .attributes-panel {
@@ -171,15 +47,6 @@
         .attributes-panel::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.15);
             border-radius: 4px;
-        }
-
-        .section-subtitle {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #c7d2fe;
-            margin-bottom: 6px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 4px;
         }
 
         .slider-group {
@@ -430,7 +297,7 @@
 
     <nav>
         <div class="nav-left">
-            <div class="nav-title">實驗室 物理數據模擬</div>
+            <div class="nav-brand">實驗室 物理數據模擬</div>
             <span id="user-status-tag" class="badge">連線中...</span>
         </div>
         <ul class="nav-links">
@@ -439,6 +306,7 @@
             <li><a href="evolution.html"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
             <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
             <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="quiz.html"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
         </ul>
     </nav>
 
@@ -528,8 +396,7 @@
             </div>
             <div class="ai-body">
                 <div class="ai-chat-box" id="aiChat">
-                    <div class="msg msg-ai">您好！我是您的天文物理專題 AI 助理。左側調整參數滑桿只會即時更新 3D 模型，不會自動打擾聊天室；想請我依目前的參數給分析，請按輸入框左邊的 📊
-                        按鈕。也可以直接在下方輸入框跟我聊天、問問題。</div>
+                    <div class="msg msg-ai">您好！我是您的天文物理專題 AI 助理。當於左側調整參數滑桿時，可按下輸入框旁的分析按鈕進一步了解更多。也可以直接在下方輸入框中輸入問題！</div>
                 </div>
                 <div class="ai-input-box">
                     <button id="analyzeBtn" class="analyze-btn" title="針對目前滑桿數值即時分析"

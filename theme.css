@@ -91,6 +91,163 @@
 }
 
 
+/* ---------------- 全站共用 Reset / 基礎版面 ----------------
+   原本 index / lab / evolution / wiki / hr / quiz 六個頁面各自都寫了一份
+   幾乎一模一樣的 reset、body 基礎樣式與 #spaceCanvas，現在統一集中在這裡，
+   各頁 <style> 只保留「該頁獨有」的版面覆寫（例如 body 要不要用 flex 排版）。 */
+html {
+    scroll-behavior: smooth;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* 背景動態星空 canvas（各頁如有 #spaceCanvas 元素即自動套用） */
+#spaceCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+
+/* ---------------- 頂部導覽列（全站統一元件） ----------------
+   六個頁面（教學平台 / 實驗室 / 恆星演化史 / 宇宙百科 / 赫羅圖觀測站 / 星海問答）
+   共用同一份導覽列樣式與大小規格，只有品牌／標題文字內容不同。 */
+nav {
+    width: 100%;
+    height: 64px;
+    background: rgba(3, 7, 18, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* nav 左側容器（品牌／標題 + 額外徽章等，例如實驗室頁的連線狀態） */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* nav 品牌／頁面標題文字（原本各頁分別叫 .nav-logo 或 .nav-title，統一成 .nav-brand） */
+.nav-brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-brand span {
+    color: var(--accent);
+}
+
+.nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--accent);
+}
+
+/* 導覽列在窄螢幕（平板／手機）下隱藏文字連結，避免版面擠壓 */
+@media (max-width: 900px) {
+    .nav-links {
+        display: none;
+    }
+}
+
+/* 系統連線狀態徽章（實驗室頁 fetchStatus 使用，集中管理方便其他頁沿用） */
+.badge {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    background-color: rgba(52, 211, 153, 0.15);
+    color: #6ee7b7;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.badge.badge-offline {
+    background-color: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.3);
+}
+
+
+/* ---------------- 面板共用元件（實驗室 / 恆星演化史 / 宇宙百科 / 赫羅圖觀測站） ----------------
+   四個資料頁面的左右控制面板外觀原本各自複製一份，統一成共用元件。 */
+.panel {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    height: 82vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+    flex-shrink: 0;
+}
+
+.section-subtitle {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 4px;
+}
+
+
 /* ---------------- 基礎字體套用 ---------------- */
 /* 中文預設：LXGW Marker Gothic（找不到字再退回 Noto Sans TC） */
 html body,
@@ -114,7 +271,7 @@ html body * {
 /* 純英文 / 品牌字樣一律改用 Iceland（比 class 選擇器優先權更高，會蓋掉上面 * 的規則） */
 html body .en,
 html body .iceland-regular,
-html body .nav-logo span,
+html body .nav-brand span,
 html body .hero-badge,
 html body .fact-tag,
 html body .hr-subtitle-en,

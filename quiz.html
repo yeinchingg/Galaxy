@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星海問答 · 天文物理挑戰</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        /* 本頁獨有變數：測驗答錯／危險提示用色 */
+        :root {
+            --danger: #f87171;
+            --danger-glow: rgba(248, 113, 113, 0.25);
+        }
+
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 120px 6vw 80px;
+            position: relative;
+        }
+
+        /* ---------- SCREENS ---------- */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn .4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* -- select screen -- */
+        #select h1 {
+            font-size: var(--fs-h1);
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #select p.lead {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 44px;
+            font-size: var(--fs-body);
+        }
+
+        .levels {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        @media (max-width:820px) {
+            .levels {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .level-card {
+            position: relative;
+            cursor: pointer;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.4rem 2rem;
+            color: var(--text-main);
+            backdrop-filter: blur(12px);
+            transition: transform .3s cubic-bezier(.16, 1, .3, 1), border-color .3s ease, box-shadow .3s ease;
+        }
+
+        .level-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(129, 140, 248, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px var(--accent-glow);
+        }
+
+        .level-card .tag {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--fs-tiny);
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            letter-spacing: .5px;
+            background: rgba(129, 140, 248, 0.15);
+            color: #c7d2fe;
+        }
+
+        .level-card .icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .level-card .icon-wrap .material-symbols-outlined {
+            font-size: var(--icon-module);
+        }
+
+        .level-card h3 {
+            font-size: var(--fs-h3);
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .level-card p {
+            color: var(--text-muted);
+            font-size: var(--fs-small);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            min-height: 76px;
+        }
+
+        .start-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(129, 140, 248, 0.15);
+            border: 1px solid rgba(129, 140, 248, 0.4);
+            color: #c7d2fe;
+            padding: 11px 22px;
+            border-radius: 20px;
+            font-size: 1.02rem;
+            font-weight: 600;
+            transition: all .2s ease;
+        }
+
+        .start-hint .material-symbols-outlined {
+            font-size: var(--icon-button);
+            color: #c7d2fe;
+        }
+
+        .level-card:hover .start-hint {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .level-card:hover .start-hint .material-symbols-outlined {
+            color: #fff;
+        }
+
+        /* -- quiz screen -- */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 26px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .quiz-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            transition: all .2s ease;
+        }
+
+        .back-btn .material-symbols-outlined {
+            font-size: var(--icon-button);
+            color: var(--text-muted);
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .back-btn:hover .material-symbols-outlined {
+            color: var(--accent);
+        }
+
+        .quiz-level-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--fs-small);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .quiz-stats {
+            display: flex;
+            gap: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .quiz-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+
+        .quiz-stats .stat .material-symbols-outlined {
+            font-size: var(--icon-inline);
+        }
+
+        .quiz-stats .score-stat {
+            color: var(--accent);
+        }
+
+        .quiz-stats .score-stat .material-symbols-outlined {
+            color: var(--accent);
+        }
+
+        .quiz-stats .timer-stat.low {
+            color: var(--danger);
+            animation: pulse .6s infinite;
+        }
+
+        .quiz-stats .timer-stat.low .material-symbols-outlined {
+            color: var(--danger);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .35;
+            }
+        }
+
+        /* constellation progress */
+        .constellation {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 36px;
+            padding: 10px 6px;
+        }
+
+        .constellation::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50%;
+            height: 1px;
+            background: var(--border-color);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .const-star {
+            position: relative;
+            z-index: 1;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--border-color);
+            transition: all .3s ease;
+            flex-shrink: 0;
+        }
+
+        .const-star.correct {
+            background: var(--accent);
+            box-shadow: 0 0 8px 2px var(--accent-glow);
+        }
+
+        .const-star.wrong {
+            background: var(--danger);
+            box-shadow: 0 0 8px 2px var(--danger-glow);
+        }
+
+        .const-star.current {
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            box-shadow: 0 0 10px 3px var(--accent-glow);
+            animation: starPulse 1.1s infinite;
+        }
+
+        @keyframes starPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.35);
+            }
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 36px 32px;
+            backdrop-filter: blur(12px);
+        }
+
+        .q-index {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            font-size: var(--fs-small);
+            margin-bottom: 14px;
+        }
+
+        .q-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.65;
+            margin-bottom: 30px;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width:640px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            padding: 15px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: rgba(129, 140, 248, 0.08);
+        }
+
+        .option-btn .opt-letter {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .option-btn.correct {
+            border-color: var(--accent);
+            background: rgba(129, 140, 248, 0.14);
+        }
+
+        .option-btn.correct .opt-letter {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .option-btn.wrong {
+            border-color: var(--danger);
+            background: rgba(248, 113, 113, 0.12);
+            color: var(--danger);
+        }
+
+        .option-btn.wrong .opt-letter {
+            background: var(--danger);
+            color: #fff;
+            border-color: var(--danger);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .timer-bar-wrap {
+            height: 4px;
+            width: 100%;
+            background: var(--border-color);
+            border-radius: 2px;
+            margin-top: 28px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 100%;
+        }
+
+        /* -- results screen -- */
+        #results {
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .result-sub {
+            color: var(--text-muted);
+            margin-bottom: 34px;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 38px;
+        }
+
+        @media (max-width:640px) {
+            .result-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .rstat {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px 10px;
+        }
+
+        .rstat .num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .rstat .label {
+            font-size: var(--fs-tiny);
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .review-list {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 38px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .review-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .review-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .review-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 0.87rem;
+        }
+
+        .review-item .material-symbols-outlined {
+            flex-shrink: 0;
+            margin-top: 1px;
+            font-size: 20px;
+        }
+
+        .review-item.correct .material-symbols-outlined {
+            color: var(--accent);
+        }
+
+        .review-item.wrong .material-symbols-outlined {
+            color: var(--danger);
+        }
+
+        .review-item .rq {
+            color: var(--text-main);
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+
+        .review-item .ra {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .review-item .ra b {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .review-item .ra .miss {
+            color: var(--danger);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            background: transparent;
+            transition: transform .2s, box-shadow .2s, all .2s ease;
+        }
+
+        .btn .material-symbols-outlined {
+            font-size: var(--icon-inline);
+        }
+
+        .btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .btn.primary .material-symbols-outlined {
+            color: #fff;
+        }
+
+        .btn.primary:hover {
+            box-shadow: 0 0 25px rgba(129, 140, 248, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-brand">星海問答</div>
+        <ul class="nav-links">
+            <li><a href="index.html"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="lab.html"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="evolution.html"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="quiz.html" class="active"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <!-- ============ SELECT SCREEN ============ -->
+        <section id="select" class="screen active">
+            <h1>星海問答 · 天文物理挑戰</h1>
+            <p class="lead">選擇適合你的關卡，每次挑戰將從題庫中隨機抽出 10 題，答對越多、越快，星圖就點亮得越燦爛。</p>
+            <div class="levels">
+
+                <div class="level-card" onclick="startLevel('beginner')">
+                    <div class="tag">入門 · LEVEL 1</div>
+                    <div class="icon-wrap"><span class="material-symbols-outlined">school</span></div>
+                    <h3>國中小基礎科普</h3>
+                    <p>從黑洞、星系到太陽系的基本知識，用最生活化的方式認識宇宙，適合初次接觸天文的你。</p>
+                    <span class="start-hint">開始挑戰</span>
+                </div>
+
+                <div class="level-card" onclick="startLevel('intermediate')">
+                    <div class="tag">進階 · LEVEL 2</div>
+                    <div class="icon-wrap"><span class="material-symbols-outlined">science</span></div>
+                    <h3>高中定律與基礎物理</h3>
+                    <p>涵蓋牛頓力學、克卜勒定律、相對論基礎與恆星演化，挑戰高中天文物理程度的核心公式與觀念。</p>
+                    <span class="start-hint">開始挑戰 </span>
+                </div>
+
+                <div class="level-card" onclick="startLevel('advanced')">
+                    <div class="tag">專家 · LEVEL 3</div>
+                    <div class="icon-wrap"><span class="material-symbols-outlined">public</span></div>
+                    <h3>專業級觀測與進階理論</h3>
+                    <p>涉及最新觀測數據、宇宙學參數與前沿理論，包含 LIGO、EHT 與暗物質等主題，獻給天文愛好者的終極挑戰。</p>
+                    <span class="start-hint">開始挑戰</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ============ QUIZ SCREEN ============ -->
+        <section id="quiz" class="screen">
+            <div class="quiz-header">
+                <div class="quiz-header-left">
+                    <button class="back-btn" onclick="backToSelect()"><span
+                            class="material-symbols-outlined">arrow_back</span></button>
+                    <span class="quiz-level-badge" id="quizLevelBadge">Level 1</span>
+                </div>
+                <div class="quiz-stats">
+                    <span class="stat score-stat"><span class="material-symbols-outlined">bolt</span><span
+                            id="statScore">0</span> 分</span>
+                    <span class="stat" id="statCounter"><span class="material-symbols-outlined">tour</span>1 / 10</span>
+                    <span class="stat timer-stat" id="timerStat"><span
+                            class="material-symbols-outlined">timer</span><span id="statTimer">20</span>s</span>
+                </div>
+            </div>
+
+            <div class="constellation" id="constellation"></div>
+
+            <div class="question-card">
+                <div class="q-index" id="qIndexLabel">第 1 題</div>
+                <div class="q-text" id="qText">題目載入中...</div>
+                <div class="options" id="optionsWrap"></div>
+                <div class="timer-bar-wrap">
+                    <div class="timer-bar" id="timerBar"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ RESULTS SCREEN ============ -->
+        <section id="results" class="screen">
+            <div class="result-icon material-symbols-outlined">emoji_events</div>
+            <div class="result-title" id="resultTitle">挑戰完成！</div>
+            <p class="result-sub" id="resultSub">你在星海中點亮了屬於自己的星圖</p>
+
+            <div class="result-stats">
+                <div class="rstat">
+                    <div class="num" id="rScore">0</div>
+                    <div class="label">總分</div>
+                </div>
+                <div class="rstat">
+                    <div class="num" id="rCorrect">0/10</div>
+                    <div class="label">答對題數</div>
+                </div>
+                <div class="rstat">
+                    <div class="num" id="rAccuracy">0%</div>
+                    <div class="label">正確率</div>
+                </div>
+                <div class="rstat">
+                    <div class="num" id="rTime">0s</div>
+                    <div class="label">總花費時間</div>
+                </div>
+            </div>
+
+            <div class="review-list" id="reviewList"></div>
+
+            <div class="result-actions">
+                <button class="btn primary" onclick="restartLevel()"><span
+                        class="material-symbols-outlined">replay</span>再挑戰一次</button>
+                <button class="btn" onclick="backToSelect()"><span
+                        class="material-symbols-outlined">tour</span>切換關卡</button>
+                <a class="btn" href="index.html"><span class="material-symbols-outlined">home</span>返回首頁</a>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /* ================= 題庫資料（每題含正確答案與 3 個固定錯誤選項） ================= */
+        const QUESTIONS = {
+            beginner: [
+                ["黑洞是什麼？", "高密度、重力強到連光也無法逃脫的天體", ["宇宙中完全沒有物質的巨大空洞", "專門主動吸入遠方恆星的宇宙吸塵器", "通往另一個平行宇宙的傳送門"]],
+                ["宇宙四大基本作用力有哪些？", "重力、電磁力、強核力、弱核力", ["離心力、摩擦力、壓力、重力", "重力、磁力、浮力、電力", "推力、拉力、扭力、重力"]],
+                ["太陽最主要的成分是什麼？", "氫", ["氦", "氧", "鐵"]],
+                ["我們所在的星系名稱是什麼？", "銀河系", ["仙女座星系", "本星系群", "太陽系"]],
+                ["太陽系目前有幾大行星？", "八大行星", ["九大行星", "十二大行星", "七大行星"]],
+                ["黑洞所有物質集中的邊界稱為什麼？", "事件視界", ["吸積盤", "史瓦西半徑", "奇異點"]],
+                ["讓人類站在地面、地球繞日公轉的是哪一種力？", "重力", ["電磁力", "強核力", "離心力"]],
+                ["恆星的顏色主要由什麼決定？", "表面溫度", ["與地球的距離", "恆星的壽命", "恆星的化學成分"]],
+                ["「光年」是什麼單位？", "距離單位", ["時間單位", "亮度單位", "速度單位"]],
+                ["大質量恆星死後的巨大爆炸稱為什麼？", "超新星", ["氦閃", "新星", "原恆星"]],
+                ["大霹靂留下的「餘溫」現今稱為什麼？", "宇宙微波背景", ["宇宙射線", "暗能量", "星際消光"]],
+                ["黑洞會像吸塵器一樣主動吸光遠處所有東西嗎？", "不會", ["會，所有物質都會被吸入", "只會吸入發光的物體", "只有在晚上才會吸入物質"]],
+                ["除太陽外，離我們最近的恆星是哪一顆？", "比鄰星", ["天狼星", "北極星", "織女星"]],
+                ["離太陽最近的行星是哪一顆？", "水星", ["金星", "火星", "月球"]],
+                ["「星雲」是什麼？", "星際間由氣體與塵埃組成的雲氣", ["遙遠星系的舊稱", "即將爆炸的行星", "宇宙中的水蒸氣"]],
+                ["銀河系的外觀形狀是什麼？", "螺旋狀", ["橢圓狀", "不規則狀", "球狀"]],
+                ["宇宙中表面溫度最高的恆星呈現什麼顏色？", "藍色", ["紅色", "黃色", "綠色"]],
+                ["宇宙中表面溫度最低的恆星呈現什麼顏色？", "紅色", ["藍色", "白色", "紫色"]],
+                ["太陽目前處於恆星演化的哪一個階段？", "主序星", ["紅巨星", "白矮星", "原恆星"]],
+                ["宇宙中不發光、無法觀測但有質量的物質稱為什麼？", "暗物質", ["暗能量", "反物質", "宇宙塵埃"]]
+            ],
+            intermediate: [
+                ["牛頓萬有引力定律公式為何？", "F = G·Mm / r²", ["E = mc²", "v = H×d", "F = ma"]],
+                ["克卜勒第一定律的內容為何？", "行星軌道為橢圓，太陽位於其中一個焦點", ["行星軌道為正圓，太陽位於圓心", "所有行星的軌道皆位於同一平面", "行星速度在軌道各處皆相等"]],
+                ["克卜勒第三定律的行星週期(P)與距離(a)關係為何？", "P² ∝ a³", ["P ∝ a", "P² ∝ a²", "P³ ∝ a²"]],
+                ["愛因斯坦著名的質能互換公式為何？", "E = mc²", ["F = G·Mm / r²", "P² = a³", "λ = v / f"]],
+                ["恆星內部重力與向外壓力達成平衡的狀態稱為什麼？", "流體靜力平衡", ["熱力學平衡", "輻射平衡", "簡併平衡"]],
+                ["白矮星能支撐的最大質量上限稱為什麼？", "錢德拉塞卡極限", ["史瓦西半徑", "歐特雲界線", "普朗克長度"]],
+                ["太陽產生能量最主要的核融合反應方式為何？", "質子-質子鏈反應", ["碳氮氧循環", "核分裂反應", "三氦反應"]],
+                ["遠方星系光譜線向長波長端移動的現象稱為什麼？", "紅移", ["藍移", "塞曼效應", "康普頓散射"]],
+                ["哈伯定律描述退行速度與距離的關係為何？", "兩者成正比（v = H×d）", ["與距離平方成反比", "兩者成反比", "速度隨距離增加而遞減"]],
+                ["目前科學界估計的宇宙年齡約為多久？", "138 億年", ["46 億年", "100 萬年", "1 兆年"]],
+                ["黑洞邊界臨界半徑（史瓦西半徑）的公式為何？", "r_s = 2GM / c²", ["r = √(GM/g)", "v = √(2GM/r)", "F = mv² / r"]],
+                ["恆星族群 I 與族群 II 的主要區別為何？", "族群 I 較年輕、重元素多；族群 II 較老、重元素少", ["族群 I 是紅巨星，族群 II 是白矮星", "族群 I 位於暈部，族群 II 位於旋臂", "只有族群 I 會發生超新星爆炸"]],
+                ["快速自轉且規律發出電波脈衝的中子星稱為什麼？", "脈衝星", ["類星體", "白洞", "磁星"]],
+                ["質量使背後天體光線路徑彎曲、放大影像的效應為何？", "重力透鏡", ["視差效應", "光電效應", "折射效應"]],
+                ["超新星爆炸後的殘骸「不可能」形成哪種天體？", "白矮星", ["中子星", "黑洞", "脈衝星"]],
+                ["恆星周圍允許液態水存在的區域稱為什麼？", "適居帶", ["柯伊伯帶", "雪線", "歐特雲"]],
+                ["廣義相對論認為引力的本質是什麼？", "時空的彎曲", ["粒子間的電磁吸引", "隱形的能量射線", "大氣壓力所致"]],
+                ["等效原理的基本內容是什麼？", "重力與加速度產生的效應在局部不可分辨", ["能量與質量可以互相轉換", "物理定律在所有參考系皆相同", "作用力等於反作用力"]],
+                ["宇宙起源於極高溫、高密度的擴張狀態理論稱為什麼？", "大霹靂", ["穩態理論", "星雲假說", "暴脹理論"]],
+                ["三氦反應（Triple-alpha process）最終融合出的元素是什麼？", "碳", ["鐵", "氖", "鎂"]]
+            ],
+            advanced: [
+                ["普朗克衛星測得目前的哈伯常數 H₀ 約為多少？", "約 67.3–67.7 km/s/Mpc", ["50 km/s/Mpc", "73 km/s/Mpc", "100 km/s/Mpc"]],
+                ["標準宇宙模型中，暗能量佔宇宙總質能比例約多少？", "約 68%–69%", ["5%", "27%", "95%"]],
+                ["LIGO 於 2015 年首次偵測到的重力波源自什麼事件？", "雙黑洞併合", ["雙中子星併合", "超新星核心崩塌", "大霹靂原初擾動"]],
+                ["愛因斯坦場方程中代表真空能量、推動宇宙加速膨脹的項為何？", "宇宙學常數 Λ", ["萬有引力常數 G", "普朗克常數 h", "哈伯參數 H"]],
+                ["螺旋星系光度與其旋轉速度相關性的定標關係為何？", "塔利-費雪關係", ["週期-光度關係", "費塔關係", "赫羅分布關係"]],
+                ["WIMPs 是指哪種神祕物質可能的候選粒子？", "暗物質", ["暗能量", "微中子", "夸克"]],
+                ["宇宙從電漿態轉為中性原子，使光子得以自由傳播的時刻為何？", "退耦（Decoupling）", ["再電離期", "暴脹期", "普朗克時期"]],
+                ["大霹靂後約 10⁻³⁵ 秒發生的超光速空間膨脹過程為何？", "暴脹（Inflation）", ["加速膨脹", "聲學振盪", "大擠壓"]],
+                ["子彈星系團（Bullet Cluster）觀測結果提供了哪種物質存在的證據？", "暗物質", ["暗能量", "原初黑洞", "重子聲學振盪"]],
+                ["銀河系中心黑洞（人馬座 A*）的質量約為幾倍太陽質量？", "約 400 萬–460 萬倍", ["100 萬倍", "65 億倍", "21 倍"]],
+                ["觀測太陽光譜線分裂以測量強磁場的物理效應為何？", "塞曼效應", ["多普勒效應", "史塔克效應", "拉曼效應"]],
+                ["針對比 M 型紅矮星更冷的棕矮星，新增的光譜型有哪些？", "L, T, Y", ["O, B, A", "F, G, K", "X, Y, Z"]],
+                ["近黑洞處因巨大潮汐力使物體被垂直拉長、水平擠壓的現象為何？", "義大利麵化", ["重力紅移", "時空凝結", "奇異點化"]],
+                ["早期觀測太陽微中子數量僅為理論值 1/3 的謎團稱為什麼？", "太陽微中子問題", ["奧伯斯佯謬", "黑暗時代謎題", "視界問題"]],
+                ["赫羅圖（H-R Diagram）的縱軸與橫軸物理意義分別為何？", "縱軸：光度；橫軸：表面溫度", ["縱軸：質量；橫軸：表面溫度", "縱軸：光度；橫軸：半徑", "縱軸：年齡；橫軸：質量"]],
+                ["估計銀河系中具有通訊能力文明數量的公式稱為什麼？", "德瑞克方程式", ["哈伯定律", "愛因斯坦方程式", "舒瓦茲半徑公式"]],
+                ["主張物理定律必須能產生觀察者，否則我們不會在此測量的原則為何？", "人擇原理", ["哥白尼原理", "等效原理", "排他原理"]],
+                ["宇宙創生後至 10⁻⁴³ 秒，現有物理理論失效的極早期時期為何？", "普朗克時期", ["大一統時期", "復合期", "暴脹時期"]],
+                ["恆星內部製造比氫、氦更重之重元素的過程統稱為什麼？", "核合成（Nucleosynthesis）", ["核分裂", "重力塌縮", "離子化"]],
+                ["事件視界望遠鏡（EHT）拍攝到的黑洞影像中，中央的黑暗區域本質為何？", "黑洞陰影", ["奇異點", "黑洞內部", "宇宙空洞"]]
+            ]
+        };
+
+        const LEVEL_CONFIG = {
+            beginner: { label: "Level 1 · 國中小基礎科普", time: 20 },
+            intermediate: { label: "Level 2 · 高中定律與基礎物理", time: 25 },
+            advanced: { label: "Level 3 · 專業級觀測與進階理論", time: 30 }
+        };
+        const LETTERS = ["A", "B", "C", "D"];
+        const QUESTIONS_PER_ROUND = 10;
+        const PTS_PER_CORRECT = 100 / QUESTIONS_PER_ROUND; // 10 題 x 10 分 = 滿分 100
+
+        /* ================= 狀態 ================= */
+        let state = {};
+
+        function shuffle(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function buildQuizSet(level) {
+            const pool = QUESTIONS[level];
+            const picked = shuffle(pool).slice(0, QUESTIONS_PER_ROUND);
+            return picked.map(([q, correct, wrongs]) => ({
+                question: q,
+                correct,
+                options: shuffle([correct, ...wrongs])
+            }));
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
+        }
+
+        /* ================= 開始關卡 ================= */
+        function startLevel(level) {
+            clearInterval(state.timerInterval);
+            state = {
+                level,
+                set: buildQuizSet(level),
+                index: 0,
+                score: 0,
+                correctCount: 0,
+                answers: [],
+                startedAt: Date.now(),
+                timerInterval: null
+            };
+            document.getElementById("quizLevelBadge").textContent = LEVEL_CONFIG[level].label;
+            buildConstellation();
+            showScreen("quiz");
+            renderQuestion();
+        }
+
+        function buildConstellation() {
+            const wrap = document.getElementById("constellation");
+            wrap.innerHTML = "";
+            state.set.forEach((_, i) => {
+                const dot = document.createElement("div");
+                dot.className = "const-star";
+                dot.id = "star-" + i;
+                wrap.appendChild(dot);
+            });
+        }
+
+        function updateConstellation() {
+            state.set.forEach((_, i) => {
+                const dot = document.getElementById("star-" + i);
+                dot.classList.remove("current", "correct", "wrong");
+                if (i < state.answers.length) {
+                    dot.classList.add(state.answers[i].isCorrect ? "correct" : "wrong");
+                } else if (i === state.index) {
+                    dot.classList.add("current");
+                }
+            });
+        }
+
+        /* ================= 出題 ================= */
+        function renderQuestion() {
+            const total = state.set.length;
+            const item = state.set[state.index];
+
+            document.getElementById("statScore").textContent = Math.round(state.score);
+            document.getElementById("statCounter").innerHTML =
+                '<span class="material-symbols-outlined">tour</span>' + (state.index + 1) + " / " + total;
+            document.getElementById("qIndexLabel").textContent = "第 " + (state.index + 1) + " 題";
+            document.getElementById("qText").textContent = item.question;
+
+            updateConstellation();
+
+            const optionsWrap = document.getElementById("optionsWrap");
+            optionsWrap.innerHTML = "";
+            item.options.forEach((opt, i) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerHTML = '<span class="opt-letter">' + LETTERS[i] + '</span><span>' + opt + '</span>';
+                btn.onclick = () => selectOption(i);
+                optionsWrap.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(state.timerInterval);
+            const total = LEVEL_CONFIG[state.level].time;
+            let remaining = total;
+            const timerStatEl = document.getElementById("timerStat");
+            const timerTextEl = document.getElementById("statTimer");
+            const timerBar = document.getElementById("timerBar");
+
+            timerTextEl.textContent = remaining;
+            timerBar.style.transition = "none";
+            timerBar.style.width = "100%";
+            timerStatEl.classList.remove("low");
+            void timerBar.offsetWidth;
+            timerBar.style.transition = "width 1s linear";
+
+            state.timerInterval = setInterval(() => {
+                remaining -= 1;
+                timerTextEl.textContent = Math.max(remaining, 0);
+                timerBar.style.width = Math.max((remaining / total) * 100, 0) + "%";
+                if (remaining <= Math.ceil(total * 0.25)) timerStatEl.classList.add("low");
+                if (remaining <= 0) {
+                    clearInterval(state.timerInterval);
+                    selectOption(null);
+                }
+            }, 1000);
+        }
+
+        /* ================= 作答 ================= */
+        function selectOption(chosenIndex) {
+            clearInterval(state.timerInterval);
+            const item = state.set[state.index];
+            const correctIndex = item.options.indexOf(item.correct);
+            const isCorrect = chosenIndex === correctIndex;
+
+            document.querySelectorAll(".option-btn").forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === correctIndex) btn.classList.add("correct");
+                if (chosenIndex !== null && i === chosenIndex && !isCorrect) btn.classList.add("wrong");
+            });
+
+            if (isCorrect) {
+                state.score += PTS_PER_CORRECT;
+                state.correctCount += 1;
+            }
+            state.answers.push({
+                question: item.question,
+                correct: item.correct,
+                chosen: chosenIndex === null ? null : item.options[chosenIndex],
+                isCorrect
+            });
+
+            document.getElementById("statScore").textContent = Math.round(state.score);
+            updateConstellation();
+
+            setTimeout(nextQuestion, 1100);
+        }
+
+        function nextQuestion() {
+            state.index += 1;
+            if (state.index >= state.set.length) {
+                finishQuiz();
+            } else {
+                renderQuestion();
+            }
+        }
+
+        /* ================= 結算 ================= */
+        function finishQuiz() {
+            const total = state.set.length;
+            const accuracy = Math.round((state.correctCount / total) * 100);
+            const elapsedSec = Math.round((Date.now() - state.startedAt) / 1000);
+
+            let title = "挑戰完成！";
+            let sub = "繼續探索星海，成為真正的宇宙觀測者。";
+            if (accuracy === 100) { title = "完美通關！"; sub = "整張星圖已被你點亮，太厲害了！"; }
+            else if (accuracy >= 80) { title = "表現優異！"; sub = "你對這個關卡的知識掌握得相當扎實。"; }
+            else if (accuracy < 50) { title = "挑戰完成"; sub = "再複習一下，下次一定能點亮更多星星！"; }
+
+            document.getElementById("resultTitle").textContent = title;
+            document.getElementById("resultSub").textContent = sub;
+            document.getElementById("rScore").textContent = Math.round(state.score);
+            document.getElementById("rCorrect").textContent = state.correctCount + "/" + total;
+            document.getElementById("rAccuracy").textContent = accuracy + "%";
+            document.getElementById("rTime").textContent = elapsedSec + "s";
+
+            const reviewList = document.getElementById("reviewList");
+            reviewList.innerHTML = "";
+            state.answers.forEach((a, i) => {
+                const row = document.createElement("div");
+                row.className = "review-item " + (a.isCorrect ? "correct" : "wrong");
+                const icon = a.isCorrect ? "check_circle" : "cancel";
+                const missLine = a.isCorrect
+                    ? ""
+                    : '<div class="ra">你的答案：<span class="miss">' + (a.chosen ?? "（未作答）") + "</span></div>";
+                row.innerHTML =
+                    '<span class="material-symbols-outlined">' + icon + '</span>' +
+                    '<div>' +
+                    '<div class="rq">' + (i + 1) + ". " + a.question + '</div>' +
+                    '<div class="ra">正確答案：<b>' + a.correct + '</b></div>' +
+                    missLine +
+                    '</div>';
+                reviewList.appendChild(row);
+            });
+
+            showScreen("results");
+        }
+
+        function restartLevel() {
+            startLevel(state.level);
+        }
+
+        function backToSelect() {
+            clearInterval(state.timerInterval);
+            showScreen("select");
+        }
+    </script>
+</body>
+
+</html>
