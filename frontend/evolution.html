@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恆星演化史 | 天文與恆星物理專題</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/static/theme.css">
+    <style>
+        /* 本頁獨有：body 用 flex 直向排版置中內容 */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 與 hr.html 完美一致的三欄比例：左側控制台 (300px) | 中央 3D 視窗 (1fr) | 右側精簡欄位 (280px) */
+        .lab-container {
+            margin-top: 84px;
+            width: 100%;
+            max-width: 1560px;
+            display: grid;
+            grid-template-columns: 300px 1fr 280px;
+            gap: 20px;
+            padding: 0 24px 40px 24px;
+        }
+
+        .attributes-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .attributes-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .attributes-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--accent);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+            margin-top: 1px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            height: 4px;
+            margin-top: 3px;
+            cursor: pointer;
+        }
+
+        .play-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .play-btn:hover {
+            opacity: 0.9;
+        }
+
+        .simulation-viewport {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            height: 82vh;
+        }
+
+        .viewport-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .view-mode-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .canvas-box {
+            background-color: #02040a;
+            border-radius: 8px;
+            flex: 1;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: grab;
+        }
+
+        .canvas-box:active {
+            cursor: grabbing;
+        }
+
+        .canvas-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 82vh;
+        }
+
+        .ai-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1.1;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-chat-box {
+            flex: 1;
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            overflow-y: auto;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .ai-chat-box::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .ai-chat-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .ai-suggestions {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .suggestion-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .suggestion-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 0.68rem;
+            color: var(--accent);
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-btn:hover {
+            background: rgba(129, 140, 248, 0.15);
+        }
+
+        .hr-mini-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            flex: 0.9;
+        }
+
+        .hr-canvas-container {
+            width: 100%;
+            flex: 1;
+            background: #02040a;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hr-canvas-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="spaceCanvas"></canvas>
+
+    <nav>
+        <div class="nav-brand">恆星演化史 模擬器</div>
+        <ul class="nav-links">
+            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
+        </ul>
+    </nav>
+
+    <div class="lab-container">
+        <div class="panel attributes-panel">
+            <div class="panel-title">真實恆星導覽與演化</div>
+
+            <div>
+                <div class="section-subtitle">🌟 知名真實恆星導覽 (獨特 3D 特徵)</div>
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="loadRealStar('sun')">☀️ 太陽 (Sun)</button>
+                    <button class="preset-btn" onclick="loadRealStar('betelgeuse')">💥 參宿四 (Betel)</button>
+                    <button class="preset-btn" onclick="loadRealStar('proxima')">🔴 比鄰星 (Proxima)</button>
+                    <button class="preset-btn" onclick="loadRealStar('sirius')">✨ 天狼星 (Sirius)</button>
+                    <button class="preset-btn" onclick="loadRealStar('vega')">🌟 織女星 (+吸積盤)</button>
+                    <button class="preset-btn" onclick="loadRealStar('polaris')">⭐ 北極星 (造父)</button>
+                    <button class="preset-btn" onclick="loadRealStar('deneb')">💫 天津四 (Deneb)</button>
+                    <button class="preset-btn" onclick="loadRealStar('uyscuti')">🪐 盾牌座UY (超巨)</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">物理數值調整</div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>質量 (Mass)</span><span id="v-init-mass">1.0 M☉</span></div>
+                    <input type="range" id="s-init-mass" min="0.2" max="40.0" step="0.2" value="1.0">
+                    <div class="slider-desc">決定恆星引力、壽命與最終命運。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>金屬豐度 [Fe/H]</span><span id="v-metal">0.00</span></div>
+                    <input type="range" id="s-metal" min="-2.0" max="0.5" step="0.05" value="0.00">
+                    <div class="slider-desc">影響內部不透明度與光譜特性。</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">進階物理參數</div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>自轉速度 (Rotation)</span><span id="v-rot">1.0x</span></div>
+                    <input type="range" id="s-rot" min="0.1" max="5.0" step="0.1" value="1.0">
+                    <div class="slider-desc">高速自轉導致赤道微幅扁平。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>恆星風強度 (Wind)</span><span id="v-wind">1.0x</span></div>
+                    <input type="range" id="s-wind" min="0.5" max="10.0" step="0.5" value="1.0">
+                    <div class="slider-desc">控制外層大氣流失速率。</div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>表面磁場 (Magnetic)</span><span id="v-mag">1.0x</span></div>
+                    <input type="range" id="s-mag" min="0.1" max="5.0" step="0.1" value="1.0">
+                    <div class="slider-desc">影響表面紋理與耀斑特徵。</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-subtitle">生命週期時間軸</div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span id="v-stage" style="font-size:0.72rem;">星雲塌縮 (Nebular Collapse)</span>
+                        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ 自動撥放</button>
+                    </div>
+                    <input type="range" id="s-timeline" min="0" max="100" step="1" value="0">
+                    <div class="slider-desc">拖曳時間軸觀賞恆星誕生到死亡。</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="simulation-viewport">
+            <div class="viewport-header">
+                <div style="font-size: 0.95rem; font-weight: 700; color: #fff;" id="viewportTitle">恆星 3D 結構與演化即時渲染視窗
+                    (外部觀測視角)</div>
+                <div class="view-mode-toggle">
+                    <button class="view-btn active" id="btnSurface" onclick="switchViewMode('surface')">🌍 外部觀測</button>
+                    <button class="view-btn" id="btnCore" onclick="switchViewMode('core')">🔬 內部剖面</button>
+                </div>
+            </div>
+            <div class="canvas-box" id="webglContainer"></div>
+        </div>
+
+        <div class="right-column">
+            <div class="panel ai-panel">
+                <div class="panel-title" style="font-size: 0.88rem;"><span class="ai-title-text">AI 演化解析</span></div>
+                <div class="ai-chat-box" id="aiChat">
+                    您好！現在每顆真實恆星都具備了<b>專屬的 3D 視覺特徵</b>（例如織女星的塵埃吸積盤、參宿四與盾牌座UY的巨大紅超巨星體積、比鄰星的迷你紅矮星體型）。點擊左側感受牠們的獨特之處吧！
+                </div>
+                <div class="ai-suggestions">
+                    <div class="suggestion-title">💡 獨特視覺體驗：</div>
+                    <button class="suggestion-btn" onclick="loadRealStar('vega')">👉 檢視織女星 (周遭帶有獨特原行星塵埃盤)</button>
+                    <button class="suggestion-btn" onclick="loadRealStar('uyscuti')">👉 檢視盾牌座UY (極端巨大的紅超巨星體積)</button>
+                </div>
+            </div>
+
+            <div class="panel hr-mini-panel">
+                <div class="panel-title" style="margin-bottom: 4px; font-size: 0.85rem;">
+                    <span>赫羅圖 (H-R) 即時對應</span>
+                    <a href="hr" style="font-size: 0.75rem; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center;">放大 <span class="material-symbols-outlined icon-inline">arrow_right</span></a>
+                </div>
+                <div class="hr-canvas-container">
+                    <canvas id="hrCanvas" width="240" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for (let i = 0; i < 80; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.5,
+                alpha: Math.random() * 0.7 + 0.3,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+
+        const trailParticles = [];
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 2; i++) {
+                trailParticles.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: Math.random() * 2 + 1,
+                    alpha: 0.8,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5
+                });
+            }
+        });
+
+        function animateSpace() {
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.fillStyle = '#ffffff';
+            particles.forEach(p => {
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.y -= p.speed;
+                if (p.y < 0) {
+                    p.y = height;
+                    p.x = Math.random() * width;
+                }
+            });
+
+            for (let i = trailParticles.length - 1; i >= 0; i--) {
+                let tp = trailParticles[i];
+                ctx.globalAlpha = tp.alpha;
+                ctx.fillStyle = '#818cf8';
+                ctx.beginPath();
+                ctx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                tp.x += tp.vx;
+                tp.y += tp.vy;
+                tp.alpha -= 0.03;
+
+                if (tp.alpha <= 0) {
+                    trailParticles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateSpace);
+        }
+        animateSpace();
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const container = document.getElementById('webglContainer');
+        const cWidth = container.clientWidth > 0 ? container.clientWidth : 700;
+        const cHeight = container.clientHeight > 0 ? container.clientHeight : 520;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, cWidth / cHeight, 0.1, 1000);
+        camera.position.z = 6.5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(cWidth, cHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        function createSolarTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#a0a0a0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 4000; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let r = Math.random() * 15 + 3;
+                let shade = Math.floor(Math.random() * 90 + 90);
+                ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            return texture;
+        }
+
+        const solarTexture = createSolarTexture();
+
+        const surfaceGeo = new THREE.SphereGeometry(1.5, 128, 128);
+        const surfaceMat = new THREE.MeshStandardMaterial({
+            color: 0xffd27d,
+            roughness: 0.95,
+            metalness: 0.0,
+            bumpMap: solarTexture,
+            bumpScale: 0.012,
+            emissive: 0xff6600,
+            emissiveIntensity: 0.2
+        });
+        const surfaceStar = new THREE.Mesh(surfaceGeo, surfaceMat);
+        scene.add(surfaceStar);
+
+        const glowGeo = new THREE.SphereGeometry(1.5, 64, 64);
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: 0x38bdf8,
+            transparent: true,
+            opacity: 0.4,
+            side: THREE.BackSide
+        });
+        const atmosphere = new THREE.Mesh(glowGeo, glowMat);
+        scene.add(atmosphere);
+
+        const debrisGeo = new THREE.RingGeometry(2.2, 3.8, 64);
+        const debrisMat = new THREE.MeshBasicMaterial({
+            color: 0x93c5fd,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.35
+        });
+        const debrisDisk = new THREE.Mesh(debrisGeo, debrisMat);
+        debrisDisk.rotation.x = Math.PI / 2;
+        debrisDisk.visible = false;
+        scene.add(debrisDisk);
+
+        const coreGroup = new THREE.Group();
+        scene.add(coreGroup);
+
+        const envGeo = new THREE.SphereGeometry(1.48, 64, 64);
+        const envMat = new THREE.MeshStandardMaterial({ color: 0xff8833, transparent: true, opacity: 0.4, roughness: 0.5 });
+        const envelopeMesh = new THREE.Mesh(envGeo, envMat);
+        coreGroup.add(envelopeMesh);
+
+        const hShellGeo = new THREE.SphereGeometry(1.0, 64, 64);
+        const hShellMat = new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff3300, emissiveIntensity: 0.3, roughness: 0.4 });
+        const hShellMesh = new THREE.Mesh(hShellGeo, hShellMat);
+        coreGroup.add(hShellMesh);
+
+        const heCoreGeo = new THREE.SphereGeometry(0.55, 64, 64);
+        const heCoreMat = new THREE.MeshStandardMaterial({ color: 0xffea75, emissive: 0xffaa00, emissiveIntensity: 0.6, roughness: 0.3 });
+        const heCoreMesh = new THREE.Mesh(heCoreGeo, heCoreMat);
+        coreGroup.add(heCoreMesh);
+
+        const coCoreGeo = new THREE.SphereGeometry(0.25, 64, 64);
+        const coCoreMat = new THREE.MeshStandardMaterial({ color: 0x60a5fa, emissive: 0x38bdf8, emissiveIntensity: 0.9, roughness: 0.2 });
+        const coCoreMesh = new THREE.Mesh(coCoreGeo, coCoreMat);
+        coreGroup.add(coCoreMesh);
+
+        coreGroup.visible = false;
+
+        const ambientLight = new THREE.AmbientLight(0x444466, 1.2);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xfffaed, 2.5, 50);
+        pointLight.position.set(6, 4, 5);
+        scene.add(pointLight);
+
+        let currentViewMode = 'surface';
+        let currentMass = 1.0;
+        let currentMetal = 0.0;
+        let currentRot = 1.0;
+        let currentWind = 1.0;
+        let currentMag = 1.0;
+        let activeStarKey = 'sun';
+        let isPlaying = false;
+
+        function switchViewMode(mode) {
+            currentViewMode = mode;
+            const titleEl = document.getElementById('viewportTitle');
+            const btnSurf = document.getElementById('btnSurface');
+            const btnCore = document.getElementById('btnCore');
+
+            if (mode === 'surface') {
+                surfaceStar.visible = true; atmosphere.visible = true; coreGroup.visible = false;
+                if (activeStarKey === 'vega') debrisDisk.visible = true;
+                btnSurf.classList.add('active'); btnCore.classList.remove('active');
+                titleEl.textContent = "恆星 3D 結構與演化即時渲染視窗 (外部觀測視角)";
+            } else {
+                surfaceStar.visible = false; atmosphere.visible = false; debrisDisk.visible = false; coreGroup.visible = true;
+                btnCore.classList.add('active'); btnSurf.classList.remove('active');
+                titleEl.textContent = "恆星 3D 結構與演化即時渲染視窗 (內部核心剖面視角)";
+            }
+        }
+
+        const hrCanvas = document.getElementById('hrCanvas');
+        const hrCtx = hrCanvas.getContext('2d');
+
+        function drawHRDiagram(normStage) {
+            hrCtx.fillStyle = '#02040a';
+            hrCtx.fillRect(0, 0, hrCanvas.width, hrCanvas.height);
+            hrCtx.strokeStyle = '#1e293b';
+            hrCtx.lineWidth = 1;
+            hrCtx.strokeRect(8, 8, hrCanvas.width - 16, hrCanvas.height - 16);
+            hrCtx.strokeStyle = '#334155';
+            hrCtx.lineWidth = 3;
+            hrCtx.beginPath();
+            hrCtx.moveTo(35, 25);
+            hrCtx.bezierCurveTo(80, 70, 140, 105, 200, 125);
+            hrCtx.stroke();
+
+            let massOffset = Math.log10(currentMass) * 15;
+            let metalOffset = currentMetal * 10;
+            let hx, hy;
+
+            if (normStage < 0.15) {
+                hx = 30 + normStage * 50; hy = 140 - normStage * 40;
+            } else if (normStage < 0.3) {
+                let t = (normStage - 0.15) / 0.15;
+                hx = (45 + t * 40) - metalOffset; hy = (105 - t * 40) - massOffset;
+            } else if (normStage < 0.65) {
+                let t = (normStage - 0.3) / 0.35;
+                hx = (85 + t * 45) - metalOffset; hy = (65 + t * 20) - massOffset;
+            } else if (normStage < 0.85) {
+                let t = (normStage - 0.65) / 0.2;
+                hx = (130 - t * 80); hy = (85 - t * 50) - massOffset * 1.5;
+            } else {
+                let t = (normStage - 0.85) / 0.15;
+                hx = 50 + t * 140; hy = 25 + t * 90;
+            }
+
+            hrCtx.fillStyle = '#ef4444';
+            hrCtx.shadowColor = '#ef4444';
+            hrCtx.shadowBlur = 6;
+            hrCtx.beginPath();
+            hrCtx.arc(hx, hy, 4.5, 0, Math.PI * 2);
+            hrCtx.fill();
+            hrCtx.shadowBlur = 0;
+        }
+
+        function updateEvolution() {
+            let val = parseInt(document.getElementById('s-timeline').value);
+            let norm = val / 100.0;
+            let vStage = document.getElementById('v-stage');
+            let aiChat = document.getElementById('aiChat');
+
+            let baseSize = 1.0;
+            if (activeStarKey === 'proxima') baseSize = 0.55;
+            else if (activeStarKey === 'sirius' || activeStarKey === 'vega') baseSize = 1.3;
+            else if (activeStarKey === 'betelgeuse' || activeStarKey === 'deneb') baseSize = 2.1;
+            else if (activeStarKey === 'uyscuti') baseSize = 2.6;
+
+            let massFactor = Math.pow(currentMass, 0.33) * baseSize;
+            let oblateness = 1.0 - (currentRot * 0.035);
+            if (oblateness < 0.6) oblateness = 0.6;
+
+            surfaceMat.bumpScale = 0.012 * currentMag;
+            debrisDisk.visible = (activeStarKey === 'vega' && currentViewMode === 'surface');
+
+            let isCurrentTime = false;
+            let targetCurrentVal = 46;
+            if (activeStarKey === 'sun') targetCurrentVal = 46;
+            else if (activeStarKey === 'betelgeuse') targetCurrentVal = 85;
+            else if (activeStarKey === 'proxima') targetCurrentVal = 40;
+            else if (activeStarKey === 'sirius') targetCurrentVal = 35;
+            else if (activeStarKey === 'vega') targetCurrentVal = 30;
+            else if (activeStarKey === 'polaris') targetCurrentVal = 70;
+            else if (activeStarKey === 'deneb') targetCurrentVal = 80;
+            else if (activeStarKey === 'uyscuti') targetCurrentVal = 88;
+
+            if (Math.abs(val - targetCurrentVal) <= 1) {
+                isCurrentTime = true;
+            }
+
+            if (val < 15) {
+                vStage.textContent = "星雲塌縮 (Nebular Collapse)";
+                let cloudScale = 2.8 - (val / 15) * 1.0;
+                surfaceStar.scale.set(cloudScale, cloudScale, cloudScale);
+                atmosphere.scale.set(cloudScale * 1.4, cloudScale * 1.4, cloudScale * 1.4);
+                atmosphere.material.color.setHex(0x38bdf8);
+                atmosphere.material.opacity = 0.5 - (val / 15) * 0.2;
+                surfaceMat.color.setHex(0x1e293b);
+                surfaceMat.emissive.setHex(0x0284c7);
+                surfaceMat.emissiveIntensity = 0.1 + (val / 15) * 0.2;
+
+                envelopeMesh.scale.set(cloudScale, cloudScale, cloudScale);
+                hShellMesh.visible = false; heCoreMesh.visible = false; coCoreMesh.visible = false;
+                aiChat.innerHTML = `<b>【${getStarName(activeStarKey)} - 星雲塌縮】</b>：巨大分子雲在自身重力下向中心凝聚。`;
+            } else if (val < 30) {
+                vStage.textContent = "原恆星階段 (Protostar)";
+                let s = 1.2 * massFactor;
+                surfaceStar.scale.set(s, s * oblateness, s);
+                atmosphere.scale.set(s * 1.2, (s * oblateness) * 1.2, s * 1.2);
+                atmosphere.material.color.setHex(0xffaa33);
+                atmosphere.material.opacity = 0.2;
+                surfaceMat.color.setHex(0xff7733);
+                surfaceMat.emissive.setHex(0xff3300);
+                surfaceMat.emissiveIntensity = 0.4;
+
+                envelopeMesh.scale.set(s, s * oblateness, s);
+                hShellMesh.visible = true; hShellMesh.scale.set(0.6, 0.6, 0.6);
+                heCoreMesh.visible = false; coCoreMesh.visible = false;
+                aiChat.innerHTML = `<b>【${getStarName(activeStarKey)} - 原恆星】</b>：核心熱核反應即將點燃。`;
+            } else if (val < 65) {
+                vStage.textContent = "主序星平衡 (Main Sequence)";
+                let s = 1.0 * massFactor;
+                surfaceStar.scale.set(s, s * oblateness, s);
+                atmosphere.scale.set(s * (1.12 + currentWind * 0.03), (s * oblateness) * (1.12 + currentWind * 0.03), s * (1.12 + currentWind * 0.03));
+
+                let starColor = 0xffd27d;
+                if (activeStarKey === 'proxima') starColor = 0xef4444;
+                else if (activeStarKey === 'sirius' || activeStarKey === 'vega') starColor = 0x60a5fa;
+                else if (activeStarKey === 'deneb') starColor = 0x93c5fd;
+                else starColor = (currentMass > 10 ? 0x60a5fa : (currentMass > 2 ? 0xfffaed : 0xffd27d));
+
+                surfaceMat.color.setHex(starColor);
+                surfaceMat.emissive.setHex(0xff6600);
+                surfaceMat.emissiveIntensity = 0.2;
+
+                envelopeMesh.scale.set(s, s * oblateness, s);
+                hShellMesh.visible = true; hShellMesh.scale.set(0.7, 0.7, 0.7);
+                heCoreMesh.visible = true; heCoreMesh.scale.set(0.35, 0.35, 0.35);
+                coCoreMesh.visible = false;
+
+                if (isCurrentTime) {
+                    aiChat.innerHTML = `🎯 <b>【AI 即時導覽：現在進行時】</b><br>時間軸位於 <b>${val}%</b>。這正是<b>${getStarName(activeStarKey)}</b>在現實宇宙中的<b>「現在狀態」</b>！`;
+                } else {
+                    aiChat.innerHTML = `<b>【主序星平衡期】</b>：核心穩定氫融合中。`;
+                }
+            } else if (val < 85) {
+                vStage.textContent = "紅巨星膨脹 (Red Giant)";
+                let expScale = (1.0 + (val - 65) * (currentMass > 10 ? 0.2 : 0.08)) * massFactor;
+                surfaceStar.scale.set(expScale, expScale * oblateness, expScale);
+                let windExp = 1.1 + (currentWind * 0.08);
+                atmosphere.scale.set(expScale * windExp, (expScale * oblateness) * windExp, expScale * windExp);
+                atmosphere.material.opacity = 0.2 / currentWind;
+                surfaceMat.color.setHex(0xff4422);
+                surfaceMat.emissive.setHex(0xff2200);
+                surfaceMat.emissiveIntensity = 0.5;
+
+                envelopeMesh.scale.set(expScale, expScale * oblateness, expScale);
+                hShellMesh.visible = true; hShellMesh.scale.set(0.5, 0.5, 0.5);
+                heCoreMesh.visible = true; heCoreMesh.scale.set(0.25, 0.25, 0.25);
+                coCoreMesh.visible = true; coCoreMesh.scale.set(0.1, 0.1, 0.1);
+
+                if (isCurrentTime) {
+                    aiChat.innerHTML = `🎯 <b>【AI 即時導覽：現在進行時】</b><br>時間軸位於 <b>${val}%</b>。此為<b>${getStarName(activeStarKey)}</b>演化至紅巨星的未來狀態！`;
+                } else {
+                    aiChat.innerHTML = `<b>【紅巨星膨脹期】</b>：外層包層劇烈膨脹。`;
+                }
+            } else {
+                vStage.textContent = currentMass > 8 ? "超新星 / 中子星殘骸" : "白矮星殘骸 (White Dwarf)";
+                surfaceStar.scale.set(0.4, 0.4, 0.4);
+                atmosphere.scale.set(0.45, 0.45, 0.45);
+                atmosphere.material.opacity = 0.3;
+                surfaceMat.color.setHex(0x38bdf8);
+                surfaceMat.emissive.setHex(0x0284c7);
+                surfaceMat.emissiveIntensity = 0.8;
+
+                envelopeMesh.scale.set(0.4, 0.4, 0.4);
+                hShellMesh.visible = false; heCoreMesh.visible = false;
+                coCoreMesh.visible = true; coCoreMesh.scale.set(0.5, 0.5, 0.5);
+                aiChat.innerHTML = `<b>【最終殘骸階段】</b>：演化終了，留下高密度緻密白矮星或中子星。`;
+            }
+
+            drawHRDiagram(norm);
+        }
+
+        function getStarName(key) {
+            const names = {
+                'sun': '太陽 (Sun)',
+                'betelgeuse': '參宿四 (Betelgeuse)',
+                'proxima': '比鄰星 (Proxima)',
+                'sirius': '天狼星 (Sirius)',
+                'vega': '織女星 (Vega)',
+                'polaris': '北極星 (Polaris)',
+                'deneb': '天津四 (Deneb)',
+                'uyscuti': '盾牌座 UY (UY Scuti)'
+            };
+            return names[key] || '該恆星';
+        }
+
+        function loadRealStar(key) {
+            activeStarKey = key;
+            let mass = 1.0, metal = 0.0, rot = 1.0, wind = 1.0, mag = 1.0, timelineVal = 46;
+
+            if (key === 'sun') {
+                mass = 1.0; metal = 0.0; rot = 1.0; wind = 1.0; mag = 1.0; timelineVal = 46;
+            } else if (key === 'betelgeuse') {
+                mass = 20.0; metal = 0.1; rot = 3.0; wind = 7.0; mag = 3.5; timelineVal = 85;
+            } else if (key === 'proxima') {
+                mass = 0.12; metal = -0.2; rot = 0.4; wind = 0.6; mag = 4.5; timelineVal = 40;
+            } else if (key === 'sirius') {
+                mass = 2.1; metal = 0.2; rot = 4.5; wind = 1.5; mag = 1.2; timelineVal = 35;
+            } else if (key === 'vega') {
+                mass = 2.15; metal = -0.5; rot = 5.0; wind = 1.2; mag = 0.8; timelineVal = 30;
+            } else if (key === 'polaris') {
+                mass = 5.4; metal = 0.0; rot = 2.0; wind = 3.0; mag = 2.0; timelineVal = 70;
+            } else if (key === 'deneb') {
+                mass = 19.0; metal = 0.05; rot = 2.5; wind = 8.5; mag = 3.0; timelineVal = 80;
+            } else if (key === 'uyscuti') {
+                mass = 30.0; metal = 0.2; rot = 1.5; wind = 10.0; mag = 5.0; timelineVal = 88;
+            }
+
+            currentMass = mass; currentMetal = metal;
+            currentRot = rot; currentWind = wind; currentMag = mag;
+
+            document.getElementById('s-init-mass').value = mass;
+            document.getElementById('v-init-mass').textContent = mass.toFixed(1) + ' M☉';
+            document.getElementById('s-metal').value = metal;
+            document.getElementById('v-metal').textContent = metal.toFixed(2);
+            document.getElementById('s-rot').value = rot;
+            document.getElementById('v-rot').textContent = rot.toFixed(1) + 'x';
+            document.getElementById('s-wind').value = wind;
+            document.getElementById('v-wind').textContent = wind.toFixed(1) + 'x';
+            document.getElementById('s-mag').value = mag;
+            document.getElementById('v-mag').textContent = mag.toFixed(1) + 'x';
+
+            document.getElementById('s-timeline').value = timelineVal;
+            switchViewMode('surface');
+            updateEvolution();
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸ 暫停' : '▶ 自動撥放';
+        }
+
+        document.getElementById('s-timeline').addEventListener('input', updateEvolution);
+        document.getElementById('s-init-mass').addEventListener('input', (e) => {
+            currentMass = parseFloat(e.target.value);
+            document.getElementById('v-init-mass').textContent = currentMass.toFixed(1) + ' M☉';
+            updateEvolution();
+        });
+        document.getElementById('s-metal').addEventListener('input', (e) => {
+            currentMetal = parseFloat(e.target.value);
+            document.getElementById('v-metal').textContent = currentMetal.toFixed(2);
+            updateEvolution();
+        });
+        document.getElementById('s-rot').addEventListener('input', (e) => {
+            currentRot = parseFloat(e.target.value);
+            document.getElementById('v-rot').textContent = currentRot.toFixed(1) + 'x';
+            updateEvolution();
+        });
+        document.getElementById('s-wind').addEventListener('input', (e) => {
+            currentWind = parseFloat(e.target.value);
+            document.getElementById('v-wind').textContent = currentWind.toFixed(1) + 'x';
+            updateEvolution();
+        });
+        document.getElementById('s-mag').addEventListener('input', (e) => {
+            currentMag = parseFloat(e.target.value);
+            document.getElementById('v-mag').textContent = currentMag.toFixed(1) + 'x';
+            updateEvolution();
+        });
+
+        updateEvolution();
+
+        let lastTime = 0;
+        function animate(time) {
+            requestAnimationFrame(animate);
+
+            if (isPlaying && time - lastTime > 180) {
+                let slider = document.getElementById('s-timeline');
+                let val = parseInt(slider.value) + 1;
+                if (val > 100) val = 0;
+                slider.value = val;
+                updateEvolution();
+                lastTime = time;
+            }
+
+            let spin = 0.002 * currentRot;
+            surfaceStar.rotation.y += spin;
+            atmosphere.rotation.y += spin * 1.05;
+            debrisDisk.rotation.z += spin * 0.5;
+            coreGroup.rotation.y += spin;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('load', () => {
+            const w = container.clientWidth > 0 ? container.clientWidth : 700;
+            const h = container.clientHeight > 0 ? container.clientHeight : 520;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        window.addEventListener('resize', () => {
+            const w = container.clientWidth > 0 ? container.clientWidth : 700;
+            const h = container.clientHeight > 0 ? container.clientHeight : 520;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+    </script>
+    <script src="/static/auth.js"></script>
+</body>
+
+</html>

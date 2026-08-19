@@ -54,12 +54,13 @@ async function fetchDailyKnowledge() {
         list.forEach((news) => {
             const card = document.createElement("a");
             card.className = "news-card";
-            card.href = news.url;
+            // 👈 點擊後直連到 NASA 官方頁面
+            card.href = news.url || "https://www.nasa.gov";
             card.target = "_blank";
             card.rel = "noopener noreferrer";
             card.innerHTML = `
                 <img src="${news.image_url}" alt="${news.title}"
-                     onerror="this.src='https://via.placeholder.com/300x180?text=Astronomy+News'">
+                     onerror="this.src='https://www.nasa.gov/wp-content/uploads/2023/07/main_image_deep_field_smacs0723-5mb.jpg'">
                 <div class="news-card-body">
                     <h4>${news.title}</h4>
                     <p>${news.sub_title}</p>

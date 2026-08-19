@@ -7,7 +7,7 @@
     <title>登入與註冊系統 | 天文與恆星物理專題</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=person" />
     <style>
@@ -190,12 +190,11 @@
         <div class="login-desc">選擇訪客進入、註冊新帳號或使用既有帳號密碼登入</div>
 
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('guest')">訪客登入</button>
-            <button class="tab-btn" onclick="switchTab('register')">建立帳號</button>
-            <button class="tab-btn" onclick="switchTab('account')">帳號登入</button>
+            <button class="tab-btn active" onclick="switchTab(event, 'guest')">訪客登入</button>
+            <button class="tab-btn" onclick="switchTab(event, 'register')">建立帳號</button>
+            <button class="tab-btn" onclick="switchTab(event, 'account')">帳號登入</button>
         </div>
 
-        <!-- 1. 訪客登入 (帶隨機骰子) -->
         <div id="tab-guest" class="form-section active">
             <div class="input-group">
                 <label>訪客顯示名稱 (可自己輸入或點擊骰子隨機產生)</label>
@@ -207,7 +206,6 @@
             <button class="submit-btn" onclick="handleGuestLogin()">以訪客身分進入平台</button>
         </div>
 
-        <!-- 2. 建立帳號 (註冊) -->
         <div id="tab-register" class="form-section">
             <div class="input-group">
                 <label>設定您的使用者名稱</label>
@@ -221,7 +219,6 @@
             <button class="submit-btn" onclick="handleRegister()">註冊並進入系統</button>
         </div>
 
-        <!-- 3. 已知帳號密碼登入 -->
         <div id="tab-account" class="form-section">
             <div class="input-group">
                 <label>研究員帳號 / 用戶名</label>
@@ -236,7 +233,7 @@
         </div>
     </div>
 
-    <script src="/static/auth_handler.js"></script>
+    <script src="auth_handler.js"></script>
     <script>
         // 背景星空特效
         const canvas = document.getElementById('spaceCanvas');
@@ -265,6 +262,7 @@
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 ctx.fill();
+
                 p.y -= p.speed;
                 if (p.y < 0) {
                     p.y = height;
@@ -276,24 +274,24 @@
         animateSpace();
 
         // 頁籤切換
-        function switchTab(tabName) {
+        function switchTab(evt, tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
 
-            if (tabName === 'guest') {
-                event.target.classList.add('active');
-                document.getElementById('tab-guest').classList.add('active');
-            } else if (tabName === 'register') {
-                event.target.classList.add('active');
-                document.getElementById('tab-register').classList.add('active');
-            } else if (tabName === 'account') {
-                event.target.classList.add('active');
-                document.getElementById('tab-account').classList.add('active');
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            }
+
+            const targetSection = document.getElementById('tab-' + tabName);
+            if (targetSection) {
+                targetSection.classList.add('active');
             }
         }
 
         // 初始化先幫訪客骰一個預設名稱
-        rollGuestName();
+        if (typeof rollGuestName === 'function') {
+            rollGuestName();
+        }
     </script>
 </body>
 

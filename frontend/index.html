@@ -7,11 +7,80 @@
     <title>探索太空之數位學習平台</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_drop_down,arrow_right,school,science,public,menu_book,search_insights,tour,person" />
     <style>
         /* 本頁獨有：body 使用 position:relative 讓 #spaceCanvas 定位錨定 */
         body {
             position: relative;
+            background-color: var(--bg-color, #030712);
+            color: var(--text-main, #f9fafb);
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #spaceCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        nav {
+            width: 100%;
+            height: 64px;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted, #9ca3af);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent, #818cf8);
         }
 
         /* 滿版區塊設定 */
@@ -24,14 +93,14 @@
             align-items: center;
             text-align: center;
             justify-content: center;
+            box-sizing: border-box;
         }
 
         /* 第一屏 Banner */
         .hero-section {
-            padding-top: 9rem;
-            gap: 1.25rem;
+            padding-top: 8.5rem;
+            gap: 1.1rem;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .hero-badge {
@@ -46,7 +115,6 @@
             text-transform: uppercase;
         }
 
-        /* 主標題大小（調小為較適中的響應式尺寸） */
         .hero-title {
             font-size: clamp(2rem, 3vw, 3rem);
             font-weight: 700;
@@ -56,49 +124,46 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             max-width: 1000px;
+            margin: 0;
         }
 
         .hero-desc {
             font-size: 1rem;
-            color: var(--text-muted);
+            color: var(--text-muted, #9ca3af);
             max-width: 750px;
             line-height: 1.5;
+            margin: 0;
         }
 
-        /* Welcome 標題大小（調小為 1.8rem，看起來更精緻） */
         .welcome-title {
             font-size: 1.8rem;
             font-weight: 700;
             color: #e9dcdc;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-top: 1rem;
-            margin-bottom: 0.3rem;
+            margin-top: 0.8rem;
+            margin-bottom: 0.2rem;
         }
 
         .hero-section h2 {
             font-size: 1.15rem;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #e9dcdc;
+            margin-bottom: 6px;
+            color: #c7d2fe;
         }
 
-        #outline-recommendation {
-            margin-top: 12px;
-            font-size: 0.9rem;
-            border-radius: 8px;
-            padding: 10px 14px;
-        }
-
+        /* 新聞滾動卡片列表樣式 */
         .news-scroll {
-            margin-top: 18px;
+            margin-top: 14px;
             display: flex;
             gap: 16px;
             overflow-x: auto;
-            padding-bottom: 10px;
+            padding: 10px 4px 14px 4px;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
-            max-width: 900px;
+            max-width: 960px;
+            width: 100%;
+            justify-content: flex-start;
         }
 
         .news-scroll::-webkit-scrollbar {
@@ -106,72 +171,95 @@
         }
 
         .news-scroll::-webkit-scrollbar-thumb {
-            background-color: #d0d0e8;
+            background-color: rgba(129, 140, 248, 0.4);
             border-radius: 4px;
         }
 
         .news-card {
-            flex: 0 0 260px;
+            flex: 0 0 280px;
             scroll-snap-align: start;
             display: flex;
             flex-direction: column;
-            border: 1px solid transparent;
-            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
             overflow: hidden;
             text-decoration: none;
             color: inherit;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .news-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent);
-        }
-
-        .news-card img {
-            width: 100%;
-            height: 130px;
-            object-fit: cover;
-            background-color: var(--card-bg);
-        }
-
-        .news-card-body {
-            padding: 12px 14px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
             text-align: left;
         }
 
+        .news-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent, #818cf8);
+            box-shadow: 0 8px 24px rgba(129, 140, 248, 0.25);
+        }
+
+        .news-card-body {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+        }
+
+        .news-tag-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .news-tag {
+            font-size: 0.72rem;
+            background: rgba(129, 140, 248, 0.2);
+            color: #c7d2fe;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .news-date {
+            font-size: 0.72rem;
+            color: #9ca3af;
+        }
+
         .news-card-body h4 {
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             font-weight: 700;
-            color: #f7f3f3;
-            line-height: 1.35;
-            margin-bottom: 6px;
+            color: #fff;
+            line-height: 1.4;
+            margin: 0;
         }
 
         .news-card-body p {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            line-height: 1.4;
+            font-size: 0.8rem;
+            color: var(--text-muted, #9ca3af);
+            line-height: 1.45;
+            margin: 0;
         }
 
         .news-empty {
             font-size: 0.85rem;
-            color: var(--text-muted);
-            padding: 4px 2px;
+            color: var(--text-muted, #9ca3af);
+            padding: 12px;
+            width: 100%;
         }
 
         .cta-btn {
-            background: var(--accent);
+            background: var(--accent, #818cf8);
             color: #fff;
             padding: 10px 24px;
             border-radius: 30px;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.9rem;
-            box-shadow: 0 0 20px var(--accent-glow);
+            box-shadow: 0 0 20px rgba(129, 140, 248, 0.35);
             transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -179,7 +267,7 @@
 
         .cta-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 25px rgba(129, 140, 248, 0.5);
+            box-shadow: 0 0 25px rgba(129, 140, 248, 0.6);
         }
 
         .section-title {
@@ -191,24 +279,25 @@
 
         .section-desc {
             font-size: 0.95rem;
-            color: var(--text-muted);
+            color: var(--text-muted, #9ca3af);
             margin-bottom: 2.5rem;
         }
 
         /* Apple 風格滿版大卡片網格 */
         .modules-grid {
             width: 100%;
-            max-width: 1500px;
+            max-width: 1400px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
+            box-sizing: border-box;
         }
 
         .module-card {
             background: rgba(15, 23, 42, 0.85);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
             border-radius: 24px;
-            padding: 4rem 3rem;
+            padding: 3.5rem 2.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -228,7 +317,7 @@
         .module-card:hover {
             transform: translateY(-6px);
             border-color: rgba(129, 140, 248, 0.6);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px var(--accent-glow);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(129, 140, 248, 0.3);
         }
 
         .module-icon {
@@ -241,7 +330,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 18px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
         }
 
         .module-title {
@@ -253,7 +342,7 @@
 
         .module-desc {
             font-size: 0.95rem;
-            color: var(--text-muted);
+            color: var(--text-muted, #9ca3af);
             line-height: 1.6;
             max-width: 500px;
             margin-bottom: 2rem;
@@ -274,34 +363,25 @@
         }
 
         .module-card:hover .module-link-btn {
-            background: var(--accent);
+            background: var(--accent, #818cf8);
             color: #fff;
-            border-color: var(--accent);
+            border-color: var(--accent, #818cf8);
         }
 
         /* 互動冷知識區塊 */
         .fact-box {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             background: linear-gradient(135deg, rgba(30, 27, 75, 0.4), rgba(17, 24, 39, 0.6));
             border: 1px solid rgba(129, 140, 248, 0.2);
             border-radius: 24px;
-            padding: 3.5rem;
+            padding: 3rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1.5rem;
             backdrop-filter: blur(12px);
-        }
-
-        .fact-tag {
-            font-size: 0.75rem;
-            background: var(--accent);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            box-sizing: border-box;
         }
 
         .fact-text {
@@ -314,8 +394,8 @@
 
         .fact-btn {
             background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
+            border: 1px solid var(--accent, #818cf8);
+            color: var(--accent, #818cf8);
             padding: 8px 20px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -325,28 +405,23 @@
         }
 
         .fact-btn:hover {
-            background: var(--accent);
+            background: var(--accent, #818cf8);
             color: #fff;
         }
 
         footer {
-            padding: 3rem 4vw;
+            padding: 2.5rem 4vw;
             font-size: 0.8rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
+            color: var(--text-muted, #9ca3af);
+            border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
             width: 100%;
             text-align: center;
+            box-sizing: border-box;
         }
 
         @media (max-width: 1024px) {
             .modules-grid {
                 grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .hero-title {
-                font-size: 1.8rem;
             }
         }
     </style>
@@ -359,13 +434,13 @@
     <nav>
         <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
         <ul class="nav-links">
-            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
-            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
-            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
-            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
-            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
-            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
-            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
+            <li><a href="index.html" class="active"><span class="material-symbols-outlined">school</span>教學平台</a></li>
+            <li><a href="lab.html"><span class="material-symbols-outlined">science</span>實驗室</a></li>
+            <li><a href="evolution.html"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
+            <li><a href="wiki.html"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
+            <li><a href="hr.html"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
+            <li><a href="quiz.html"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
+            <li><a href="profile.html"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
         </ul>
     </nav>
 
@@ -376,20 +451,15 @@
             至今，宇宙已存活約 138 億年的時間，而太陽已燃燒約 46 億年。
         </p>
 
-        <!-- 調小後的 Welcome 與標題 -->
-        <h1 class="welcome-title">Welcome!</h1>
+        <h1 class="welcome-title">WELCOME!</h1>
         <h2>每日一則天文新知</h2>
 
-        <!-- 個人化課程大綱推薦 -->
-        <div id="outline-recommendation"></div>
-
-        <!-- 今日天文新聞 -->
         <div id="news-scroll" class="news-scroll">
             <p class="news-empty">新聞載入中...</p>
         </div>
 
-        <a href="#features" class="cta-btn">開始探索核心功能<span class="material-symbols-outlined icon-inline"
-                style="color:#fff;">arrow_drop_down</span></a>
+        <a href="#features" class="cta-btn">開始探索核心功能<span class="material-symbols-outlined"
+                style="color:#fff; font-size: 1.2rem;">arrow_drop_down</span></a>
     </section>
 
     <section id="features" class="section">
@@ -397,35 +467,35 @@
         <p class="section-desc">四大獨立運作又完美串聯的物理與天文互動模組</p>
 
         <div class="modules-grid">
-            <a href="lab" class="module-card">
+            <a href="lab.html" class="module-card">
                 <div class="module-icon">🔭</div>
                 <div class="module-title">3D 天文實驗室</div>
                 <div class="module-desc">互動式調整引力常數、暗物質密度與光譜波段，即時觀測天體運行與重力扭曲，深入探索星系動力學。</div>
                 <div class="module-link-btn">進入實驗室 <span
-                        class="material-symbols-outlined icon-inline">arrow_right</span></div>
+                        class="material-symbols-outlined">arrow_right</span></div>
             </a>
 
-            <a href="evolution" class="module-card">
+            <a href="evolution.html" class="module-card">
                 <div class="module-icon">⏳</div>
                 <div class="module-title">恆星演化史模擬</div>
                 <div class="module-desc">搭載 8 顆知名真實恆星導覽與多維度物理參數，支援內部剖面、即時自轉與自動時間軸演化。</div>
                 <div class="module-link-btn">展開演化史 <span
-                        class="material-symbols-outlined icon-inline">arrow_right</span></div>
+                        class="material-symbols-outlined">arrow_right</span></div>
             </a>
 
-            <a href="hr" class="module-card">
+            <a href="hr.html" class="module-card">
                 <div class="module-icon">📊</div>
                 <div class="module-title">赫羅圖觀測站</div>
                 <div class="module-desc">支援按住紅點拖曳互動、對數座標光度對應與光譜顏色刻度，完美同步連動 3D 立體恆星模型。</div>
                 <div class="module-link-btn">進入觀測站 <span
-                        class="material-symbols-outlined icon-inline">arrow_right</span></div>
+                        class="material-symbols-outlined">arrow_right</span></div>
             </a>
 
-            <a href="wiki" class="module-card">
+            <a href="wiki.html" class="module-card">
                 <div class="module-icon">📚</div>
                 <div class="module-title">宇宙百科全書</div>
                 <div class="module-desc">收錄所有核心天文物理名詞與進階學術知識，結合多媒體文獻與 NASA 權威資料庫快速檢索。</div>
-                <div class="module-link-btn">查閱百科 <span class="material-symbols-outlined icon-inline">arrow_right</span>
+                <div class="module-link-btn">查閱百科 <span class="material-symbols-outlined">arrow_right</span>
                 </div>
             </a>
         </div>
@@ -543,8 +613,9 @@
         document.getElementById('factText').style.transition = 'opacity 0.2s ease';
         document.getElementById('factText').textContent = facts[0];
     </script>
-    <script src="/static/fetch_news.js"></script>
-    <script src="/static/auth.js"></script>
+
+    <script src="fetch_news.js"></script>
+    <script src="auth.js"></script>
 </body>
 
 </html>

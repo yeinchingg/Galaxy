@@ -412,7 +412,8 @@
 
     <script>
         // 定義 API 基礎路徑（解決連線失敗問題）
-        const API_BASE = "";
+        // 確保 API_BASE 正確指向當前伺服器網址
+        const API_BASE = window.location.origin;
 
         const spaceCanvas = document.getElementById('spaceCanvas');
         const spaceCtx = spaceCanvas.getContext('2d');
