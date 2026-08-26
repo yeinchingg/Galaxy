@@ -217,7 +217,7 @@ Store.update('logM', 12.5);
 // 內部：P['logM'] = 12.5 → simulate()
 ```
 
-#### SCHEMA 驅動的自動滑桿綁定
+#### SCHEMA 驅動的自動滑桿綁定!
 
 ```javascript
 // 不需要為每個滑桿手動寫 addEventListener
