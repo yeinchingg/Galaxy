@@ -34,11 +34,13 @@ QUESTION = os.getenv("BENCHMARK_QUESTION", "太陽的表面溫度大概是幾度
 
 
 def run_once(round_no: int) -> dict:
-    payload = json.dumps({
-        "question": QUESTION,
-        "session_id": f"benchmark_{round_no}_{int(time.time())}",
-        "top_k": 3,
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "question": QUESTION,
+            "session_id": f"benchmark_{round_no}_{int(time.time())}",
+            "top_k": 3,
+        }
+    ).encode("utf-8")
 
     req = urllib.request.Request(
         f"{BASE_URL}/api/chat/stream",
@@ -65,11 +67,11 @@ def run_once(round_no: int) -> dict:
                 continue
 
             if line.startswith("event:"):
-                current_event = line[len("event:"):].strip()
+                current_event = line[len("event:") :].strip()
                 continue
 
             if line.startswith("data:"):
-                data_value = line[len("data:"):].strip()
+                data_value = line[len("data:") :].strip()
 
                 if current_event == "session":
                     continue  # 這是 session_id，不是回答內容
@@ -87,9 +89,11 @@ def run_once(round_no: int) -> dict:
     total = t_end - t_start
 
     print(
-        f"  round {round_no}: TTFT={ttft:.3f}s"
-        if ttft is not None
-        else f"  round {round_no}: TTFT=N/A（沒有偵測到內容）",
+        (
+            f"  round {round_no}: TTFT={ttft:.3f}s"
+            if ttft is not None
+            else f"  round {round_no}: TTFT=N/A（沒有偵測到內容）"
+        ),
         f"| total={total:.3f}s | chunks={chunk_count}",
     )
     return {"ttft": ttft, "total": total}
@@ -112,9 +116,13 @@ def main():
 
     print("\n===== 結果彙總 =====")
     if ttfts:
-        print(f"TTFT  平均: {statistics.mean(ttfts):.3f}s | 中位數: {statistics.median(ttfts):.3f}s | 最慢: {max(ttfts):.3f}s")
+        print(
+            f"TTFT  平均: {statistics.mean(ttfts):.3f}s | 中位數: {statistics.median(ttfts):.3f}s | 最慢: {max(ttfts):.3f}s"
+        )
     if totals:
-        print(f"Total 平均: {statistics.mean(totals):.3f}s | 中位數: {statistics.median(totals):.3f}s | 最慢: {max(totals):.3f}s")
+        print(
+            f"Total 平均: {statistics.mean(totals):.3f}s | 中位數: {statistics.median(totals):.3f}s | 最慢: {max(totals):.3f}s"
+        )
 
 
 if __name__ == "__main__":

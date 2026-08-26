@@ -4,7 +4,7 @@ main.py - StarLearn Clean Architecture 啟動入口
 
 from app.adapters.controllers import chat_controller
 from app.use_cases.rag_chat_use_case import RAGChatUseCase
-from app.infrastructure.database.sqlite_repository import SQLiteRepository
+from app.infrastructure.database.database import SQLiteRepository
 from app.infrastructure.external_ai.pinecone_service import PineconeService
 from app.infrastructure.external_ai.gemini_service import GeminiService
 import os
@@ -25,7 +25,7 @@ load_dotenv(dotenv_path=ENV_PATH)
 ai_service = GeminiService(api_keys=os.getenv("GEMINI_API_KEY", ""))
 vector_store = PineconeService(
     api_key=os.getenv("PINECONE_API_KEY", ""),
-    index_name=os.getenv("PINECONE_INDEX_NAME", "astro-knowledge")
+    index_name=os.getenv("PINECONE_INDEX_NAME", "astro-knowledge"),
 )
 
 # 👈 完整嫁接 SQLite 資料庫儲存庫
@@ -33,13 +33,10 @@ db_path_str = str(BASE_DIR / "astro_platform.db")
 db_repo = SQLiteRepository(db_path=db_path_str)
 
 rag_use_case = RAGChatUseCase(
-    ai_service=ai_service,
-    vector_store=vector_store,
-    session_repo=db_repo
+    ai_service=ai_service, vector_store=vector_store, session_repo=db_repo
 )
 
-app = FastAPI(title="StarLearn API - Clean Architecture Edition",
-              version="3.1.0")
+app = FastAPI(title="StarLearn API - Clean Architecture Edition", version="3.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -60,6 +57,7 @@ async def root_redirect():
 @app.get("/home", include_in_schema=False)
 async def home_redirect():
     return RedirectResponse(url="/index.html")
+
 
 # 注入 Use Case 給 Controller
 chat_controller.set_use_case(rag_use_case)
@@ -82,9 +80,11 @@ if FRONTEND_DIR.exists():
 
         raise HTTPException(status_code=404, detail="頁面不存在")
 
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR),
-              html=False), name="frontend")
+    app.mount(
+        "/", StaticFiles(directory=str(FRONTEND_DIR), html=False), name="frontend"
+    )
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

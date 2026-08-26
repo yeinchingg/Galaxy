@@ -4,7 +4,7 @@ app/use_cases/rag_chat_use_case.py
 """
 
 from typing import Generator, List, Dict, Any, Optional
-from app.use_cases.interfaces import IAIService, IVectorStore, ISessionRepository
+from app.domain.interfaces import IAIService, IVectorStore, ISessionRepository
 
 # 相關性分數門檻
 HIGH_RELEVANCE_THRESHOLD = 0.55
@@ -48,7 +48,12 @@ HINT_TEMPLATE = """請根據以下狀態描述，用親切、像旁白解說的�
 
 
 class RAGChatUseCase:
-    def __init__(self, ai_service: IAIService, vector_store: Optional[IVectorStore] = None, session_repo: Optional[ISessionRepository] = None):
+    def __init__(
+        self,
+        ai_service: IAIService,
+        vector_store: Optional[IVectorStore] = None,
+        session_repo: Optional[ISessionRepository] = None,
+    ):
         self.ai_service = ai_service
         self.vector_store = vector_store
         self.session_repo = session_repo
@@ -69,11 +74,13 @@ class RAGChatUseCase:
                 continue
 
             seen_texts.add(text)
-            results.append({
-                "text": text,
-                "score": score,
-                "relevance": "high" if score >= HIGH_RELEVANCE_THRESHOLD else "low"
-            })
+            results.append(
+                {
+                    "text": text,
+                    "score": score,
+                    "relevance": "high" if score >= HIGH_RELEVANCE_THRESHOLD else "low",
+                }
+            )
 
         results.sort(key=lambda r: r["score"], reverse=True)
         return results
@@ -85,7 +92,7 @@ class RAGChatUseCase:
             history = self.session_repo.get_history(session_id)
             if not history:
                 return ""
-            recent = history[-HISTORY_TURNS * 2:]
+            recent = history[-HISTORY_TURNS * 2 :]
             lines = [
                 f"{'使用者' if m.get('role') == 'user' else '助教'}：{m.get('content', '')}"
                 for m in recent
@@ -94,7 +101,12 @@ class RAGChatUseCase:
         except Exception:
             return ""
 
-    def build_prompt(self, question: str, contexts: List[Dict[str, Any]], session_id: Optional[str] = None) -> str:
+    def build_prompt(
+        self,
+        question: str,
+        contexts: List[Dict[str, Any]],
+        session_id: Optional[str] = None,
+    ) -> str:
         history_block = self._build_history_block(session_id)
         high = [c for c in contexts if c.get("relevance") == "high"]
 
@@ -113,7 +125,9 @@ class RAGChatUseCase:
                 question=question,
             )
 
-    def ask(self, question: str, top_k: int = 3, session_id: Optional[str] = None) -> Dict[str, Any]:
+    def ask(
+        self, question: str, top_k: int = 3, session_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         try:
             contexts = self.retrieve_context(question, top_k=top_k)
             prompt = self.build_prompt(question, contexts, session_id)
@@ -132,7 +146,9 @@ class RAGChatUseCase:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    def generate_stream(self, question: str, top_k: int = 3, session_id: Optional[str] = None) -> Generator[str, None, None]:
+    def generate_stream(
+        self, question: str, top_k: int = 3, session_id: Optional[str] = None
+    ) -> Generator[str, None, None]:
         contexts = self.retrieve_context(question, top_k=top_k)
         prompt = self.build_prompt(question, contexts, session_id)
         return self.ai_service.generate_stream(prompt)

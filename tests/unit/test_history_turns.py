@@ -34,7 +34,8 @@ def test_history_block_only_includes_last_two_turns():
     # HISTORY_TURNS=2 → 最近 2 輪 = 4 則訊息
     # 排除開頭的「先前的對話紀錄：」標題行，只數實際訊息行
     message_lines = [
-        line for line in block.split("\n")
+        line
+        for line in block.split("\n")
         if line.startswith("使用者：") or line.startswith("助教：")
     ]
     expected_lines = 2 * rag_module.HISTORY_TURNS

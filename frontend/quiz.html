@@ -730,7 +730,7 @@
     </main>
 
     <script>
-        /* ================= 題庫資料（每題含正確答案與 3 個固定錯誤選項） ================= */
+        /* ================= 題庫資料 ================= */
         const QUESTIONS = {
             beginner: [
                 ["黑洞是什麼？", "高密度、重力強到連光也無法逃脫的天體", ["宇宙中完全沒有物質的巨大空洞", "專門主動吸入遠方恆星的宇宙吸塵器", "通往另一個平行宇宙的傳送門"]],
@@ -803,11 +803,11 @@
         const LEVEL_CONFIG = {
             beginner: { label: "Level 1 · 國中小基礎科普", time: 20 },
             intermediate: { label: "Level 2 · 高中定律與基礎物理", time: 25 },
-            advanced: { label: "Level 3 · 專業級觀測與進階理論", time: 30 }
+            advanced: { label: "Level 3 · 專家級觀測與進階理論", time: 30 }
         };
         const LETTERS = ["A", "B", "C", "D"];
         const QUESTIONS_PER_ROUND = 10;
-        const PTS_PER_CORRECT = 100 / QUESTIONS_PER_ROUND; // 10 題 x 10 分 = 滿分 100
+        const PTS_PER_CORRECT = 100 / QUESTIONS_PER_ROUND;
 
         /* ================= 狀態 ================= */
         let state = {};
@@ -971,7 +971,7 @@
         }
 
         /* ================= 結算 ================= */
-        function finishQuiz() {
+        async function finishQuiz() {
             const total = state.set.length;
             const accuracy = Math.round((state.correctCount / total) * 100);
             const elapsedSec = Math.round((Date.now() - state.startedAt) / 1000);
@@ -982,12 +982,32 @@
             else if (accuracy >= 80) { title = "表現優異！"; sub = "(❁´◡`❁)"; }
             else if (accuracy < 50) { title = "挑戰完成"; sub = "(o゜▽゜)o☆"; }
 
+            // 計算最終精準分數
+            const finalScore = Math.round(state.score);
+
             document.getElementById("resultTitle").textContent = title;
             document.getElementById("resultSub").textContent = sub;
-            document.getElementById("rScore").textContent = Math.round(state.score);
+            document.getElementById("rScore").textContent = finalScore;
             document.getElementById("rCorrect").textContent = state.correctCount + "/" + total;
             document.getElementById("rAccuracy").textContent = accuracy + "%";
             document.getElementById("rTime").textContent = elapsedSec + "s";
+
+            // 單一且正確地發送結算成績（只發送一次）
+            try {
+                await fetch('/api/quiz/score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: 1,
+                        quiz_type: state.level,
+                        score: finalScore,
+                        total_questions: total
+                    })
+                });
+                console.log("✅ 測驗成績已成功記錄至資料庫！");
+            } catch (err) {
+                console.error("❌ 儲存測驗成績失敗:", err);
+            }
 
             const reviewList = document.getElementById("reviewList");
             reviewList.innerHTML = "";

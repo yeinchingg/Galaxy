@@ -30,7 +30,7 @@ class SpaceflightNewsClient:
                     "image_url": item.get("image_url"),
                     "url": item.get("url", "#"),
                     "published_at": item.get("published_at", ""),
-                    "source": item.get("news_site", "Spaceflight News")
+                    "source": item.get("news_site", "Spaceflight News"),
                 }
                 for item in results
             ]
@@ -49,6 +49,6 @@ class SpaceflightNewsClient:
                     "image_url": None,
                     "url": "#",
                     "published_at": "Just now",
-                    "source": "STARLEARN System"
+                    "source": "STARLEARN System",
                 }
             ]

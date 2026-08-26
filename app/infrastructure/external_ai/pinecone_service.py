@@ -5,7 +5,7 @@ app/infrastructure/external_ai/pinecone_service.py
 
 from typing import List, Dict, Any
 from pinecone import Pinecone
-from app.use_cases.interfaces import IVectorStore
+from app.domain.interfaces import IVectorStore
 
 
 class PineconeService(IVectorStore):
@@ -13,7 +13,9 @@ class PineconeService(IVectorStore):
         self.pc = Pinecone(api_key=api_key) if api_key else None
         self.index = self.pc.Index(index_name) if self.pc and index_name else None
 
-    def similarity_search(self, vector: List[float], top_k: int = 3) -> List[Dict[str, Any]]:
+    def similarity_search(
+        self, vector: List[float], top_k: int = 3
+    ) -> List[Dict[str, Any]]:
         if not self.index:
             return []
         try:
@@ -23,10 +25,12 @@ class PineconeService(IVectorStore):
             results = []
             for match in query_res.matches:
                 if match.metadata and "text" in match.metadata:
-                    results.append({
-                        "text": match.metadata["text"].strip(),
-                        "score": getattr(match, "score", 0.0) or 0.0
-                    })
+                    results.append(
+                        {
+                            "text": match.metadata["text"].strip(),
+                            "score": getattr(match, "score", 0.0) or 0.0,
+                        }
+                    )
             return results
         except Exception as e:
             print(f"Pinecone 檢索失敗: {e}")

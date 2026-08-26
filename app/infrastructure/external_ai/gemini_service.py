@@ -6,13 +6,13 @@ app/infrastructure/external_ai/gemini_service.py
 from typing import List, Generator, Union
 from google import genai
 from google.genai import types
-from app.use_cases.interfaces import IAIService
+from app.domain.interfaces import IAIService
 
 # ✅ 使用帳號實測可用的模型清單，避免 503 塞車與 404 過期問題
 GENERATION_MODELS = [
     "gemini-flash-lite-latest",  # 備援：最新輕量版 Flash-Lite
-    "gemini-2.5-flash",             # 首選：穩定版 2.5 Flash
-    "gemini-flash-latest",           # 備援：最新 Flash 別名
+    "gemini-2.5-flash",  # 首選：穩定版 2.5 Flash
+    "gemini-flash-latest",  # 備援：最新 Flash 別名
 ]
 EMBEDDING_MODEL = "gemini-embedding-001"
 
@@ -62,7 +62,9 @@ class GeminiService(IAIService):
                     )
                     return response.text.strip()
                 except Exception as e:
-                    print(f"⚠️ 模型 {model_name} 呼叫失敗 ({e})，切換下一組 Key/模型重試...")
+                    print(
+                        f"⚠️ 模型 {model_name} 呼叫失敗 ({e})，切換下一組 Key/模型重試..."
+                    )
                     last_exception = e
         raise RuntimeError(f"所有模型與 API Key 組合皆失敗: {last_exception}")
 
@@ -93,7 +95,7 @@ class GeminiService(IAIService):
                 embed_res = client.models.embed_content(
                     model=self.embedding_model,
                     contents=text,
-                    config={"output_dimensionality": self.target_dimension}
+                    config={"output_dimensionality": self.target_dimension},
                 )
                 return embed_res.embeddings[0].values
             except Exception as e:

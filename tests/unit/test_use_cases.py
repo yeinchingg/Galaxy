@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import AsyncMock
 from app.use_cases.rag_chat_use_case import RAGChatUseCase
 
+
 @pytest.mark.asyncio
 async def test_rag_chat_flow():
     mock_ai = AsyncMock()
@@ -10,7 +11,9 @@ async def test_rag_chat_flow():
     mock_vector.similarity_search.return_value = ["赫羅圖相關文獻"]
     mock_repo = AsyncMock()
 
-    use_case = RAGChatUseCase(ai_service=mock_ai, vector_store=mock_vector, repository=mock_repo)
+    use_case = RAGChatUseCase(
+        ai_service=mock_ai, vector_store=mock_vector, repository=mock_repo
+    )
     result = await use_case.execute("什麼是赫羅圖？", "session_123")
 
     assert "赫羅圖" in result

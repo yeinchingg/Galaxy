@@ -10,11 +10,11 @@ from typing import Dict, Tuple, Optional
 SPECTRAL_TABLE = [
     (30000, "O", "#9bb0ff", "藍色"),
     (10000, "B", "#aabfff", "藍白色"),
-    (7500,  "A", "#cad7ff", "白色"),
-    (6000,  "F", "#f8f7ff", "黃白色"),
-    (5200,  "G", "#fff4ea", "黃色"),
-    (3700,  "K", "#ffd2a1", "橙色"),
-    (0,     "M", "#ffcc6f", "紅色"),
+    (7500, "A", "#cad7ff", "白色"),
+    (6000, "F", "#f8f7ff", "黃白色"),
+    (5200, "G", "#fff4ea", "黃色"),
+    (3700, "K", "#ffd2a1", "橙色"),
+    (0, "M", "#ffcc6f", "紅色"),
 ]
 
 
@@ -45,33 +45,39 @@ class StarPhysicsCalculator:
     def temp_to_color(temp_k: float) -> StarColor:
         """根據表面有效溫度轉換光譜型與顏色"""
         if temp_k <= 0:
-            return StarColor(spectral_type="-", hex_code="#333333", name="無法用溫度描述")
+            return StarColor(
+                spectral_type="-", hex_code="#333333", name="無法用溫度描述"
+            )
 
         for threshold, spectral_type, hex_color, name in SPECTRAL_TABLE:
             if temp_k >= threshold:
-                return StarColor(spectral_type=spectral_type, hex_code=hex_color, name=name)
+                return StarColor(
+                    spectral_type=spectral_type, hex_code=hex_color, name=name
+                )
         return StarColor(spectral_type="M", hex_code="#ffcc6f", name="紅色")
 
     @staticmethod
-    def compute_initial_properties(mass: float, metallicity: float = 1.0, rotation: float = 0.0) -> InitialStarProps:
+    def compute_initial_properties(
+        mass: float, metallicity: float = 1.0, rotation: float = 0.0
+    ) -> InitialStarProps:
         """計算恆星零齡主序星 (ZAMS) 初始物理參數"""
         mass = max(0.1, min(mass, 100.0))
         metallicity = max(0.0, min(metallicity, 2.0))
         rotation = max(0.0, min(rotation, 1.0))
 
         # 質量-光度與質量-半徑關係 (簡化模型)
-        luminosity = mass ** 3.5
-        radius = mass ** 0.74
-        temperature = 5778 * (luminosity / (radius ** 2)) ** 0.25
+        luminosity = mass**3.5
+        radius = mass**0.74
+        temperature = 5778 * (luminosity / (radius**2)) ** 0.25
 
         # 金屬遮蔽效應
-        temperature *= (1 - 0.05 * (metallicity - 1))
+        temperature *= 1 - 0.05 * (metallicity - 1)
 
         # 自轉扁率
-        oblateness = 0.5 * (rotation ** 2)
+        oblateness = 0.5 * (rotation**2)
 
         # 主序壽命 (十億年 Gyr)
-        lifetime_gyr = 10 / (mass ** 2.5)
+        lifetime_gyr = 10 / (mass**2.5)
 
         color = StarPhysicsCalculator.temp_to_color(temperature)
 
@@ -88,7 +94,9 @@ class StarPhysicsCalculator:
         )
 
     @staticmethod
-    def calculate_evolution_state(mass: float, l0: float, r0: float, age_frac: float) -> Tuple[str, str, Optional[float], Optional[float]]:
+    def calculate_evolution_state(
+        mass: float, l0: float, r0: float, age_frac: float
+    ) -> Tuple[str, str, Optional[float], Optional[float]]:
         """依年齡比例計算演化階段與當前光度/半徑倍數"""
         if age_frac < 0.9:
             stage = "main_sequence"
@@ -110,7 +118,10 @@ class StarPhysicsCalculator:
         else:
             # 演化末期殘骸判定
             if mass < 0.5:
-                stage, stage_name = "white_dwarf", "白矮星（極低質量恆星最終型態，理論上需比宇宙年齡更久）"
+                stage, stage_name = (
+                    "white_dwarf",
+                    "白矮星（極低質量恆星最終型態，理論上需比宇宙年齡更久）",
+                )
                 r, l = 0.01, 0.0005
             elif mass < 8:
                 stage, stage_name = "white_dwarf", "白矮星"

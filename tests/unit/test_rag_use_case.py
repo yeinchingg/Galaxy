@@ -38,9 +38,7 @@ def test_rag_fallback_when_no_high_relevance():
 
     mock_vdb = MagicMock()
     # 沒有高相關資料
-    mock_vdb.similarity_search.return_value = [
-        {"text": "邊緣資料", "score": 0.38}
-    ]
+    mock_vdb.similarity_search.return_value = [{"text": "邊緣資料", "score": 0.38}]
 
     use_case = RAGChatUseCase(ai_service=mock_ai, vector_store=mock_vdb)
     result = use_case.ask("未知的物理現象？")

@@ -38,11 +38,17 @@ if not api_key:
     print("\n❌ 目前讀不到 GEMINI_API_KEY。")
     print("   可能原因：")
     print("   1) .env 檔案不在上面印出的路徑")
-    print("   2) .env 裡的變數名稱打錯（要完全是 GEMINI_API_KEY=xxxx，等號兩邊不要有空白，不要加引號也可以）")
-    print("   3) 這台機器/這個部署環境本來就沒有把 .env 帶進來（很多雲端平台預設不會上傳 .env，因為它被 .gitignore 排除）")
+    print(
+        "   2) .env 裡的變數名稱打錯（要完全是 GEMINI_API_KEY=xxxx，等號兩邊不要有空白，不要加引號也可以）"
+    )
+    print(
+        "   3) 這台機器/這個部署環境本來就沒有把 .env 帶進來（很多雲端平台預設不會上傳 .env，因為它被 .gitignore 排除）"
+    )
     sys.exit(1)
 
-masked = api_key[:4] + "..." + api_key[-4:] if len(api_key) > 8 else "(太短，可能貼錯了)"
+masked = (
+    api_key[:4] + "..." + api_key[-4:] if len(api_key) > 8 else "(太短，可能貼錯了)"
+)
 print(f"\n✅ 讀到 GEMINI_API_KEY: {masked}（長度 {len(api_key)}）")
 
 # 支援用逗號分隔多把 key 輪播（跟 rag_engine.py 的邏輯一致），這裡全部都測過一輪
@@ -103,4 +109,6 @@ for i, key in enumerate(keys, start=1):
     print()
 
 print("測試結束。若上面每一步都是 ✅，代表 Key 本身沒問題，")
-print("那你專案裡原本 404 NOT_FOUND 的錯誤，根源是『model 名稱過期』，不是 Key 或 .env 的問題。")
+print(
+    "那你專案裡原本 404 NOT_FOUND 的錯誤，根源是『model 名稱過期』，不是 Key 或 .env 的問題。"
+)

@@ -18,7 +18,9 @@ class IAIService(ABC):
 
 class IVectorStore(ABC):
     @abstractmethod
-    def similarity_search(self, vector: List[float], top_k: int = 3) -> List[Dict[str, Any]]:
+    def similarity_search(
+        self, vector: List[float], top_k: int = 3
+    ) -> List[Dict[str, Any]]:
         pass
 
 

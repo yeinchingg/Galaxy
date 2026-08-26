@@ -1,12 +1,13 @@
 import math
 
+
 class StellarPhysics:
     @staticmethod
     def calculate_schwarzschild_radius(mass_kg: float) -> float:
         """計算史瓦西半徑 (m)"""
         G = 6.67430e-11
         c = 299792458
-        return (2 * G * mass_kg) / (c ** 2)
+        return (2 * G * mass_kg) / (c**2)
 
     @staticmethod
     def determine_stellar_stage(mass: float, progress: float) -> str:
