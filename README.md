@@ -1,194 +1,211 @@
-# STARLEARN 探索太空數位學習平台
 
-本專案是一個結合 Clean Architecture 設計理念的天文科普與恆星物理互動學習平台。系統整合 RAG 檢索增強生成、恆星物理演化模型、3D 視覺化實驗室、SSE 實時串流對話與個人化學習大綱動態推薦等核心功能。
+# 🌌 StarLearn - 天文物理多模態智慧學習平台
 
----
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat-square&logo=python)](https://www.python.org/)
+[![Google Gemini API](https://img.shields.io/badge/LLM-Gemini_2.5_Flash-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
+[![Pinecone](https://img.shields.io/badge/VectorDB-Pinecone-000000?style=flat-square)](https://www.pinecone.io/)
+[![Three.js](https://img.shields.io/badge/Frontend-Three.js_/_WebGL-black?style=flat-square&logo=three.js)](https://threejs.org/)
+[![NASA Open API](https://img.shields.io/badge/Data-NASA_APOD_API-E03C31?style=flat-square&logo=nasa)](https://api.nasa.gov/)
 
-## 核心功能
-
-- 3D 恆星實驗室：透過互動式 3D 視覺化，觀察恆星結構與物理特性
-- 恆星演化模型：以物理演算法模擬恆星從誕生到死亡的完整生命週期
-- RAG 智能問答：結合向量檢索與 LLM 生成，提供精準的天文知識問答
-- SSE 實時串流對話：低延遲、逐字串流的對話體驗
-- 赫羅圖 (H-R Diagram) 觀測站：視覺化呈現恆星光譜與亮度分類
-- 星海問答與測驗：檢核學習成效的互動測驗模組
-- 宇宙知識百科庫：系統化整理的天文知識庫
-- 使用者驗證機制：完整的登入 / 註冊 / 訪客模式支援
-- 太空新聞動態擷取：即時同步最新太空探索資訊
+> **StarLearn** 是一個結合 **RAG 檢索增強生成**、**3D 天體互動模擬**、**NASA 每日隨機天文探索** 與 **個人化學習路徑推薦** 的天文物理教育平台。
 
 ---
 
-## 專案架構
+## 📑 目錄
 
-專案採用 Clean Architecture 劃分為四大層級，模組職責歸屬如下：
+- [專案簡介](#-專案簡介)
+- [核心功能亮點](#-核心功能亮點)
+- [系統架構與設計模式](#-系統架構與設計模式)
+- [專案目錄結構](#-專案目錄結構)
+- [技術棧](#-技術棧)
+- [環境安裝與啟動教學](#-環境安裝與啟動教學)
+- [後端 API 端點規格](#-後端-api-端點規格)
+
+
+---
+
+## 📖 專案簡介
+
+本專案旨在解決傳統天文物理學習門檻高、抽象難懂的問題。透過以下核心技術實現沉浸式學習：
+1. **檢索增強生成 (RAG)**：整合 Pinecone 向量資料庫與 Gemini 多金鑰容錯機制，精準回答專業天體物理問題。
+2. **3D 即時動態實驗室**：使用 Three.js 模擬黑洞吸積盤、重力透鏡與恆星結構，並由 AI 根據畫面即時生成解說旁白。
+3. **NASA 即時新知**：每日隨機串接 NASA 官方 APOD 資料庫與深度研究連結，提供即時的天文動態。
+4. **個人化大綱與行為追蹤**：記錄使用者瀏覽足跡，自動推薦專屬延伸學習主題。
+
+---
+
+## ✨ 核心功能亮點
+
+- 🤖 **AI 智慧導師 (SSE 串流對話)**：支援 Markdown 與 LaTeX 數學公式即時串流輸出，具備多對話輪次記憶。
+- 🔑 **Gemini 多金鑰輪替機制 (Multi-Key Failover)**：自動偵測配額耗盡（429）或無效金鑰，秒級切換可用 Key，保證高可用性。
+- 🔭 **3D 天體實驗室 (Interactive Lab)**：支援視角切換、物理參數調節與 AI 動態旁白生成。
+- 🌠 **NASA 每日隨機新知輪播**：即時或隨機抽取 NASA 天文照片與摘要，點擊直達官方專屬報導頁面。
+- 📊 **赫羅圖與恆星演化探索 (H-R Diagram)**：動態展示主序星、巨星、白矮星與超新星的演化路徑。
+- 🎯 **個人化學習路徑**：基於前端行為追蹤演算法，即時計算學習興趣並推薦最佳探索大綱。
+
+---
+
+## 🏗 系統架構與設計模式
+
+本專案後端嚴格遵循 **Clean Architecture（整潔架構）** 原則，實現高度模組化、低耦合與易於測試的特性：
 
 ```text
-starlearn/
-├── 1. 前端網頁層 (Presentation Layer / User Interface)
-│   ├── index.html           # 首頁 / 系統入口
-│   ├── lab.html             # 3D 恆星實驗室互動介面
-│   ├── evolution.html       # 恆星演化歷程展示
-│   ├── hr.html              # 赫羅圖 (H-R Diagram) 觀測站
-│   ├── quiz.html            # 星海問答與測驗
-│   ├── wiki.html            # 宇宙知識百科庫
-│   ├── login.html           # 使用者登入與身份驗證頁面
-│   ├── profile.html         # 個人學習歷程與檔案
-│   ├── auth.js              # 前端路由保護與驗證邏輯
-│   ├── auth_handler.js      # 登入/註冊/訪客機制處理器
-│   ├── fetch_news.js        # 太空新聞動態擷取邏輯
-│   └── theme.css            # 全站 UI 主題樣式表
-│
-├── 2. 後端 API 層 (Interface Adapters / Web Controller)
-│   ├── main.py              # 應用程式入口：FastAPI 初始化、CORS、依賴注入 (DI)
-│   └── api_routes.py        # 端點控制層：定義 /api/* 路由與 Pydantic Schema
-│
-├── 3. AI 與業務邏輯服務層 (Application & Domain Business Logic)
-│   ├── rag_engine.py        # RAG 檢索增強生成、SSE 串流對話引擎
-│   └── star_engine.py       # 恆星物理模型計算與演化演算法
-│   └── 外部 AI 服務 (External AI Services)
-│       ├── Gemini API       # LLM 生成回答與向量嵌入 (Embedding)
-│       └── Pinecone DB      # 雲端向量資料庫 (Vector Index)
-│
-├── 4. 資料儲存與基礎設施層 (Infrastructure / Data Access Layer)
-│   ├── storage.py           # 資料庫存取介面 (SQLite / PostgreSQL DAO)
-│   ├── astro_platform.db    # 現行本地 SQLite 資料庫檔案
-│   └── (未來規劃) Redis      # 快取快照與 Session 高效存取
-│
-└── 環境設定與工具 (Config & Tools)
-    ├── .env                 # 機密密鑰與 API Key 儲存檔（已列入 .gitignore 防護）
-    ├── .gitignore           # Git 忽略檔案清單
-    ├── requirements.txt     # Python 套件依賴需求檔
-    └── test_api_key.py      # API 金鑰效能與運作測試腳本
+┌────────────────────────────────────────────────────────┐
+│                   Frontend Client                      │
+│   (index.html / lab.html / hr.html / wiki.html / JS)   │
+└───────────────────────────┬────────────────────────────┘
+                            │ HTTP / SSE Stream
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│             FastAPI Entrypoint (main.py)               │
+└───────────────────────────┬────────────────────────────┘
+                            │
+┌───────────────────────────▼────────────────────────────┐
+│      Adapters / Controllers (chat_controller.py)       │
+│  - REST API 路由 (/api/daily-knowledge, /api/outline)  │
+│  - SSE 串流協議轉發 (/api/chat/stream)                  │
+└───────────────────────────┬────────────────────────────┘
+                            │
+┌───────────────────────────▼────────────────────────────┐
+│         Use Cases (rag_chat_use_case.py)               │
+│  - RAG 檢索邏輯流程編排                                 │
+│  - 對話歷史記錄管理                                     │
+│  - 3D 場景語境旁白生成                                  │
+└───────────────────────────┬────────────────────────────┘
+                            │
+┌───────────────────────────▼────────────────────────────┐
+│      Infrastructure & External Services                │
+│  ├── Gemini LLM (Multi-Key Rotation / Embedding)       │
+│  ├── Pinecone Vector DB (天文知識庫語意搜尋)            │
+│  └── NASA Open API (APOD 即時/隨機天文照片與報導)        │
+└────────────────────────────────────────────────────────┘
+
 ```
 
 ---
 
-## 安裝
+## 📁 專案目錄結構
 
-### 環境需求
+```text
+website/
+├── app/
+│   ├── adapters/
+│   │   └── controllers/
+│   │       ├── __init__.py
+│   │       └── chat_controller.py       # FastAPI 控制器與所有端點定義
+│   ├── domain/                          # 核心業務實體與介面
+│   ├── infrastructure/                  # 外部服務實作 (Gemini, Pinecone, NASA)
+│   └── use_cases/
+│       └── rag_chat_use_case.py         # RAG 檢索與對話用例
+├── frontend/                            # 前端靜態資源
+│   ├── css/                             # 樣式表 (深色太空風格)
+│   ├── js/
+│   │   ├── chat.js                      # AI 助理對話與 SSE 串流接收
+│   │   ├── fetch_news.js                # 新聞隨機輪播、追蹤與大綱推薦
+│   │   └── lab_3d.js                    # Three.js 3D 模擬與互動邏輯
+│   ├── index.html                       # 平台首頁
+│   ├── lab.html                         # 3D 天體互動實驗室
+│   ├── hr.html                          # 赫羅圖與恆星演化
+│   └── wiki.html                        # 天文知識庫百科
+├── main.py                              # FastAPI 服務啟動入口
+├── README.md                            # 專案說明文件
+└── requirements.txt                     # Python 相依套件清單
 
-- Python 3.10 或更高版本
-- Git
-- 資料庫：SQLite 3（現行）／ PostgreSQL 14+ ／ Redis（未來規劃）
-- 支援 WebGL / HTML5 的現代瀏覽器（Chrome、Edge、Safari）
-- 第三方 API 金鑰：
-  - [Google Gemini API Key](https://aistudio.google.com/)（用於 RAG 問答與向量生成）
-  - [Pinecone API Key](https://www.pinecone.io/)（用於向量資料庫檢索）
-
-### 步驟
-
-**1. 複製儲存庫**
-
-```bash
-git clone https://github.com/your-username/starlearn.git
-cd starlearn
 ```
 
-**2. 建立並啟用虛擬環境**
+---
 
-macOS / Linux：
+## 🛠 技術棧
+
+### 後端 (Backend)
+
+* **核心框架**：Python 3.11+、FastAPI、Uvicorn
+* **AI / LLM**：Google Generative AI (Gemini 2.5 Flash / Pro)
+* **向量檢索**：Pinecone Serverless Vector Database
+* **外部資料**：NASA APOD API、Requests
+
+### 前端 (Frontend)
+
+* **視圖層**：HTML5、CSS3 (Glassmorphism 毛玻璃視覺設計)
+* **3D 渲染引擎**：Three.js、WebGL
+* **非同步與串流**：Fetch API、Server-Sent Events (SSE)
+* **排版與解析**：Marked.js (Markdown 解析)、KaTeX (LaTeX 公式渲染)
+
+---
+
+## 🚀 環境安裝與啟動教學
+
+### 1. 複製專案庫
 
 ```bash
+git clone [https://github.com/your-username/StarLearn.git](https://github.com/your-username/StarLearn.git)
+cd StarLearn
+
+```
+
+### 2. 建立並啟動 Python 虛擬環境
+
+```powershell
+# Windows
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# macOS / Linux
 python3 -m venv venv
 source venv/bin/activate
+
 ```
 
-Windows（CMD / PowerShell）：
+### 3. 安裝相依套件
 
 ```bash
-python -m venv venv
-.\venv\Scripts\activate
-```
-
-**3. 安裝依賴套件**
-
-```bash
-pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-若前端有獨立的 Node/NPM 套件管理，請另外執行：
-
-```bash
-npm install
-```
-
-**4. 設定環境變數**
-
-在專案根目錄下建立 `.env` 檔案，並填入 API 金鑰（可參考 `.env.example`）：
 
 ```
-GEMINI_API_KEY=your_gemini_api_key_here
-PINECONE_API_KEY=your_pinecone_api_key_here
-PINECONE_ENV=us-east-1
 
-PORT=8000
-DEBUG=True
-```
-
-**5. 初始化資料庫**
-
-```bash
-python storage.py --init-db
-```
+> 若無 `requirements.txt`，可直接安裝關鍵套件：
+> ```bash
+> pip install fastapi uvicorn google-generativeai pinecone-client python-dotenv requests pydantic
+> 
+> ```
+> 
+> 
 
 ---
 
-## 快速啟動
 
-```bash
+
+## 🌐 後端 API 端點規格
+
+| 方法 | 端點 | 說明 |
+| --- | --- | --- |
+| `GET` | `/api/status` | 檢查伺服器與 AI 引擎連線狀態 |
+| `GET` | `/api/daily-knowledge` | 隨機獲取 NASA APOD 每日天文新知與專屬報導連結 |
+| `GET` | `/api/outline/{user_id}` | 根據使用者 ID 取得推薦學習大綱 |
+| `POST` | `/api/track` | 記錄使用者瀏覽行為與主題互動次數 |
+| `POST` | `/api/chat` | 單次問答對話 (JSON 回應) |
+| `POST` | `/api/chat/stream` | **SSE 串流問答**（打字機效果，支援對話輪次記憶） |
+| `POST` | `/api/3d/narrate` | 傳入 3D 場景參數，由 AI 即時生成解說旁白 |
+
+---
+
+## 🖥 執行與預覽
+
+啟動 FastAPI 伺服器：
+
+```powershell
 python main.py
-# 或使用 uvicorn 啟動
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
 ```
 
-啟動成功後，開啟瀏覽器造訪：
+啟動後打開瀏覽器訪問各個模組：
 
-- Web 介面首頁：http://127.0.0.1:8000/
-- Swagger API 互動文件：http://127.0.0.1:8000/docs
-
----
-
-## 環境變數
-
-| 變數名稱 | 說明 | 必填 |
-|---|---|---|
-| `GEMINI_API_KEY` | Google Gemini API 金鑰，用於生成回答與向量嵌入 | 是 |
-| `PINECONE_API_KEY` | Pinecone 向量資料庫 API 金鑰 | 是 |
-| `PINECONE_ENV` | Pinecone 服務所在的環境區域（例如 `us-east-1`） | 是 |
-| `PORT` | 服務啟動的埠號（預設 `8000`） | 否 |
-| `DEBUG` | 是否開啟除錯模式（`True` / `False`） | 否 |
-
-`.env` 檔案已列入 `.gitignore`，請勿將金鑰提交至版本控制系統。
+* 🌟 **首頁門戶**：`http://127.0.0.1:8000/index.html`
+* 🌌 **3D 互動實驗室**：`http://127.0.0.1:8000/lab.html`
+* 📊 **赫羅圖模擬**：`http://127.0.0.1:8000/hr.html`
+* 📖 **天文百科知識庫**：`http://127.0.0.1:8000/wiki.html`
+* 📑 **互動式 API 文件**：`http://127.0.0.1:8000/docs`
 
 ---
-
-## API 文件
-
-專案基於 FastAPI 建置，啟動服務後可於 `/docs` 取得自動生成的 Swagger UI 文件，涵蓋：
-
-- `/api/chat`：RAG 問答與 SSE 串流對話端點
-- `/api/star`：恆星物理演化模型計算端點
-- `/api/auth`：使用者登入 / 註冊 / 身份驗證端點
-
-詳細的請求與回應 Schema 請參考 `api_routes.py` 中的 Pydantic 模型定義。
-
----
-
- ## Roadmap
-
-- 導入 PostgreSQL 取代現行 SQLite，支援更高併發存取
-- 整合 Redis 作為快取層，加速 Session 與熱門查詢
-- 擴充個人化學習大綱動態推薦演算法
-- 新增多語系（i18n）支援
-- 補充完整的單元測試與 CI/CD 流程
-
----
-## 透過 Issue 或 Pull Request 參與開發
-
-1. Fork 本專案
-2. 建立功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交變更 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送分支 (`git push origin feature/AmazingFeature`)
-5. 開啟 Pull Request
 
