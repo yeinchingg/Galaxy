@@ -10,8 +10,8 @@ from app.use_cases.interfaces import IAIService
 
 # ✅ 使用帳號實測可用的模型清單，避免 503 塞車與 404 過期問題
 GENERATION_MODELS = [
+    "gemini-flash-lite-latest",  # 備援：最新輕量版 Flash-Lite
     "gemini-2.5-flash",             # 首選：穩定版 2.5 Flash
-    "gemini-flash-lite-latest",      # 備援：最新輕量版 Flash-Lite
     "gemini-flash-latest",           # 備援：最新 Flash 別名
 ]
 EMBEDDING_MODEL = "gemini-embedding-001"
