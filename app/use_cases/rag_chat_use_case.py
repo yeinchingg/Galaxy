@@ -9,7 +9,7 @@ from app.use_cases.interfaces import IAIService, IVectorStore, ISessionRepositor
 # 相關性分數門檻
 HIGH_RELEVANCE_THRESHOLD = 0.55
 LOW_RELEVANCE_THRESHOLD = 0.35
-HISTORY_TURNS = 4
+HISTORY_TURNS = 2
 
 SYSTEM_PERSONA = """你是一位親切、耐心的天文助教，正在跟一位對天文有興趣的學習者聊天。
 

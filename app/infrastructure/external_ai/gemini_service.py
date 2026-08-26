@@ -5,6 +5,7 @@ app/infrastructure/external_ai/gemini_service.py
 
 from typing import List, Generator, Union
 from google import genai
+from google.genai import types
 from app.use_cases.interfaces import IAIService
 
 # ✅ 使用帳號實測可用的模型清單，避免 503 塞車與 404 過期問題
@@ -14,6 +15,10 @@ GENERATION_MODELS = [
     "gemini-flash-latest",           # 備援：最新 Flash 別名
 ]
 EMBEDDING_MODEL = "gemini-embedding-001"
+
+# 單一請求的逾時時間（毫秒）。避免某個 key/模型卡住時，
+# 依序重試造成整體對話延遲被無限放大。
+REQUEST_TIMEOUT_MS = 15_000
 
 
 class GeminiService(IAIService):
@@ -32,10 +37,18 @@ class GeminiService(IAIService):
         self.embedding_model = EMBEDDING_MODEL
         self.target_dimension = target_dimension
 
+        # 每個 key 各自快取一個 Client，避免每次呼叫都重新建立
+        # （省去重複的 client 初始化開銷），並統一套用逾時設定。
+        http_options = types.HttpOptions(timeout=REQUEST_TIMEOUT_MS)
+        self._clients: List[genai.Client] = [
+            genai.Client(api_key=key, http_options=http_options)
+            for key in self.api_keys
+        ]
+
     def _get_next_client(self) -> genai.Client:
-        current_key = self.api_keys[self.current_key_index]
-        self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
-        return genai.Client(api_key=current_key)
+        client = self._clients[self.current_key_index]
+        self.current_key_index = (self.current_key_index + 1) % len(self._clients)
+        return client
 
     def generate_content(self, prompt: str) -> str:
         last_exception = None
