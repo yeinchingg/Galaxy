@@ -2,7 +2,7 @@
 main.py - StarLearn Clean Architecture 啟動入口
 """
 
-from app.adapters.controllers import chat_controller
+from app.adapters.controllers import chat_controller, auth_controller
 from app.use_cases.rag_chat_use_case import RAGChatUseCase
 from app.infrastructure.database.database import SQLiteRepository
 from app.infrastructure.external_ai.pinecone_service import PineconeService
@@ -62,12 +62,11 @@ async def home_redirect():
 # 注入 Use Case 給 Controller
 chat_controller.set_use_case(rag_use_case)
 app.include_router(chat_controller.router, prefix="/api")
-
+app.include_router(auth_controller.router, prefix="/api")
 # 4. 前端靜態資源與 HTML 萬用路由掛載
 FRONTEND_DIR = BASE_DIR / "frontend"
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
-
     @app.get("/{page_name}")
     async def render_html_page(page_name: str):
         target_file = FRONTEND_DIR / page_name
@@ -87,4 +86,4 @@ if FRONTEND_DIR.exists():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)

@@ -1,10 +1,171 @@
+<!-- <!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究員檔案與紀錄 | 天文與恆星物理專題</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color, #030712);
+            color: var(--text-main, #f3f4f6);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg, #111827);
+            border: 1px solid var(--border-color, #374151);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--accent, #6366f1);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .info-group {
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .history-section {
+            margin-top: 30px;
+        }
+
+        .history-card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid #374151;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--accent, #6366f1);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="profile-container">
+        <h2>🔬 研究員個人檔案</h2>
+
+        <div class="info-group">
+            <div class="info-label">使用者名稱</div>
+            <div class="info-value" id="profileUsername">載入中...</div>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">身分權限</div>
+            <div class="info-value" id="profileRole">載入中...</div>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">帳號建立時間</div>
+            <div class="info-value" id="profileCreated">載入中...</div>
+        </div>
+
+        <div class="history-section">
+            <h3>📊 個人測驗歷史紀錄</h3>
+            <div id="quizHistoryList">
+                <p style="color: #9ca3af;">正在讀取紀錄...</p>
+            </div>
+        </div>
+
+        <a href="/index.html" class="back-btn">返回主畫面</a>
+    </div>
+
+    <script>
+        async function fetchUserProfile() {
+            // 從 localStorage 取得登入時存入的 user_id
+            const userId = localStorage.getItem('user_id');
+
+            if (!userId) {
+                alert('尚未登入或身分遺失，請重新登入。');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/auth/profile/${userId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 填入基本資料
+                    document.getElementById('profileUsername').innerText = data.user.username;
+                    document.getElementById('profileRole').innerText = data.user.role_type === 'guest' ? '訪客身分 (Guest)' : '正式研究員 (Registered)';
+                    document.getElementById('profileCreated').innerText = data.user.created_at || '未知';
+
+                    // 填入測驗歷史
+                    const quizContainer = document.getElementById('quizHistoryList');
+                    if (data.quiz_history && data.quiz_history.length > 0) {
+                        quizContainer.innerHTML = data.quiz_history.map(q => `
+                            <div class="history-card">
+                                <strong>測驗類型：</strong> ${q.quiz_type} <br>
+                                <strong>得分：</strong> ${q.score} / ${q.total_questions} 分 <br>
+                                <span style="font-size: 0.8rem; color: #9ca3af;">完成時間：${q.completed_at}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        quizContainer.innerHTML = '<p style="color: #9ca3af;">目前尚無任何測驗紀錄。</p>';
+                    }
+                } else {
+                    alert(data.detail || '無法取得個人檔案');
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('連線錯誤:', error);
+                alert('無法連線至伺服器');
+            }
+        }
+
+        // 頁面載入完成後自動執行
+        document.addEventListener('DOMContentLoaded', fetchUserProfile);
+    </script>
+</body>
+
+</html> -->
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人帳號與 AI 聊天紀錄 | 天文與恆星物理專題</title>
+    <title>個人帳號與紀錄 | 天文與恆星物理專題</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="/static/theme.css">
@@ -86,8 +247,8 @@
             background: rgba(248, 113, 113, 0.28);
         }
 
-        /* 聊天紀錄收合卡片樣式 */
-        .chat-history-card {
+        /* 通用收合卡片樣式 (AI 聊天紀錄與測驗紀錄共用風格) */
+        .collapsible-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
@@ -96,7 +257,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .chat-history-header {
+        .card-header-toggle {
             font-size: 1.1rem;
             color: #fff;
             display: flex;
@@ -106,14 +267,7 @@
             user-select: none;
         }
 
-        /* 標題右側的清除按鈕容器 */
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .chat-history-content {
+        .card-content-body {
             margin-top: 16px;
             border-top: 1px solid var(--border-color);
             padding-top: 16px;
@@ -124,10 +278,11 @@
             overflow-y: auto;
         }
 
-        .chat-history-content.expanded {
+        .card-content-body.expanded {
             display: flex;
         }
 
+        /* 聊天紀錄專屬樣式 */
         .chat-item {
             background: rgba(3, 7, 18, 0.6);
             border: 1px solid var(--border-color);
@@ -162,7 +317,6 @@
             margin-bottom: 4px;
         }
 
-        /* 將「刪除此則」移至單則對話框底部靠右，與時間分開，絕不遮蓋 */
         .chat-footer {
             display: flex;
             justify-content: flex-end;
@@ -202,6 +356,29 @@
             border-color: #f87171;
             color: #f87171;
         }
+
+        /* 測驗紀錄專屬卡片樣式 */
+        .history-card {
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+
+        .history-card strong {
+            color: #c7d2fe;
+        }
+
+        .empty-msg {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            text-align: center;
+            padding: 15px 0;
+        }
     </style>
 </head>
 
@@ -236,13 +413,26 @@
             <button class="logout-btn" onclick="logout()">登出帳號</button>
         </div>
 
-        <!-- AI 聊天紀錄卡片 (預設收合) -->
-        <div class="chat-history-card">
-            <div class="chat-history-header" onclick="toggleChatHistory()">
-                <span>💬 與 AI 助理的歷史對話紀錄 </span>
-                <span id="toggleIcon">▼</span>
+        <!-- 📊 個人測驗歷史紀錄卡片 (新增：採用與聊天紀錄相同的收合風格) -->
+        <div class="collapsible-card">
+            <div class="card-header-toggle" onclick="toggleSection('quizHistoryContent', 'quizToggleIcon')">
+                <span>📊 個人測驗歷史紀錄</span>
+                <span id="quizToggleIcon">▼</span>
             </div>
-            <div class="chat-history-content" id="chatHistoryContent">
+            <div class="card-content-body" id="quizHistoryContent">
+                <div id="quizHistoryList">
+                    <div class="empty-msg">正在讀取測驗紀錄...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💬 AI 聊天紀錄卡片 (預設收合) -->
+        <div class="collapsible-card">
+            <div class="card-header-toggle" onclick="toggleSection('chatHistoryContent', 'chatToggleIcon')">
+                <span>💬 與 AI 助理的歷史對話紀錄</span>
+                <span id="chatToggleIcon">▼</span>
+            </div>
+            <div class="card-content-body" id="chatHistoryContent">
                 <div class="action-bar" style="margin-bottom: 8px;">
                     <button class="clear-btn" onclick="clearAllChatHistory()">清除所有對話</button>
                 </div>
@@ -255,7 +445,7 @@
 
     <script src="/static/auth.js"></script>
     <script>
-        // 背景星空
+        // 背景星空特效
         const canvas = document.getElementById('spaceCanvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -292,36 +482,110 @@
         }
         animateSpace();
 
-        // 收合與展開切換
-        function toggleChatHistory() {
-            const content = document.getElementById('chatHistoryContent');
-            const icon = document.getElementById('toggleIcon');
+        // 通用收合與展開切換函式
+        function toggleSection(contentId, iconId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(iconId);
             content.classList.toggle('expanded');
             icon.textContent = content.classList.contains('expanded') ? '▲' : '▼';
         }
 
-        // 載入用戶資料與 AI 聊天紀錄
-        function loadProfileData() {
+        // 載入用戶資料、API 測驗歷史與 AI 聊天紀錄
+        async function loadProfileData() {
+            // 1. 優先支援原本現代介面的 session 檢查，若無則相容 profile.html 的 localStorage('user_id')
             const sessionStr = localStorage.getItem("astro_user_session");
+            const legacyUserId = localStorage.getItem('user_id');
+
             if (sessionStr) {
                 try {
                     const session = JSON.parse(sessionStr);
                     document.getElementById("userNameDisplay").textContent = session.userId;
-                    document.getElementById("userTypeDisplay").textContent = `帳號類型：${session.accountType} | 登入時間：${session.loginTime}`;
+                    document.getElementById("userTypeDisplay").textContent = `帳號類型：${session.accountType || '正式研究員'} | 登入時間：${session.loginTime || '未知'}`;
                 } catch (e) {
                     document.getElementById("userNameDisplay").textContent = "未知用戶";
                 }
+            } else if (legacyUserId) {
+                document.getElementById("userNameDisplay").textContent = legacyUserId;
+                document.getElementById("userTypeDisplay").textContent = `研究員編號：${legacyUserId}`;
+            } else {
+                document.getElementById("userNameDisplay").textContent = "尚未登入";
+                document.getElementById("userTypeDisplay").textContent = "請重新登入以檢視完整紀錄";
             }
 
+            // 2. 呼叫 API 取得伺服器端測驗紀錄 (來自 profile.html 實體邏輯)
+            await fetchQuizHistoryFromApi();
+
+            // 3. 渲染前端 localStorage 中的 AI 對話紀錄
             renderChatHistory();
         }
 
-        function renderChatHistory() {
+        // 從後端 API 取得個人測驗歷史紀錄
+        async function fetchQuizHistoryFromApi() {
+            const quizContainer = document.getElementById('quizHistoryList');
+            const userId = localStorage.getItem('user_id') || (() => {
+                try {
+                    const s = JSON.parse(localStorage.getItem("astro_user_session"));
+                    return s ? s.userId : null;
+                } catch (e) { return null; }
+            })();
+
+            if (!userId) {
+                quizContainer.innerHTML = '<div class="empty-msg">無法取得使用者身分，無法載入測驗紀錄。</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/auth/profile/${userId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 若 API 同時回傳了使用者更詳細資料也能一併更新
+                    if (data.user) {
+                        document.getElementById('userNameDisplay').textContent = data.user.username;
+                        const roleText = data.user.role_type === 'guest' ? '訪客身分 (Guest)' : '正式研究員 (Registered)';
+                        document.getElementById('userTypeDisplay').textContent = `身分權限：${roleText} | 建立時間：${data.user.created_at || '未知'}`;
+                    }
+
+                    // 渲染測驗紀錄
+                    if (data.quiz_history && data.quiz_history.length > 0) {
+                        quizContainer.innerHTML = data.quiz_history.map(q => `
+                            <div class="history-card">
+                                <div><strong>測驗類型：</strong> ${escapeHtml(q.quiz_type)}</div>
+                                <div><strong>得分：</strong> ${q.score} / ${q.total_questions} 分</div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted);">完成時間：${escapeHtml(q.completed_at)}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        quizContainer.innerHTML = '<div class="empty-msg">目前尚無任何測驗歷史紀錄。</div>';
+                    }
+                } else {
+                    quizContainer.innerHTML = `<div class="empty-msg">${escapeHtml(data.detail || '無法取得測驗紀錄')}</div>`;
+                }
+            } catch (error) {
+                console.error('連線錯誤:', error);
+                quizContainer.innerHTML = '<div class="empty-msg">無法連線至伺服器讀取測驗紀錄。</div>';
+            }
+        }
+
+        // 取得目前使用者的 chat key 輔助函式
+            function getChatStorageKey() {
+                const userId = localStorage.getItem("user_id") || (() => {
+                    try {
+                        const u = JSON.parse(localStorage.getItem("astro_current_user"));
+                        return u ? u.user_id : "guest";
+                    } catch (e) { return "guest"; }
+                })();
+                return `astro_ai_chat_history_${userId}`;
+            }
+
+            // 修改 renderChatHistory
+            function renderChatHistory() {
                 const container = document.getElementById('chatListContainer');
-                const chatHistory = JSON.parse(localStorage.getItem("astro_ai_chat_history") || "[]");
+                const storageKey = getChatStorageKey();
+                const chatHistory = JSON.parse(localStorage.getItem(storageKey) || "[]");
 
                 if (chatHistory.length === 0) {
-                    container.innerHTML = '<div class="empty-chat">目前尚無與 AI 的對話紀錄（可在 lab.html 實驗室中與 AI 互動）</div>';
+                    container.innerHTML = '<div class="empty-msg">目前尚無與 AI 的對話紀錄（可在 lab.html 實驗室中與 AI 互動）</div>';
                     return;
                 }
 
@@ -331,40 +595,46 @@
                     const div = document.createElement('div');
                     div.className = 'chat-item';
                     div.innerHTML = `
-                    <div class="chat-meta">
-                        <span>${escapeHtml(item.time)}</span>
-                    </div>
-                    <div class="chat-q">Q: ${escapeHtml(item.question)}</div>
-                    <div class="chat-a">A: ${escapeHtml(item.answer)}</div>
-                    <div class="chat-footer">
-                        <button class="delete-single-btn" onclick="deleteSingleChat(${originalIndex})">刪除此則</button>
-                    </div>
-                `;
+            <div class="chat-meta">
+                <span>${escapeHtml(item.time)}</span>
+            </div>
+            <div class="chat-q">Q: ${escapeHtml(item.question)}</div>
+            <div class="chat-a">A: ${escapeHtml(item.answer)}</div>
+            <div class="chat-footer">
+                <button class="delete-single-btn" onclick="deleteSingleChat(${originalIndex})">刪除此則</button>
+            </div>
+        `;
                     container.appendChild(div);
                 });
             }
-        function deleteSingleChat(index) {
-            let chatHistory = JSON.parse(localStorage.getItem("astro_ai_chat_history") || "[]");
-            chatHistory.splice(index, 1);
-            localStorage.setItem("astro_ai_chat_history", JSON.stringify(chatHistory));
-            renderChatHistory();
-        }
 
-        function clearAllChatHistory() {
-            if (confirm("確定要清除所有與 AI 的聊天紀錄嗎？")) {
-                localStorage.removeItem("astro_ai_chat_history");
+            // 修改 deleteSingleChat
+            function deleteSingleChat(index) {
+                const storageKey = getChatStorageKey();
+                let chatHistory = JSON.parse(localStorage.getItem(storageKey) || "[]");
+                chatHistory.splice(index, 1);
+                localStorage.setItem(storageKey, JSON.stringify(chatHistory));
                 renderChatHistory();
             }
-        }
+
+            // 修改 clearAllChatHistory
+            function clearAllChatHistory() {
+                if (confirm("確定要清除所有與 AI 的聊天紀錄嗎？")) {
+                    const storageKey = getChatStorageKey();
+                    localStorage.removeItem(storageKey);
+                    renderChatHistory();
+                }
+            }
 
         function escapeHtml(text) {
             if (!text) return "";
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
         function logout() {
             if (confirm("確定要登出系統嗎？")) {
                 localStorage.removeItem("astro_user_session");
+                localStorage.removeItem("user_id");
                 window.location.href = "/login";
             }
         }

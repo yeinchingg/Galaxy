@@ -791,15 +791,30 @@
                     answerEl.textContent = '(AI 助理沒有回應內容，請再試一次)';
                 } else {
                     // 【關鍵修正】將對話紀錄寫入 localStorage，確保 profile.html 能夠呈現
-                    const chatHistory = JSON.parse(localStorage.getItem("astro_ai_chat_history") || "[]");
-                    const sessionStr = localStorage.getItem("astro_user_session");
-                    let currentUserName = "訪客";
-                    if (sessionStr) {
+                  const currentUserStr = localStorage.getItem("astro_current_user");
+                    let currentUserId = localStorage.getItem("user_id") || "guest";
+                    let currentUserName = localStorage.getItem("username") || "訪客";
+
+                    if (currentUserStr) {
                         try {
-                            const session = JSON.parse(sessionStr);
-                            currentUserName = session.userId || "一般學員";
+                            const u = JSON.parse(currentUserStr);
+                            currentUserId = u.user_id || currentUserId;
+                            currentUserName = u.username || currentUserName;
                         } catch (e) { }
                     }
+
+                    // 依據使用者 ID 建立獨立的儲存 Key
+                    const storageKey = `astro_ai_chat_history_${currentUserId}`;
+                    const chatHistory = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+                    chatHistory.push({
+                        userId: currentUserId,
+                        user: currentUserName,
+                        question: question,
+                        answer: answer.trim(),
+                        time: new Date().toLocaleString()
+                    });
+                    localStorage.setItem(storageKey, JSON.stringify(chatHistory));
 
                     chatHistory.push({
                         user: currentUserName,
