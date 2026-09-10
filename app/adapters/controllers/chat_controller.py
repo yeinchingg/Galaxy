@@ -128,7 +128,14 @@ def auth_register(req: RegisterRequest):
     if db.get_user_by_username(username):
         raise HTTPException(status_code=409, detail="這個使用者名稱已經被註冊了")
 
-    user_id = db.create_user(username, password=password, role_type="member")
+    try:
+        user_id = db.create_user(username, password=password, role_type="member")
+    except Exception as e:
+        # 密碼雜湊 / 資料庫寫入若出錯，把原因印到後端 log 並回傳給前端，
+        # 不要讓它變成一個看不出原因的 500
+        print(f"❌ [DB] 建立帳號失敗: {e}")
+        raise HTTPException(status_code=500, detail=f"建立帳號失敗：{e}")
+
     return {
         "user_id": user_id,
         "username": username,
@@ -214,6 +221,28 @@ def get_quiz_history(user_id: int):
     if not _db_repo:
         raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
     return _db_repo.get_quiz_history(user_id)
+
+
+@router.delete("/quiz/history/{user_id}")
+def clear_quiz_history(user_id: int):
+    """清除某使用者的所有測驗紀錄 (供 profile.html 使用)"""
+    if not _db_repo:
+        raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
+    if hasattr(_db_repo, "clear_quiz_history"):
+        _db_repo.clear_quiz_history(user_id)
+        return {"status": "success"}
+    return {"status": "error", "message": "功能未支援"}
+
+
+@router.delete("/quiz/score/{score_id}")
+def delete_quiz_score(score_id: int, user_id: int = 1):
+    """刪除單筆測驗紀錄 (供 profile.html 使用)"""
+    if not _db_repo:
+        raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
+    if hasattr(_db_repo, "delete_quiz_score"):
+        success = _db_repo.delete_quiz_score(score_id, user_id)
+        return {"status": "success", "deleted": success}
+    return {"status": "error", "message": "功能未支援"}
 
 
 # --- 聊天與 AI 相關端點 ---

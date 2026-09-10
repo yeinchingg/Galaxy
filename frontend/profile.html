@@ -251,6 +251,22 @@
                 </div>
             </div>
         </div>
+
+        <!-- 星海問答測驗紀錄卡片 (預設收合) -->
+        <div class="chat-history-card">
+            <div class="chat-history-header" onclick="toggleQuizHistory()">
+                <span>🧭 星海問答歷史測驗紀錄 </span>
+                <span id="quizToggleIcon">▼</span>
+            </div>
+            <div class="chat-history-content" id="quizHistoryContent">
+                <div class="action-bar" style="margin-bottom: 8px;">
+                    <button class="clear-btn" onclick="clearAllQuizHistory()">清除所有測驗紀錄</button>
+                </div>
+                <div id="quizListContainer">
+                    <!-- 動態插入測驗紀錄 -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/static/auth.js"></script>
@@ -300,6 +316,13 @@
             icon.textContent = content.classList.contains('expanded') ? '▲' : '▼';
         }
 
+        function toggleQuizHistory() {
+            const content = document.getElementById('quizHistoryContent');
+            const icon = document.getElementById('quizToggleIcon');
+            content.classList.toggle('expanded');
+            icon.textContent = content.classList.contains('expanded') ? '▲' : '▼';
+        }
+
         const API_BASE = window.location.origin;
 
         // 載入用戶資料與 AI 聊天紀錄
@@ -319,6 +342,7 @@
             }
 
             await renderChatHistory();
+            await renderQuizHistory();
         }
 
         function currentUserId() {
@@ -400,6 +424,77 @@
                     console.error("清除失敗", e);
                 }
                 renderChatHistory();
+            }
+        }
+
+        // ---- 星海問答測驗紀錄 ----
+        async function renderQuizHistory() {
+            const container = document.getElementById('quizListContainer');
+            container.innerHTML = '<div class="empty-chat">載入中...</div>';
+
+            let scores = [];
+            try {
+                const res = await fetch(`${API_BASE}/api/quiz/history/${currentUserId()}`);
+                scores = await res.json();
+            } catch (e) {
+                console.error("讀取測驗紀錄失敗", e);
+                container.innerHTML = '<div class="empty-chat">讀取測驗紀錄失敗，請確認伺服器是否已啟動</div>';
+                return;
+            }
+
+            if (!Array.isArray(scores) || scores.length === 0) {
+                container.innerHTML = '<div class="empty-chat">目前尚無測驗紀錄（可在星海問答中挑戰關卡）</div>';
+                return;
+            }
+
+            container.innerHTML = "";
+            scores.forEach((item) => {
+                // 【修正】quiz.html 的 score 其實是「滿分 100 分制」的分數
+                // （每題配分 = 100 / 題數），不是答對題數，所以不能直接拿
+                // score ÷ total_questions 當正確率，那樣分母分子單位對不上，
+                // 會算出離譜的百分比（例如答對 1 題卻顯示 100%）。
+                // score 本身就已經等同「正確率」，答對題數則要反推回來。
+                const accuracy = Math.round(item.score);
+                const correctCount = item.total_questions
+                    ? Math.round((item.score / 100) * item.total_questions)
+                    : 0;
+                const div = document.createElement('div');
+                div.className = 'chat-item';
+                div.innerHTML = `
+                    <div class="chat-meta">
+                        <span>${escapeHtml(item.completed_at)}</span>
+                    </div>
+                    <div class="chat-q">關卡：${escapeHtml(item.quiz_type)}</div>
+                    <div class="chat-a">答對：${correctCount} ／ ${item.total_questions} 題（正確率 ${accuracy}%，得分 ${Math.round(item.score)} 分）</div>
+                    <div class="chat-footer">
+                        <button class="delete-single-btn" onclick="deleteSingleQuiz(${item.score_id})">刪除此則</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function deleteSingleQuiz(scoreId) {
+            try {
+                await fetch(`${API_BASE}/api/quiz/score/${scoreId}?user_id=${currentUserId()}`, {
+                    method: "DELETE"
+                });
+            } catch (e) {
+                console.error("刪除失敗", e);
+            }
+            renderQuizHistory();
+        }
+
+        async function clearAllQuizHistory() {
+            if (confirm("確定要清除所有測驗紀錄嗎？")) {
+                try {
+                    await fetch(`${API_BASE}/api/quiz/history/${currentUserId()}`, {
+                        method: "DELETE"
+                    });
+                } catch (e) {
+                    console.error("清除失敗", e);
+                }
+                renderQuizHistory();
             }
         }
 

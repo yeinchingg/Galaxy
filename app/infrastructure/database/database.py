@@ -191,6 +191,18 @@ class SQLiteRepository(IDataRepository):
             ).fetchall()
             return [dict(r) for r in rows]
 
+    def clear_quiz_history(self, user_id: int) -> None:
+        with get_conn() as conn:
+            conn.execute("DELETE FROM quiz_scores WHERE user_id = ?", (user_id,))
+
+    def delete_quiz_score(self, score_id: int, user_id: int) -> bool:
+        with get_conn() as conn:
+            cur = conn.execute(
+                "DELETE FROM quiz_scores WHERE score_id = ? AND user_id = ?",
+                (score_id, user_id),
+            )
+            return cur.rowcount > 0
+
 
 def create_user(username: str, password: str | None, role_type: str) -> int:
     password_hash = pwd_context.hash(password) if password else None
