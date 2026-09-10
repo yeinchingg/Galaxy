@@ -6,11 +6,8 @@
     <title>星空觀測儀 (Sky Observatory) | AstroResearch</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="theme.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=arrow_drop_down,arrow_right,school,science,public,menu_book,search_insights,tour,person"
-    />
+    <!-- 統一引入站內核心 CSS，內建 Material Symbols 離線字體與尺寸 Token -->
+    <link rel="stylesheet" href="/static/theme.css" />
     <style>
       body,
       html {
@@ -20,7 +17,6 @@
         height: 100%;
         overflow: hidden;
         background-color: #000000;
-        font-family: "JetBrains Mono", "Noto Sans TC", monospace;
         color: #f3f4f6;
         user-select: none;
       }
@@ -32,57 +28,6 @@
         width: 100%;
         height: 100%;
         z-index: 1;
-      }
-
-      nav {
-        width: 100%;
-        height: 60px;
-        background: rgba(3, 7, 18, 0.7);
-        backdrop-filter: blur(16px);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 32px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 50;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        box-sizing: border-box;
-      }
-
-      .nav-brand {
-        font-weight: 700;
-        font-size: 1.05rem;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        letter-spacing: 1px;
-      }
-
-      .nav-links {
-        display: flex;
-        gap: 18px;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-
-      .nav-links a {
-        text-decoration: none;
-        color: #9ca3af;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: color 0.2s;
-      }
-
-      .nav-links a:hover,
-      .nav-links a.active {
-        color: #818cf8;
       }
 
       /* 左上方天文台 HUD */
@@ -262,7 +207,7 @@
         pointer-events: none;
       }
 
-      /* ✨ 右側純數據遙測卡片 (含 NASA 高畫質真實照片) */
+      /* 右側純數據遙測卡片 */
       .telemetry-card {
         position: absolute;
         top: 76px;
@@ -304,7 +249,27 @@
         letter-spacing: 1px;
       }
 
-      /* NASA 真實觀測照片展示框 */
+      .close-card-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        border-radius: 6px;
+        transition: background 0.2s;
+      }
+
+      .close-card-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .close-card-btn .material-symbols-outlined {
+        color: var(--text-muted);
+        font-size: var(--icon-button);
+      }
+
       .real-photo-container {
         width: 100%;
         height: 160px;
@@ -394,7 +359,7 @@
       <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
       <ul class="nav-links">
         <li>
-          <a href="index.html" class="active"
+          <a href="index.html"
             ><span class="material-symbols-outlined">school</span>教學平台</a
           >
         </li>
@@ -404,7 +369,7 @@
           >
         </li>
         <li>
-          <a href="sky.html"
+          <a href="sky.html" class="active"
             ><span class="material-symbols-outlined">visibility</span
             >星空觀測儀</a
           >
@@ -446,15 +411,15 @@
       </div>
       <div class="hud-row">
         <span>世界標準時 (UTC)</span>
-        <span id="hudUtcTime" class="hud-accent">--:--:--</span>
+        <span id="hudUtcTime" class="hud-accent mono">--:--:--</span>
       </div>
       <div class="hud-row">
         <span>本地恆星時 (LST)</span>
-        <span id="hudLstTime">--:--:--</span>
+        <span id="hudLstTime" class="mono">--:--:--</span>
       </div>
       <div class="hud-row">
         <span>天球仰角 / 方位</span>
-        <span id="hudOrientation">Alt: +25.0° | Az: 180.0°</span>
+        <span id="hudOrientation" class="mono">Alt: +25.0° | Az: 180.0°</span>
       </div>
     </div>
 
@@ -466,10 +431,12 @@
         style="display: none"
         onclick="resetCameraToSky()"
       >
-        <span class="material-symbols-outlined">arrow_back</span> 退回全景
+        <span class="material-symbols-outlined icon-button">arrow_back</span>
+        退回全景
       </button>
       <button id="fullscreenBtn" class="hud-btn">
-        <span class="material-symbols-outlined">fullscreen</span> 全螢幕投影模式
+        <span class="material-symbols-outlined icon-button">fullscreen</span>
+        全螢幕投影模式
       </button>
     </div>
 
@@ -486,14 +453,14 @@
     </div>
 
     <!-- 方位羅盤刻度 -->
-    <div class="compass-bar">
+    <div class="compass-bar mono">
       <span>N (000°)</span>
       <span>E (090°)</span>
       <span>S (180°)</span>
       <span>W (270°)</span>
     </div>
 
-    <!-- ✨ 右側純數據遙測卡片 -->
+    <!-- 右側純數據遙測卡片 -->
     <div id="telemetryCard" class="telemetry-card">
       <div class="telemetry-header">
         <div>
@@ -501,15 +468,11 @@
           <div id="targetType" class="telemetry-id">CLASSIFICATION</div>
         </div>
         <button
+          class="close-card-btn"
           onclick="resetCameraToSky()"
-          style="
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-          "
+          title="關閉卡片"
         >
-          <span class="material-symbols-outlined">close</span>
+          <span class="material-symbols-outlined icon-button">close</span>
         </button>
       </div>
 

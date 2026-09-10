@@ -7,7 +7,70 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="/static/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
     <style>
+      /* 導覽列標準化樣式 */
+      nav {
+        width: 100%;
+        height: 64px;
+        background: rgba(3, 7, 18, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 40px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+        box-sizing: border-box;
+      }
+
+      .nav-brand {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text-muted, #9ca3af);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--accent, #818cf8);
+      }
+
+      .nav-links a .material-symbols-outlined {
+        font-size: 20px;
+        line-height: 1;
+        display: inline-block;
+      }
+
       /* 本頁獨有變數：測驗答錯／危險提示用色 */
       :root {
         --danger: #f87171;
@@ -622,7 +685,7 @@
       <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
       <ul class="nav-links">
         <li>
-          <a href="index.html" class="active"
+          <a href="index.html"
             ><span class="material-symbols-outlined">school</span>教學平台</a
           >
         </li>
@@ -654,7 +717,7 @@
           >
         </li>
         <li>
-          <a href="quiz.html"
+          <a href="quiz.html" class="active"
             ><span class="material-symbols-outlined">tour</span>星海問答</a
           >
         </li>
@@ -1329,7 +1392,6 @@
           sub = "(o゜▽゜)o☆";
         }
 
-        // 計算最終精準分數
         const finalScore = Math.round(state.score);
 
         document.getElementById("resultTitle").textContent = title;
@@ -1340,7 +1402,6 @@
         document.getElementById("rAccuracy").textContent = accuracy + "%";
         document.getElementById("rTime").textContent = elapsedSec + "s";
 
-        // 單一且正確地發送結算成績（只發送一次）
         try {
           await fetch("/api/quiz/score", {
             method: "POST",
