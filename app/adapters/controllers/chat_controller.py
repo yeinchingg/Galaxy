@@ -1,16 +1,16 @@
 """
 app/adapters/controllers/chat_controller.py
 Clean Architecture - Controller / Adapter 層
-負責處理前端發起的所有 API 請求（AI 聊天、新聞、測驗紀錄、行為追蹤、歷史對話）
+負責處理前端發起的所有 API 請求（AI 聊天、新聞、測驗紀錄、行為追蹤、歷史對話、星空觀測歷程）
 """
 
 import os
-import random
 import requests
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+
 from app.use_cases.rag_chat_use_case import RAGChatUseCase
 from app.infrastructure.database import database as db
 
@@ -67,7 +67,16 @@ class QuizScoreRequest(BaseModel):
     total_questions: int = 10
 
 
-# ---------------- 備援新聞池 (解決 fetchnews 抓不到問題) ----------------
+class BodyLogRequest(BaseModel):
+    name: str
+    body_type: str
+    alt: Optional[float] = None
+    az: Optional[float] = None
+    mag: Optional[float] = None
+    user_id: Optional[str] = "1"
+
+
+# ---------------- 備援新聞池 ----------------
 NEWS_FALLBACK_POOL = [
     {
         "title": "韋伯太空望遠鏡發現早期遙遠星系新線索",
@@ -105,9 +114,8 @@ def get_system_status():
 
 @router.post("/auth/guest")
 def auth_guest(req: GuestLoginRequest):
-    """訪客登入：每次都建立一個獨立的訪客帳號，取得專屬 user_id"""
+    """訪客登入"""
     display_name = (req.display_name or "訪客研究員").strip() or "訪客研究員"
-    # 訪客帳號名稱要唯一，避免撞到 users.username 的 UNIQUE 限制
     unique_username = f"guest_{os.urandom(4).hex()}"
     user_id = db.create_user(unique_username, password=None, role_type="guest")
     return {
@@ -119,7 +127,7 @@ def auth_guest(req: GuestLoginRequest):
 
 @router.post("/auth/register")
 def auth_register(req: RegisterRequest):
-    """建立帳號：真正寫入 users 資料表，密碼會雜湊儲存"""
+    """建立會員帳號"""
     username = req.username.strip()
     password = req.password.strip()
     if not username or not password:
@@ -131,8 +139,6 @@ def auth_register(req: RegisterRequest):
     try:
         user_id = db.create_user(username, password=password, role_type="member")
     except Exception as e:
-        # 密碼雜湊 / 資料庫寫入若出錯，把原因印到後端 log 並回傳給前端，
-        # 不要讓它變成一個看不出原因的 500
         print(f"❌ [DB] 建立帳號失敗: {e}")
         raise HTTPException(status_code=500, detail=f"建立帳號失敗：{e}")
 
@@ -145,7 +151,7 @@ def auth_register(req: RegisterRequest):
 
 @router.post("/auth/login")
 def auth_login(req: LoginRequest):
-    """帳號密碼登入：驗證雜湊密碼是否正確"""
+    """帳號密碼登入"""
     username = req.username.strip()
     password = req.password.strip()
     user = db.verify_password(username, password)
@@ -161,7 +167,7 @@ def auth_login(req: LoginRequest):
 
 @router.get("/news")
 def get_news(limit: int = 6):
-    """即時太空新聞端點 (修復 frontend fetch_news.js 抓不到的問題)"""
+    """即時太空新聞端點"""
     news_items = []
     try:
         url = f"https://api.spaceflightnewsapi.net/v4/articles/?limit={limit}"
@@ -194,22 +200,16 @@ def get_daily_knowledge():
     return {"status": "success", "data": get_news(4)}
 
 
-# --- 測驗成績相關端點 (支援 profile.html) ---
+# --- 測驗成績相關端點 ---
 @router.post("/quiz/score")
 def save_quiz_score(req: QuizScoreRequest):
-    print(
-        f"📝 [API] 收到測驗成績請求: user_id={req.user_id}, quiz_type={req.quiz_type}, score={req.score}, total={req.total_questions}"
-    )
-
     if not _db_repo:
-        print(f"❌ [DB] 測驗寫入失敗：資料庫 Repo 尚未初始化")
         raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
 
     try:
         score_id = _db_repo.save_quiz_score(
             req.user_id, req.quiz_type, req.score, req.total_questions
         )
-        print(f"✅ [DB] 成功儲存測驗成績，score_id: {score_id}")
         return {"status": "success", "score_id": score_id}
     except Exception as e:
         print(f"❌ [DB] 儲存測驗成績出錯: {e}")
@@ -225,7 +225,6 @@ def get_quiz_history(user_id: int):
 
 @router.delete("/quiz/history/{user_id}")
 def clear_quiz_history(user_id: int):
-    """清除某使用者的所有測驗紀錄 (供 profile.html 使用)"""
     if not _db_repo:
         raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
     if hasattr(_db_repo, "clear_quiz_history"):
@@ -236,7 +235,6 @@ def clear_quiz_history(user_id: int):
 
 @router.delete("/quiz/score/{score_id}")
 def delete_quiz_score(score_id: int, user_id: int = 1):
-    """刪除單筆測驗紀錄 (供 profile.html 使用)"""
     if not _db_repo:
         raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
     if hasattr(_db_repo, "delete_quiz_score"):
@@ -250,20 +248,15 @@ def delete_quiz_score(score_id: int, user_id: int = 1):
 def chat_endpoint(req: ChatRequest):
     if not _use_case:
         raise HTTPException(status_code=500, detail="AI UseCase 尚未就緒")
-    result = _use_case.ask(
-        req.question, top_k=req.top_k or 3, session_id=req.session_id
-    )
-    return result
+    return _use_case.ask(req.question, top_k=req.top_k or 3, session_id=req.session_id)
 
 
 @router.post("/chat/stream")
 def chat_stream_endpoint(req: ChatRequest):
-    """SSE 串流對話，並帶有完整除錯日誌"""
     if not _use_case:
         raise HTTPException(status_code=500, detail="AI UseCase 尚未就緒")
 
     session_id = req.session_id or f"session_{os.urandom(4).hex()}"
-    print(f"💬 [API] 收到聊天請求: {req.question}, session_id: {session_id}")
 
     def sse_event_generator():
         yield f"event: session\ndata: {session_id}\n\n"
@@ -276,25 +269,19 @@ def chat_stream_endpoint(req: ChatRequest):
                 if chunk:
                     full_answer.append(chunk)
                     yield f"data: {chunk}\n\n"
-            print(f"✨ [API] AI 串流生成完畢，總字數: {len(''.join(full_answer))}")
         except Exception as e:
             print(f"❌ [API] AI 串流生成出錯: {e}")
             yield f"data: (AI 助理遇到暫時性問題: {str(e)})\n\n"
 
-        # 👈 檢查 _db_repo 是否存在並執行寫入
         if _db_repo:
-            print(f"📦 [DB] 準備將對話寫入資料庫... (user_id={req.user_id or 1})")
             try:
                 uid = req.user_id or 1
                 _db_repo.save_message(session_id, "user", req.question, user_id=uid)
                 _db_repo.save_message(
                     session_id, "assistant", "".join(full_answer), user_id=uid
                 )
-                print(f"✅ [DB] 成功將對話寫入資料庫！")
             except Exception as db_err:
-                print(f"❌ [DB] 寫入資料庫失敗，報錯原因: {db_err}")
-        else:
-            print(f"⚠️ [DB] _db_repo 為空，無法寫入資料庫！")
+                print(f"❌ [DB] 寫入資料庫失敗: {db_err}")
 
         yield "event: done\ndata: [DONE]\n\n"
 
@@ -311,7 +298,6 @@ def chat_stream_endpoint(req: ChatRequest):
 
 @router.get("/chat/history")
 def get_chat_history_endpoint(user_id: int = 1):
-    """取得歷史對話紀錄 (供 profile.html 使用)"""
     if not _db_repo:
         raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
     if hasattr(_db_repo, "get_chat_history"):
@@ -321,7 +307,6 @@ def get_chat_history_endpoint(user_id: int = 1):
 
 @router.delete("/chat/message/{message_id}")
 def delete_chat_message(message_id: int, user_id: int = 1):
-    """刪除單則對話紀錄"""
     if _db_repo and hasattr(_db_repo, "delete_message"):
         success = _db_repo.delete_message(message_id, user_id)
         return {"status": "success", "deleted": success}
@@ -330,7 +315,6 @@ def delete_chat_message(message_id: int, user_id: int = 1):
 
 @router.delete("/chat/history")
 def clear_all_chat_history(user_id: int = 1):
-    """清除所有對話紀錄"""
     if _db_repo and hasattr(_db_repo, "clear_chat_history"):
         _db_repo.clear_chat_history(user_id)
         return {"status": "success"}
@@ -366,3 +350,27 @@ def get_outline(user_id: str):
             {"topic": "black_hole", "title": "黑洞物理與重力透鏡", "visit_count": 1},
         ],
     }
+
+
+# --- 星空觀測儀端點 ---
+@router.post("/sky/observe")
+def log_celestial_observation(req: BodyLogRequest):
+    """紀錄觀測行為至資料庫，毫秒級回應，不進行慢速 AI 語音處理"""
+    if _db_repo and hasattr(_db_repo, "log_interaction"):
+        try:
+            _db_repo.log_interaction(
+                user_id=req.user_id or "1",
+                topic="sky_observatory",
+                action="observe_target",
+                params={
+                    "target_name": req.name,
+                    "type": req.body_type,
+                    "altitude": req.alt,
+                    "azimuth": req.az,
+                    "mag": req.mag,
+                },
+            )
+        except Exception as e:
+            print(f"⚠️ 觀測紀錄寫入失敗: {e}")
+
+    return {"status": "success", "target": req.name}

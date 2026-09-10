@@ -52,12 +52,16 @@ def inspect_table(conn: sqlite3.Connection, table: str, limit: int):
 
     order_by = ORDER_BY_HINTS.get(table, "rowid DESC")
     try:
-        rows = conn.execute(f"SELECT * FROM {table} ORDER BY {order_by} LIMIT ?", (limit,)).fetchall()
+        rows = conn.execute(
+            f"SELECT * FROM {table} ORDER BY {order_by} LIMIT ?", (limit,)
+        ).fetchall()
     except sqlite3.OperationalError:
         # 排序欄位不存在時退回不排序
         rows = conn.execute(f"SELECT * FROM {table} LIMIT ?", (limit,)).fetchall()
 
-    col_names = [d[0] for d in conn.execute(f"SELECT * FROM {table} LIMIT 1").description]
+    col_names = [
+        d[0] for d in conn.execute(f"SELECT * FROM {table} LIMIT 1").description
+    ]
     print("  欄位:", ", ".join(col_names))
     for row in rows:
         print(" ", dict(row))
@@ -68,9 +72,13 @@ def inspect_table(conn: sqlite3.Connection, table: str, limit: int):
 
 def main():
     parser = argparse.ArgumentParser(description="檢查 astro_platform.db 目前的資料")
-    parser.add_argument("--db", type=str, default=str(DEFAULT_DB_PATH), help="資料庫檔案路徑")
+    parser.add_argument(
+        "--db", type=str, default=str(DEFAULT_DB_PATH), help="資料庫檔案路徑"
+    )
     parser.add_argument("--table", type=str, default=None, help="只看指定的資料表")
-    parser.add_argument("--limit", type=int, default=10, help="每個表最多顯示幾筆（預設 10）")
+    parser.add_argument(
+        "--limit", type=int, default=10, help="每個表最多顯示幾筆（預設 10）"
+    )
     args = parser.parse_args()
 
     db_path = Path(args.db)
@@ -91,7 +99,9 @@ def main():
 
         if args.table:
             if args.table not in tables:
-                print(f"❌ 找不到資料表 '{args.table}'，目前有的表: {', '.join(tables)}")
+                print(
+                    f"❌ 找不到資料表 '{args.table}'，目前有的表: {', '.join(tables)}"
+                )
                 return
             inspect_table(conn, args.table, args.limit)
         else:

@@ -67,6 +67,7 @@ app.include_router(auth_controller.router, prefix="/api")
 FRONTEND_DIR = BASE_DIR / "frontend"
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+
     @app.get("/{page_name}")
     async def render_html_page(page_name: str):
         target_file = FRONTEND_DIR / page_name

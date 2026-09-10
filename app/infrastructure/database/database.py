@@ -330,9 +330,7 @@ def create_user(username: str, password: str | None, role_type: str) -> int:
 
 def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
     with get_conn() as conn:
-        cursor = conn.execute(
-            "SELECT * FROM users WHERE username = ?", (username,)
-        )
+        cursor = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
         row = cursor.fetchone()
         return dict(row) if row else None
 

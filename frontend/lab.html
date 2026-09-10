@@ -1,493 +1,643 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>實驗室 | 天文與恆星物理專題</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="/static/theme.css" />
     <style>
-        /* 本頁獨有：body 用 flex 直向排版置中內容 */
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+      /* 本頁獨有：body 用 flex 直向排版置中內容 */
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-        .lab-container {
-            margin-top: 84px;
-            width: 100%;
-            max-width: 1560px;
-            display: grid;
-            grid-template-columns: 300px minmax(400px, 1fr) 280px;
-            gap: 20px;
-            padding: 0 24px 40px 24px;
-            transition: grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+      .lab-container {
+        margin-top: 84px;
+        width: 100%;
+        max-width: 1560px;
+        display: grid;
+        grid-template-columns: 300px minmax(400px, 1fr) 280px;
+        gap: 20px;
+        padding: 0 24px 40px 24px;
+        transition: grid-template-columns 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-        .lab-container.ai-collapsed {
-            grid-template-columns: 300px minmax(400px, 1fr) 50px;
-        }
+      .lab-container.ai-collapsed {
+        grid-template-columns: 300px minmax(400px, 1fr) 50px;
+      }
 
-        .attributes-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 82vh;
-            overflow-y: auto;
-            padding-right: 6px;
-        }
+      .attributes-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 82vh;
+        overflow-y: auto;
+        padding-right: 6px;
+      }
 
-        .attributes-panel::-webkit-scrollbar {
-            width: 5px;
-        }
+      .attributes-panel::-webkit-scrollbar {
+        width: 5px;
+      }
 
-        .attributes-panel::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-        }
+      .attributes-panel::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+      }
 
-        .slider-group {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 8px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
+      .slider-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 8px;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
 
-        .slider-label {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-        }
+      .slider-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+      }
 
-        .slider-desc {
-            font-size: 0.68rem;
-            color: var(--text-muted);
-            line-height: 1.2;
-        }
+      .slider-desc {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        line-height: 1.2;
+      }
 
-        input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent);
-            height: 4px;
-            margin-top: 3px;
-            cursor: pointer;
-        }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+        height: 4px;
+        margin-top: 3px;
+        cursor: pointer;
+      }
 
-        .simulation-viewport {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-        }
+      .simulation-viewport {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 24px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+      }
 
-        .canvas-box {
-            background-color: #02040a;
-            border-radius: 8px;
-            height: 560px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            cursor: grab;
-        }
+      .canvas-box {
+        background-color: #02040a;
+        border-radius: 8px;
+        height: 560px;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        cursor: grab;
+      }
 
-        .canvas-box:active {
-            cursor: grabbing;
-        }
+      .canvas-box:active {
+        cursor: grabbing;
+      }
 
-        .ai-panel {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 620px;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+      .ai-panel {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 620px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-        .ai-panel.collapsed {
-            padding: 20px 4px;
-            align-items: center;
-            background-color: rgba(15, 23, 42, 0.95);
-        }
+      .ai-panel.collapsed {
+        padding: 20px 4px;
+        align-items: center;
+        background-color: rgba(15, 23, 42, 0.95);
+      }
 
-        .ai-panel.collapsed .ai-body {
-            display: none;
-        }
+      .ai-panel.collapsed .ai-body {
+        display: none;
+      }
 
-        .ai-panel.collapsed .ai-title-text {
-            display: none;
-        }
+      .ai-panel.collapsed .ai-title-text {
+        display: none;
+      }
 
-        .toggle-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            color: var(--accent);
-            font-weight: 700;
-        }
+      .toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        color: var(--accent);
+        font-weight: 700;
+      }
 
-        .ai-body {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            margin-top: 10px;
-            width: 100%;
-            min-height: 0;
-        }
+      .ai-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-top: 10px;
+        width: 100%;
+        min-height: 0;
+      }
 
-        .ai-chat-box {
-            flex: 1;
-            background: rgba(3, 7, 18, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            overflow-y: auto;
-            line-height: 1.45;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+      .ai-chat-box {
+        flex: 1;
+        background: rgba(3, 7, 18, 0.6);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        overflow-y: auto;
+        line-height: 1.45;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
 
-        .ai-chat-box::-webkit-scrollbar {
-            width: 5px;
-        }
+      .ai-chat-box::-webkit-scrollbar {
+        width: 5px;
+      }
 
-        .ai-chat-box::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-        }
+      .ai-chat-box::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+      }
 
-        /* 聊天訊息泡泡 */
-        .msg {
-            max-width: 92%;
-            padding: 8px 10px;
-            border-radius: 8px;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
+      /* 聊天訊息泡泡 */
+      .msg {
+        max-width: 92%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
 
-        .msg-ai {
-            align-self: flex-start;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
+      .msg-ai {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+      }
 
-        .msg-user {
-            align-self: flex-end;
-            background: var(--accent);
-            color: #0b0f1a;
-            font-weight: 500;
-        }
+      .msg-user {
+        align-self: flex-end;
+        background: var(--accent);
+        color: #0b0f1a;
+        font-weight: 500;
+      }
 
-        .msg-hint {
-            align-self: flex-start;
-            background: rgba(129, 140, 248, 0.12);
-            border: 1px solid rgba(129, 140, 248, 0.25);
-            color: #c7d2fe;
-            font-size: 0.75rem;
-        }
+      .msg-hint {
+        align-self: flex-start;
+        background: rgba(129, 140, 248, 0.12);
+        border: 1px solid rgba(129, 140, 248, 0.25);
+        color: #c7d2fe;
+        font-size: 0.75rem;
+      }
 
-        .ai-input-box {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
+      .ai-input-box {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
 
-        .analyze-btn {
-            flex-shrink: 0;
-            width: 34px;
-            height: 34px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: rgba(129, 140, 248, 0.12);
-            color: var(--accent);
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, transform 0.15s;
-        }
+      .analyze-btn {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: rgba(129, 140, 248, 0.12);
+        color: var(--accent);
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
 
-        .analyze-btn:hover {
-            background: rgba(129, 140, 248, 0.28);
-        }
+      .analyze-btn:hover {
+        background: rgba(129, 140, 248, 0.28);
+      }
 
-        .analyze-btn:active {
-            transform: scale(0.94);
-        }
+      .analyze-btn:active {
+        transform: scale(0.94);
+      }
 
-        .analyze-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+      .analyze-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
-        .ai-input-box input {
-            flex: 1;
-            min-width: 0;
-            background: rgba(3, 7, 18, 0.8);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 0.82rem;
-            color: var(--text-main);
-            outline: none;
-        }
+      .ai-input-box input {
+        flex: 1;
+        min-width: 0;
+        background: rgba(3, 7, 18, 0.8);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        color: var(--text-main);
+        outline: none;
+      }
 
-        .ai-input-box input::placeholder {
-            color: var(--text-muted);
-        }
+      .ai-input-box input::placeholder {
+        color: var(--text-muted);
+      }
 
-        .ai-input-box input:focus {
-            border-color: var(--accent);
-        }
+      .ai-input-box input:focus {
+        border-color: var(--accent);
+      }
 
-        .ai-input-box button:not(.analyze-btn) {
-            border: none;
-            background: var(--accent);
-            color: #e4e8f0;
-            font-weight: 700;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 0.82rem;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
+      .ai-input-box button:not(.analyze-btn) {
+        border: none;
+        background: var(--accent);
+        color: #e4e8f0;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
 
-        .ai-input-box button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+      .ai-input-box button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <canvas id="spaceCanvas"></canvas>
 
     <nav>
-        <div class="nav-left">
-            <div class="nav-brand">實驗室 物理數據模擬</div>
-            <span id="user-status-tag" class="badge">連線中...</span>
-        </div>
-        <ul class="nav-links">
-            <li><a href="/home"><span class="material-symbols-outlined">school</span>教學平台</a></li>
-            <li><a href="/lab"><span class="material-symbols-outlined">science</span>實驗室</a></li>
-            <li><a href="/evolution"><span class="material-symbols-outlined">public</span>恆星演化史</a></li>
-            <li><a href="/wiki"><span class="material-symbols-outlined">menu_book</span>宇宙百科</a></li>
-            <li><a href="/hr"><span class="material-symbols-outlined">search_insights</span>赫羅圖觀測站</a></li>
-            <li><a href="/quiz"><span class="material-symbols-outlined">tour</span>星海問答</a></li>
-            <li><a href="/profile"><span class="material-symbols-outlined">person</span>個人帳號</a></li>
-        </ul>
+      <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
+      <ul class="nav-links">
+        <li>
+          <a href="index.html" class="active"
+            ><span class="material-symbols-outlined">school</span>教學平台</a
+          >
+        </li>
+        <li>
+          <a href="lab.html"
+            ><span class="material-symbols-outlined">science</span>實驗室</a
+          >
+        </li>
+        <li>
+          <a href="sky.html"
+            ><span class="material-symbols-outlined">visibility</span
+            >星空觀測儀</a
+          >
+        </li>
+        <li>
+          <a href="evolution.html"
+            ><span class="material-symbols-outlined">public</span>恆星演化史</a
+          >
+        </li>
+        <li>
+          <a href="wiki.html"
+            ><span class="material-symbols-outlined">menu_book</span>宇宙百科</a
+          >
+        </li>
+        <li>
+          <a href="hr.html"
+            ><span class="material-symbols-outlined">search_insights</span
+            >赫羅圖觀測站</a
+          >
+        </li>
+        <li>
+          <a href="quiz.html"
+            ><span class="material-symbols-outlined">tour</span>星海問答</a
+          >
+        </li>
+        <li>
+          <a href="profile.html"
+            ><span class="material-symbols-outlined">person</span>個人帳號</a
+          >
+        </li>
+      </ul>
     </nav>
 
     <div class="lab-container" id="labContainer">
-        <!-- Left Panel -->
-        <div class="panel attributes-panel">
-            <div class="panel-title">參數控制面板</div>
+      <!-- Left Panel -->
+      <div class="panel attributes-panel">
+        <div class="panel-title">參數控制面板</div>
 
-            <div>
-                <div class="section-subtitle">恆星物理屬性</div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>恆星質量</span><span id="v-mass">1.0 M☉</span></div>
-                    <input type="range" id="s-mass" min="0.1" max="50.0" step="0.1" value="1.0">
-                    <div class="slider-desc">影響 3D 星球的體積大小 (Scale) 與表面細節。</div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>核心熱核反應速率</span><span id="v-fusion">1.0x</span></div>
-                    <input type="range" id="s-fusion" min="0.1" max="10.0" step="0.1" value="1.0">
-                    <div class="slider-desc">影響星球的內部發光強度 (Emissive Glow) 與核心熾熱感。</div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>表面重力加速度</span><span id="v-gravity">274 m/s²</span></div>
-                    <input type="range" id="s-gravity" min="10" max="1000" step="10" value="274">
-                    <div class="slider-desc">影響星球外層大氣光暈的壓縮與張力。</div>
-                </div>
+        <div>
+          <div class="section-subtitle">恆星物理屬性</div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>恆星質量</span><span id="v-mass">1.0 M☉</span>
             </div>
-
-            <div>
-                <div class="section-subtitle">星系與軌道力學</div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>萬有引力常數倍率</span><span id="v-gconst">1.0 G</span></div>
-                    <input type="range" id="s-gconst" min="0.5" max="3.0" step="0.1" value="1.0">
-                    <div class="slider-desc">影響星體周圍的重力扭曲感或自轉軌跡。</div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>暗物質密度</span><span id="v-dark">0.3 ρc</span></div>
-                    <input type="range" id="s-dark" min="0.0" max="2.0" step="0.05" value="0.3">
-                    <div class="slider-desc">影響外圍環繞的暗物質暈粒子濃度與透光度。</div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>軌道離心率</span><span id="v-ecc">0.02</span></div>
-                    <input type="range" id="s-ecc" min="0.0" max="0.9" step="0.01" value="0.02">
-                    <div class="slider-desc">影響模擬視窗中星體的橢圓軌道擺動。</div>
-                </div>
+            <input
+              type="range"
+              id="s-mass"
+              min="0.1"
+              max="50.0"
+              step="0.1"
+              value="1.0"
+            />
+            <div class="slider-desc">
+              影響 3D 星球的體積大小 (Scale) 與表面細節。
             </div>
-
-            <div>
-                <div class="section-subtitle">時空與演化維度</div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>時間流逝速率</span><span id="v-time">1.0x</span></div>
-                    <input type="range" id="s-time" min="0.1" max="5.0" step="0.1" value="1.0">
-                    <div class="slider-desc">直接控制 3D 星球的自轉與動畫演化播放速度 (Time Delta)。</div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>空間曲率</span><span id="v-curve">0.00</span></div>
-                    <input type="range" id="s-curve" min="-1.0" max="1.0" step="0.05" value="0.00">
-                    <div class="slider-desc">影響畫面透視與相機的微幅扭曲變形。</div>
-                </div>
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>核心熱核反應速率</span><span id="v-fusion">1.0x</span>
             </div>
-
-            <div>
-                <div class="section-subtitle">視覺與光譜觀測</div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>電磁波譜觀測頻段</span><span id="v-spectrum">標準太陽 (G2V)</span></div>
-                    <input type="range" id="s-spectrum" min="1" max="4" step="1" value="1">
-                    <div class="slider-desc">切換不同波段觀測表面氣體與化學元素輻射特徵。</div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>宇宙塵埃遮蔽率</span><span id="v-dust">5%</span></div>
-                    <input type="range" id="s-dust" min="0" max="100" step="1" value="5">
-                    <div class="slider-desc">影響外層大氣與材質的透明度與黯淡感。</div>
-                </div>
+            <input
+              type="range"
+              id="s-fusion"
+              min="0.1"
+              max="10.0"
+              step="0.1"
+              value="1.0"
+            />
+            <div class="slider-desc">
+              影響星球的內部發光強度 (Emissive Glow) 與核心熾熱感。
             </div>
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>表面重力加速度</span><span id="v-gravity">274 m/s²</span>
+            </div>
+            <input
+              type="range"
+              id="s-gravity"
+              min="10"
+              max="1000"
+              step="10"
+              value="274"
+            />
+            <div class="slider-desc">影響星球外層大氣光暈的壓縮與張力。</div>
+          </div>
         </div>
 
-        <!-- Center Panel -->
-        <div class="simulation-viewport">
-            <div style="font-size: 0.95rem; font-weight: 700; color: #f3eaea;">物理模擬視窗 (真實太陽電漿對流與柔和冕層)</div>
-            <div class="canvas-box" id="webglContainer"></div>
+        <div>
+          <div class="section-subtitle">星系與軌道力學</div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>萬有引力常數倍率</span><span id="v-gconst">1.0 G</span>
+            </div>
+            <input
+              type="range"
+              id="s-gconst"
+              min="0.5"
+              max="3.0"
+              step="0.1"
+              value="1.0"
+            />
+            <div class="slider-desc">影響星體周圍的重力扭曲感或自轉軌跡。</div>
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>暗物質密度</span><span id="v-dark">0.3 ρc</span>
+            </div>
+            <input
+              type="range"
+              id="s-dark"
+              min="0.0"
+              max="2.0"
+              step="0.05"
+              value="0.3"
+            />
+            <div class="slider-desc">
+              影響外圍環繞的暗物質暈粒子濃度與透光度。
+            </div>
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>軌道離心率</span><span id="v-ecc">0.02</span>
+            </div>
+            <input
+              type="range"
+              id="s-ecc"
+              min="0.0"
+              max="0.9"
+              step="0.01"
+              value="0.02"
+            />
+            <div class="slider-desc">影響模擬視窗中星體的橢圓軌道擺動。</div>
+          </div>
         </div>
 
-        <!-- Right Panel -->
-        <div class="panel ai-panel" id="aiPanel">
-            <div class="panel-title">
-                <span class="ai-title-text">AI小助理</span>
-                <button class="toggle-btn" id="aiToggleBtn" onclick="toggleAI()">◀</button>
+        <div>
+          <div class="section-subtitle">時空與演化維度</div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>時間流逝速率</span><span id="v-time">1.0x</span>
             </div>
-            <div class="ai-body">
-                <div class="ai-chat-box" id="aiChat">
-                    <div class="msg msg-ai">您好！我是您的天文物理專題 AI 助理。當於左側調整參數滑桿時，可按下輸入框旁的分析按鈕進一步了解更多。也可以直接在下方輸入框中輸入問題！</div>
-                </div>
-                <div class="ai-input-box">
-                    <button id="analyzeBtn" class="analyze-btn" title="針對目前滑桿數值即時分析"
-                        onclick="requestSliderNarration()"><span
-                            class="material-symbols-outlined icon-button">bar_chart</span></button>
-                    <input type="text" id="aiUserInput" placeholder="輸入問題，按 Enter 送出...">
-                    <button id="aiSendBtn" onclick="sendChatMessage()">送出</button>
-                </div>
+            <input
+              type="range"
+              id="s-time"
+              min="0.1"
+              max="5.0"
+              step="0.1"
+              value="1.0"
+            />
+            <div class="slider-desc">
+              直接控制 3D 星球的自轉與動畫演化播放速度 (Time Delta)。
             </div>
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>空間曲率</span><span id="v-curve">0.00</span>
+            </div>
+            <input
+              type="range"
+              id="s-curve"
+              min="-1.0"
+              max="1.0"
+              step="0.05"
+              value="0.00"
+            />
+            <div class="slider-desc">影響畫面透視與相機的微幅扭曲變形。</div>
+          </div>
         </div>
+
+        <div>
+          <div class="section-subtitle">視覺與光譜觀測</div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>電磁波譜觀測頻段</span
+              ><span id="v-spectrum">標準太陽 (G2V)</span>
+            </div>
+            <input
+              type="range"
+              id="s-spectrum"
+              min="1"
+              max="4"
+              step="1"
+              value="1"
+            />
+            <div class="slider-desc">
+              切換不同波段觀測表面氣體與化學元素輻射特徵。
+            </div>
+          </div>
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>宇宙塵埃遮蔽率</span><span id="v-dust">5%</span>
+            </div>
+            <input
+              type="range"
+              id="s-dust"
+              min="0"
+              max="100"
+              step="1"
+              value="5"
+            />
+            <div class="slider-desc">影響外層大氣與材質的透明度與黯淡感。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Panel -->
+      <div class="simulation-viewport">
+        <div style="font-size: 0.95rem; font-weight: 700; color: #f3eaea">
+          物理模擬視窗 (真實太陽電漿對流與柔和冕層)
+        </div>
+        <div class="canvas-box" id="webglContainer"></div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="panel ai-panel" id="aiPanel">
+        <div class="panel-title">
+          <span class="ai-title-text">AI小助理</span>
+          <button class="toggle-btn" id="aiToggleBtn" onclick="toggleAI()">
+            ◀
+          </button>
+        </div>
+        <div class="ai-body">
+          <div class="ai-chat-box" id="aiChat">
+            <div class="msg msg-ai">
+              您好！我是您的天文物理專題 AI
+              助理。當於左側調整參數滑桿時，可按下輸入框旁的分析按鈕進一步了解更多。也可以直接在下方輸入框中輸入問題！
+            </div>
+          </div>
+          <div class="ai-input-box">
+            <button
+              id="analyzeBtn"
+              class="analyze-btn"
+              title="針對目前滑桿數值即時分析"
+              onclick="requestSliderNarration()"
+            >
+              <span class="material-symbols-outlined icon-button"
+                >bar_chart</span
+              >
+            </button>
+            <input
+              type="text"
+              id="aiUserInput"
+              placeholder="輸入問題，按 Enter 送出..."
+            />
+            <button id="aiSendBtn" onclick="sendChatMessage()">送出</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        // 定義 API 基礎路徑（解決連線失敗問題）
-        // 確保 API_BASE 正確指向當前伺服器網址
-        const API_BASE = window.location.origin;
+      // 定義 API 基礎路徑
+      const API_BASE = window.location.origin;
 
-        const spaceCanvas = document.getElementById('spaceCanvas');
-        const spaceCtx = spaceCanvas.getContext('2d');
+      const spaceCanvas = document.getElementById("spaceCanvas");
+      const spaceCtx = spaceCanvas.getContext("2d");
 
-        let sw = spaceCanvas.width = window.innerWidth;
-        let sh = spaceCanvas.height = window.innerHeight;
+      let sw = (spaceCanvas.width = window.innerWidth);
+      let sh = (spaceCanvas.height = window.innerHeight);
 
-        window.addEventListener('resize', () => {
-            sw = spaceCanvas.width = window.innerWidth;
-            sh = spaceCanvas.height = window.innerHeight;
+      window.addEventListener("resize", () => {
+        sw = spaceCanvas.width = window.innerWidth;
+        sh = spaceCanvas.height = window.innerHeight;
+      });
+
+      const starParticles = [];
+      for (let i = 0; i < 80; i++) {
+        starParticles.push({
+          x: Math.random() * sw,
+          y: Math.random() * sh,
+          radius: Math.random() * 1.5 + 0.5,
+          alpha: Math.random() * 0.7 + 0.3,
+          speed: Math.random() * 0.2 + 0.05,
+        });
+      }
+
+      const starTrail = [];
+      window.addEventListener("mousemove", (e) => {
+        for (let i = 0; i < 2; i++) {
+          starTrail.push({
+            x: e.clientX,
+            y: e.clientY,
+            radius: Math.random() * 2 + 1,
+            alpha: 0.8,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5,
+          });
+        }
+      });
+
+      function animateSpace() {
+        spaceCtx.clearRect(0, 0, sw, sh);
+
+        spaceCtx.fillStyle = "#ffffff";
+        starParticles.forEach((p) => {
+          spaceCtx.globalAlpha = p.alpha;
+          spaceCtx.beginPath();
+          spaceCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          spaceCtx.fill();
+
+          p.y -= p.speed;
+          if (p.y < 0) {
+            p.y = sh;
+            p.x = Math.random() * sw;
+          }
         });
 
-        const starParticles = [];
-        for (let i = 0; i < 80; i++) {
-            starParticles.push({
-                x: Math.random() * sw,
-                y: Math.random() * sh,
-                radius: Math.random() * 1.5 + 0.5,
-                alpha: Math.random() * 0.7 + 0.3,
-                speed: Math.random() * 0.2 + 0.05
-            });
+        for (let i = starTrail.length - 1; i >= 0; i--) {
+          let tp = starTrail[i];
+          spaceCtx.globalAlpha = tp.alpha;
+          spaceCtx.fillStyle = "#818cf8";
+          spaceCtx.beginPath();
+          spaceCtx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
+          spaceCtx.fill();
+
+          tp.x += tp.vx;
+          tp.y += tp.vy;
+          tp.alpha -= 0.03;
+
+          if (tp.alpha <= 0) {
+            starTrail.splice(i, 1);
+          }
         }
 
-        const starTrail = [];
-        window.addEventListener('mousemove', (e) => {
-            for (let i = 0; i < 2; i++) {
-                starTrail.push({
-                    x: e.clientX,
-                    y: e.clientY,
-                    radius: Math.random() * 2 + 1,
-                    alpha: 0.8,
-                    vx: (Math.random() - 0.5) * 1.5,
-                    vy: (Math.random() - 0.5) * 1.5
-                });
-            }
-        });
-
-        function animateSpace() {
-            spaceCtx.clearRect(0, 0, sw, sh);
-
-            spaceCtx.fillStyle = '#ffffff';
-            starParticles.forEach(p => {
-                spaceCtx.globalAlpha = p.alpha;
-                spaceCtx.beginPath();
-                spaceCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                spaceCtx.fill();
-
-                p.y -= p.speed;
-                if (p.y < 0) {
-                    p.y = sh;
-                    p.x = Math.random() * sw;
-                }
-            });
-
-            for (let i = starTrail.length - 1; i >= 0; i--) {
-                let tp = starTrail[i];
-                spaceCtx.globalAlpha = tp.alpha;
-                spaceCtx.fillStyle = '#818cf8';
-                spaceCtx.beginPath();
-                spaceCtx.arc(tp.x, tp.y, tp.radius, 0, Math.PI * 2);
-                spaceCtx.fill();
-
-                tp.x += tp.vx;
-                tp.y += tp.vy;
-                tp.alpha -= 0.03;
-
-                if (tp.alpha <= 0) {
-                    starTrail.splice(i, 1);
-                }
-            }
-
-            requestAnimationFrame(animateSpace);
-        }
-        animateSpace();
+        requestAnimationFrame(animateSpace);
+      }
+      animateSpace();
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -495,357 +645,349 @@
     <script src="fetch_news.js"></script>
     <script src="auth.js"></script>
     <script>
-        function toggleAI() {
-            const container = document.getElementById('labContainer');
-            const panel = document.getElementById('aiPanel');
-            const btn = document.getElementById('aiToggleBtn');
-            container.classList.toggle('ai-collapsed');
-            panel.classList.toggle('collapsed');
-            btn.textContent = panel.classList.contains('collapsed') ? '▶' : '◀';
+      function toggleAI() {
+        const container = document.getElementById("labContainer");
+        const panel = document.getElementById("aiPanel");
+        const btn = document.getElementById("aiToggleBtn");
+        container.classList.toggle("ai-collapsed");
+        panel.classList.toggle("collapsed");
+        btn.textContent = panel.classList.contains("collapsed") ? "▶" : "◀";
+      }
+
+      const container = document.getElementById("webglContainer");
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        50,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000,
+      );
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 2;
+      controls.maxDistance = 15;
+
+      // 載入 8K 太陽真實貼圖
+      const textureLoader = new THREE.TextureLoader();
+      const sunTexture = textureLoader.load(
+        "/static/static/textures/8k_sun.jpg",
+      );
+
+      const geometry = new THREE.SphereGeometry(1.5, 128, 128);
+      const material = new THREE.MeshStandardMaterial({
+        map: sunTexture,
+        roughness: 1.0,
+        metalness: 0.0,
+        bumpMap: sunTexture,
+        bumpScale: 0.012,
+        emissive: 0xffffff,
+        emissiveMap: sunTexture,
+        emissiveIntensity: 0.35,
+      });
+      const planet = new THREE.Mesh(geometry, material);
+      scene.add(planet);
+
+      const glowGeo = new THREE.SphereGeometry(1.68, 64, 64);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0xffaa33,
+        transparent: true,
+        opacity: 0.12,
+        side: THREE.BackSide,
+      });
+      const atmosphere = new THREE.Mesh(glowGeo, glowMat);
+      scene.add(atmosphere);
+
+      const ambientLight = new THREE.AmbientLight(0x444466, 1.2);
+      scene.add(ambientLight);
+      const pointLight = new THREE.PointLight(0xfffaed, 2.0, 50);
+      pointLight.position.set(6, 4, 5);
+      scene.add(pointLight);
+
+      let baseRotSpeed = 0.003;
+      let timeMultiplier = 1.0;
+      let eccOffset = 0;
+      const aiChat = document.getElementById("aiChat");
+
+      // ============================================================
+      // AI 助理嫁接：即時視覺回饋（拖曳中）+ 後端 API 解說（放開滑桿後）
+      // ============================================================
+
+      function scrollChatToBottom() {
+        aiChat.scrollTop = aiChat.scrollHeight;
+      }
+
+      function appendMessage(kind, text) {
+        const el = document.createElement("div");
+        el.className =
+          kind === "user"
+            ? "msg msg-user"
+            : kind === "hint"
+              ? "msg msg-hint"
+              : "msg msg-ai";
+        el.textContent = text;
+        aiChat.appendChild(el);
+        scrollChatToBottom();
+        return el;
+      }
+
+      function gatherSliderState() {
+        const rows = [
+          ["恆星質量", document.getElementById("v-mass").textContent],
+          ["核心熱核反應速率", document.getElementById("v-fusion").textContent],
+          ["表面重力加速度", document.getElementById("v-gravity").textContent],
+          ["萬有引力常數倍率", document.getElementById("v-gconst").textContent],
+          ["暗物質密度", document.getElementById("v-dark").textContent],
+          ["軌道離心率", document.getElementById("v-ecc").textContent],
+          ["時間流逝速率", document.getElementById("v-time").textContent],
+          ["空間曲率", document.getElementById("v-curve").textContent],
+          [
+            "電磁波譜觀測頻段",
+            document.getElementById("v-spectrum").textContent,
+          ],
+          ["宇宙塵埃遮蔽率", document.getElementById("v-dust").textContent],
+        ];
+        return rows.map(([label, value]) => `${label}:${value}`).join(", ");
+      }
+
+      let narrateInFlight = false;
+      async function requestSliderNarration() {
+        if (narrateInFlight) return;
+        const btn = document.getElementById("analyzeBtn");
+        narrateInFlight = true;
+        if (btn) btn.disabled = true;
+        const loadingEl = appendMessage("hint", "AI 助理分析中...");
+        try {
+          const res = await fetch(`${API_BASE}/api/3d/narrate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ context_description: gatherSliderState() }),
+          });
+          const data = await res.json();
+          loadingEl.textContent = data.hint || "目前無法取得動態旁白。";
+        } catch (err) {
+          console.warn("narrate API 失敗", err);
+          loadingEl.textContent =
+            "暫時無法連線到 AI 助理，請確認後端伺服器是否已啟動。";
+        } finally {
+          narrateInFlight = false;
+          if (btn) btn.disabled = false;
+          scrollChatToBottom();
         }
+      }
 
-        const container = document.getElementById('webglContainer');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.z = 5;
+      document.getElementById("s-mass").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-mass").textContent = val.toFixed(1) + " M☉";
+        let scale = Math.pow(val, 0.33);
+        planet.scale.set(scale, scale, scale);
+        atmosphere.scale.set(scale, scale, scale);
+      });
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
+      document.getElementById("s-fusion").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-fusion").textContent = val.toFixed(1) + "x";
+        material.emissiveIntensity = val * 0.35;
+      });
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 2;
-        controls.maxDistance = 15;
+      document.getElementById("s-gravity").addEventListener("input", (e) => {
+        let val = parseInt(e.target.value);
+        document.getElementById("v-gravity").textContent = val + " m/s²";
+        let distort = 1.0 + val / 3000;
+        planet.scale.y = distort;
+      });
 
-        // 生成擬真、柔和的恆星對流米粒組織紋理 (取代生硬坑洞)
-        function createSolarTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1024;
-            canvas.height = 512;
-            const ctx = canvas.getContext('2d');
+      document.getElementById("s-gconst").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-gconst").textContent = val.toFixed(1) + " G";
+      });
 
-            ctx.fillStyle = '#b5b5b5';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+      document.getElementById("s-dark").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-dark").textContent = val.toFixed(2) + " ρc";
+        atmosphere.material.opacity = 0.1 + val * 0.2;
+      });
 
-            for (let i = 0; i < 4000; i++) {
-                let x = Math.random() * canvas.width;
-                let y = Math.random() * canvas.height;
-                let r = Math.random() * 15 + 3;
-                let shade = Math.floor(Math.random() * 80 + 100);
-                ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
-                ctx.beginPath();
-                ctx.arc(x, y, r, 0, Math.PI * 2);
-                ctx.fill();
-            }
+      document.getElementById("s-ecc").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-ecc").textContent = val.toFixed(2);
+        eccOffset = val;
+      });
 
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.ClampToEdgeWrapping;
-            return texture;
-        }
+      document.getElementById("s-time").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-time").textContent = val.toFixed(1) + "x";
+        timeMultiplier = val;
+      });
 
-        const solarTexture = createSolarTexture();
+      document.getElementById("s-curve").addEventListener("input", (e) => {
+        let val = parseFloat(e.target.value);
+        document.getElementById("v-curve").textContent = val.toFixed(2);
+        camera.position.z = 5 + val * 1.5;
+      });
 
-        const geometry = new THREE.SphereGeometry(1.5, 128, 128);
-        const material = new THREE.MeshStandardMaterial({
-            color: 0xffd27d,
-            roughness: 0.95,
-            metalness: 0.0,
-            bumpMap: solarTexture,
-            bumpScale: 0.012,
-            emissive: 0xff6600,
-            emissiveIntensity: 0.2
-        });
-        const planet = new THREE.Mesh(geometry, material);
-        scene.add(planet);
+      const specNames = [
+        "標準太陽 (G2V)",
+        "高能天體 (X-Ray)",
+        "紅外熱輻射 (IR)",
+        "強烈紫外線 (UV)",
+      ];
+      const specColors = [0xffffff, 0x60a5fa, 0xf87171, 0x34d399];
+      const specEmissive = [0xffffff, 0x3b82f6, 0xd97706, 0x059669];
+      document.getElementById("s-spectrum").addEventListener("input", (e) => {
+        let idx = parseInt(e.target.value) - 1;
+        document.getElementById("v-spectrum").textContent = specNames[idx];
+        material.color.setHex(specColors[idx]);
+        material.emissive.setHex(specEmissive[idx]);
+      });
 
-        const glowGeo = new THREE.SphereGeometry(1.68, 64, 64);
-        const glowMat = new THREE.MeshBasicMaterial({
-            color: 0xffaa33,
-            transparent: true,
-            opacity: 0.12,
-            side: THREE.BackSide
-        });
-        const atmosphere = new THREE.Mesh(glowGeo, glowMat);
-        scene.add(atmosphere);
+      document.getElementById("s-dust").addEventListener("input", (e) => {
+        let val = parseInt(e.target.value);
+        document.getElementById("v-dust").textContent = val + "%";
+        material.bumpScale = 0.005 + val / 800;
+      });
 
-        const ambientLight = new THREE.AmbientLight(0x444466, 1.2);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xfffaed, 2.0, 50);
-        pointLight.position.set(6, 4, 5);
-        scene.add(pointLight);
+      // ============================================================
+      // AI 助理聊天室：串接 /api/chat/stream ＆ 儲存紀錄至 profile
+      // ============================================================
 
-        let baseRotSpeed = 0.003;
-        let timeMultiplier = 1.0;
-        let eccOffset = 0;
-        const aiChat = document.getElementById('aiChat');
+      const currentUser = getCurrentUser();
+      const currentUserId =
+        currentUser && currentUser.user_id ? currentUser.user_id : 1;
+      const SESSION_KEY = `astro_lab_session_id_${currentUserId}`;
+      let labSessionId = localStorage.getItem(SESSION_KEY) || null;
+      const aiInput = document.getElementById("aiUserInput");
+      const aiSendBtn = document.getElementById("aiSendBtn");
 
-        // ============================================================
-        // AI 助理嫁接：即時視覺回饋（拖曳中）+ 後端 API 解說（放開滑桿後）
-        // ============================================================
+      async function sendChatMessage() {
+        const question = aiInput.value.trim();
+        if (!question) return;
 
-        function scrollChatToBottom() {
-            aiChat.scrollTop = aiChat.scrollHeight;
-        }
+        aiInput.value = "";
+        aiInput.disabled = true;
+        aiSendBtn.disabled = true;
 
-        function appendMessage(kind, text) {
-            const el = document.createElement('div');
-            el.className = kind === 'user' ? 'msg msg-user' : (kind === 'hint' ? 'msg msg-hint' : 'msg msg-ai');
-            el.textContent = text;
-            aiChat.appendChild(el);
-            scrollChatToBottom();
-            return el;
-        }
+        appendMessage("user", question);
+        const answerEl = appendMessage("ai", "思考中...");
 
-        function gatherSliderState() {
-            const rows = [
-                ['恆星質量', document.getElementById('v-mass').textContent],
-                ['核心熱核反應速率', document.getElementById('v-fusion').textContent],
-                ['表面重力加速度', document.getElementById('v-gravity').textContent],
-                ['萬有引力常數倍率', document.getElementById('v-gconst').textContent],
-                ['暗物質密度', document.getElementById('v-dark').textContent],
-                ['軌道離心率', document.getElementById('v-ecc').textContent],
-                ['時間流逝速率', document.getElementById('v-time').textContent],
-                ['空間曲率', document.getElementById('v-curve').textContent],
-                ['電磁波譜觀測頻段', document.getElementById('v-spectrum').textContent],
-                ['宇宙塵埃遮蔽率', document.getElementById('v-dust').textContent],
-            ];
-            return rows.map(([label, value]) => `${label}:${value}`).join(', ');
-        }
+        let answer = "";
 
-        let narrateInFlight = false;
-        async function requestSliderNarration() {
-            if (narrateInFlight) return;
-            const btn = document.getElementById('analyzeBtn');
-            narrateInFlight = true;
-            if (btn) btn.disabled = true;
-            const loadingEl = appendMessage('hint', 'AI 助理分析中...');
-            try {
-                const res = await fetch(`${API_BASE}/api/3d/narrate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ context_description: gatherSliderState() }),
-                });
-                const data = await res.json();
-                loadingEl.textContent = data.hint || '目前無法取得動態旁白。';
-            } catch (err) {
-                console.warn('narrate API 失敗', err);
-                loadingEl.textContent = '暫時無法連線到 AI 助理，請確認後端伺服器是否已啟動。';
-            } finally {
-                narrateInFlight = false;
-                if (btn) btn.disabled = false;
+        try {
+          const res = await fetch(`${API_BASE}/api/chat/stream`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              question: question,
+              session_id: labSessionId,
+              top_k: 3,
+              user_id: currentUserId,
+            }),
+          });
+
+          if (!res.ok || !res.body) {
+            throw new Error(`stream failed: ${res.status}`);
+          }
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let buffer = "";
+          let firstChunk = true;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const parts = buffer.split("\n\n");
+            buffer = parts.pop();
+
+            for (const part of parts) {
+              if (!part.trim()) continue;
+              const lines = part.split("\n");
+              let eventType = "message";
+              let data = "";
+              for (const line of lines) {
+                if (line.startsWith("event:")) {
+                  eventType = line.replace(/^event:\s?/, "").trim();
+                } else if (line.startsWith("data:")) {
+                  data += line.replace(/^data:\s?/, "");
+                }
+              }
+
+              if (eventType === "session") {
+                labSessionId = data.trim();
+                localStorage.setItem(SESSION_KEY, labSessionId);
+              } else if (eventType === "done") {
+                // 串流結束
+              } else {
+                if (data === "[DONE]") continue;
+                if (firstChunk) {
+                  answer = "";
+                  firstChunk = false;
+                }
+                answer += data;
+                answerEl.textContent = answer;
                 scrollChatToBottom();
+              }
             }
+          }
+
+          if (!answer.trim()) {
+            answerEl.textContent = "(AI 助理沒有回應內容，請再試一次)";
+          }
+        } catch (err) {
+          console.warn("chat/stream 失敗", err);
+          answerEl.textContent =
+            "抱歉，AI 助理暫時無法回應，請確認後端伺服器是否已啟動。";
+        } finally {
+          aiInput.disabled = false;
+          aiSendBtn.disabled = false;
+          aiInput.focus();
+        }
+      }
+
+      aiInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendChatMessage();
+        }
+      });
+
+      // Render Loop
+      let clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        let currentSpeed = baseRotSpeed * timeMultiplier;
+
+        planet.rotation.y += currentSpeed;
+        atmosphere.rotation.y += currentSpeed * 1.02;
+
+        if (eccOffset > 0) {
+          let time = clock.getElapsedTime() * timeMultiplier;
+          planet.position.x = Math.sin(time) * eccOffset * 0.8;
+          atmosphere.position.x = planet.position.x;
+        } else {
+          planet.position.x = 0;
+          atmosphere.position.x = 0;
         }
 
-        document.getElementById('s-mass').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-mass').textContent = val.toFixed(1) + ' M☉';
-            let scale = Math.pow(val, 0.33);
-            planet.scale.set(scale, scale, scale);
-            atmosphere.scale.set(scale, scale, scale);
-        });
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
 
-        document.getElementById('s-fusion').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-fusion').textContent = val.toFixed(1) + 'x';
-            material.emissiveIntensity = val * 0.12;
-        });
-
-        document.getElementById('s-gravity').addEventListener('input', (e) => {
-            let val = parseInt(e.target.value);
-            document.getElementById('v-gravity').textContent = val + ' m/s²';
-            let distort = 1.0 + (val / 3000);
-            planet.scale.y = distort;
-        });
-
-        document.getElementById('s-gconst').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-gconst').textContent = val.toFixed(1) + ' G';
-        });
-
-        document.getElementById('s-dark').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-dark').textContent = val.toFixed(2) + ' ρc';
-            atmosphere.material.opacity = 0.1 + (val * 0.2);
-        });
-
-        document.getElementById('s-ecc').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-ecc').textContent = val.toFixed(2);
-            eccOffset = val;
-        });
-
-        document.getElementById('s-time').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-time').textContent = val.toFixed(1) + 'x';
-            timeMultiplier = val;
-        });
-
-        document.getElementById('s-curve').addEventListener('input', (e) => {
-            let val = parseFloat(e.target.value);
-            document.getElementById('v-curve').textContent = val.toFixed(2);
-            camera.position.z = 5 + (val * 1.5);
-        });
-
-        const specNames = ["標準太陽 (G2V)", "高能天體 (X-Ray)", "紅外熱輻射 (IR)", "強烈紫外線 (UV)"];
-        const specColors = [0xffd27d, 0x60a5fa, 0xf87171, 0x34d399];
-        const specEmissive = [0xff6600, 0x3b82f6, 0xd97706, 0x059669];
-        document.getElementById('s-spectrum').addEventListener('input', (e) => {
-            let idx = parseInt(e.target.value) - 1;
-            document.getElementById('v-spectrum').textContent = specNames[idx];
-            material.color.setHex(specColors[idx]);
-            material.emissive.setHex(specEmissive[idx]);
-        });
-
-        document.getElementById('s-dust').addEventListener('input', (e) => {
-            let val = parseInt(e.target.value);
-            document.getElementById('v-dust').textContent = val + '%';
-            material.bumpScale = 0.005 + (val / 800);
-        });
-
-        // ============================================================
-        // AI 助理聊天室：串接 /api/chat/stream ＆ 儲存紀錄至 profile
-        // ============================================================
-
-        // 【修正】SESSION_KEY 依登入者的 user_id 分開存放，
-        // 不然同一台瀏覽器換帳號登入還是會沿用同一個聊天 session_id，
-        // 導致資料庫裡的對話紀錄混在一起、無法依帳號分流。
-        const currentUser = getCurrentUser();
-        const currentUserId = currentUser && currentUser.user_id ? currentUser.user_id : 1;
-        const SESSION_KEY = `astro_lab_session_id_${currentUserId}`;
-        let labSessionId = localStorage.getItem(SESSION_KEY) || null;
-        const aiInput = document.getElementById('aiUserInput');
-        const aiSendBtn = document.getElementById('aiSendBtn');
-
-        async function sendChatMessage() {
-            const question = aiInput.value.trim();
-            if (!question) return;
-
-            aiInput.value = '';
-            aiInput.disabled = true;
-            aiSendBtn.disabled = true;
-
-            appendMessage('user', question);
-            const answerEl = appendMessage('ai', '思考中...');
-
-            let answer = '';
-
-            try {
-                const res = await fetch(`${API_BASE}/api/chat/stream`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        question: question,
-                        session_id: labSessionId,
-                        top_k: 3,
-                        user_id: currentUserId,
-                    }),
-                });
-
-                if (!res.ok || !res.body) {
-                    throw new Error(`stream failed: ${res.status}`);
-                }
-
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder('utf-8');
-                let buffer = '';
-                let firstChunk = true;
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const parts = buffer.split('\n\n');
-                    buffer = parts.pop();
-
-                    for (const part of parts) {
-                        if (!part.trim()) continue;
-                        const lines = part.split('\n');
-                        let eventType = 'message';
-                        let data = '';
-                        for (const line of lines) {
-                            if (line.startsWith('event:')) {
-                                eventType = line.replace(/^event:\s?/, '').trim();
-                            } else if (line.startsWith('data:')) {
-                                data += line.replace(/^data:\s?/, '');
-                            }
-                        }
-
-                        if (eventType === 'session') {
-                            labSessionId = data.trim();
-                            localStorage.setItem(SESSION_KEY, labSessionId);
-                        } else if (eventType === 'done') {
-                            // 串流結束
-                        } else {
-                            if (data === '[DONE]') continue;
-                            if (firstChunk) {
-                                answer = '';
-                                firstChunk = false;
-                            }
-                            answer += data;
-                            answerEl.textContent = answer;
-                            scrollChatToBottom();
-                        }
-                    }
-                }
-
-                if (!answer.trim()) {
-                    answerEl.textContent = '(AI 助理沒有回應內容，請再試一次)';
-                }
-                // 對話紀錄現在由後端 /api/chat/stream 直接依 user_id 寫入資料庫
-                // （見 chat_controller.py），profile.html 會即時向後端查詢，
-                // 不再需要另外寫一份到 localStorage。
-            } catch (err) {
-                console.warn('chat/stream 失敗', err);
-                answerEl.textContent = '抱歉，AI 助理暫時無法回應，請確認後端伺服器是否已啟動。';
-            } finally {
-                aiInput.disabled = false;
-                aiSendBtn.disabled = false;
-                aiInput.focus();
-            }
-        }
-
-        aiInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendChatMessage();
-            }
-        });
-
-        // Render Loop
-        let clock = new THREE.Clock();
-        function animate() {
-            requestAnimationFrame(animate);
-            let currentSpeed = baseRotSpeed * timeMultiplier;
-
-            planet.rotation.y += currentSpeed;
-            atmosphere.rotation.y += currentSpeed * 1.02;
-
-            if (eccOffset > 0) {
-                let time = clock.getElapsedTime() * timeMultiplier;
-                planet.position.x = Math.sin(time) * eccOffset * 0.8;
-                atmosphere.position.x = planet.position.x;
-            } else {
-                planet.position.x = 0;
-                atmosphere.position.x = 0;
-            }
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
+      window.addEventListener("resize", () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
     </script>
-</body>
-
+  </body>
 </html>

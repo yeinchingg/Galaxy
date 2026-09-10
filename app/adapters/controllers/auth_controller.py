@@ -4,7 +4,7 @@ from app.infrastructure.database.database import (
     create_user,
     get_user_by_username,
     verify_password,
-    get_conn
+    get_conn,
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -25,22 +25,23 @@ def register_user(data: UserAuthRequest):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="此使用者名稱已被註冊，請選擇其他名稱。"
+            detail="此使用者名稱已被註冊，請選擇其他名稱。",
         )
     try:
-        user_id = create_user(username=data.username,
-                              password=data.password, role_type="registered")
+        user_id = create_user(
+            username=data.username, password=data.password, role_type="registered"
+        )
         return {
             "status": "success",
             "message": "註冊成功",
             "user_id": user_id,
             "username": data.username,
-            "role_type": "registered"
+            "role_type": "registered",
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"註冊失敗: {str(e)}"
+            detail=f"註冊失敗: {str(e)}",
         )
 
 
@@ -49,15 +50,14 @@ def login_user(data: UserAuthRequest):
     user = verify_password(data.username, data.password)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="使用者名稱或密碼錯誤。"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="使用者名稱或密碼錯誤。"
         )
     return {
         "status": "success",
         "message": "登入成功",
         "user_id": user["user_id"],
         "username": user["username"],
-        "role_type": user["role_type"]
+        "role_type": user["role_type"],
     }
 
 
@@ -70,22 +70,21 @@ def guest_login(data: GuestLoginRequest):
             "message": "訪客登入成功",
             "user_id": user["user_id"],
             "username": user["username"],
-            "role_type": user["role_type"]
+            "role_type": user["role_type"],
         }
     try:
-        user_id = create_user(username=data.username,
-                              password=None, role_type="guest")
+        user_id = create_user(username=data.username, password=None, role_type="guest")
         return {
             "status": "success",
             "message": "訪客帳號建立並登入成功",
             "user_id": user_id,
             "username": data.username,
-            "role_type": "guest"
+            "role_type": "guest",
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"訪客登入初始化失敗: {str(e)}"
+            detail=f"訪客登入初始化失敗: {str(e)}",
         )
 
 
@@ -97,7 +96,7 @@ def get_user_profile(user_id: int):
     with get_conn() as conn:
         user = conn.execute(
             "SELECT user_id, username, role_type, created_at FROM users WHERE user_id = ?",
-            (user_id,)
+            (user_id,),
         ).fetchone()
 
         if not user:
@@ -105,16 +104,16 @@ def get_user_profile(user_id: int):
 
         quizzes = conn.execute(
             "SELECT * FROM quiz_scores WHERE user_id = ? ORDER BY completed_at DESC",
-            (user_id,)
+            (user_id,),
         ).fetchall()
 
         interactions = conn.execute(
             "SELECT * FROM interactions WHERE user_id = ? ORDER BY ts DESC LIMIT 20",
-            (user_id,)
+            (user_id,),
         ).fetchall()
 
         return {
             "user": dict(user),
             "quiz_history": [dict(q) for q in quizzes],
-            "interactions": [dict(i) for i in interactions]
+            "interactions": [dict(i) for i in interactions],
         }
