@@ -493,6 +493,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="fetch_news.js"></script>
+    <script src="auth.js"></script>
     <script>
         function toggleAI() {
             const container = document.getElementById('labContainer');
@@ -710,7 +711,12 @@
         // AI 助理聊天室：串接 /api/chat/stream ＆ 儲存紀錄至 profile
         // ============================================================
 
-        const SESSION_KEY = 'astro_lab_session_id';
+        // 【修正】SESSION_KEY 依登入者的 user_id 分開存放，
+        // 不然同一台瀏覽器換帳號登入還是會沿用同一個聊天 session_id，
+        // 導致資料庫裡的對話紀錄混在一起、無法依帳號分流。
+        const currentUser = getCurrentUser();
+        const currentUserId = currentUser && currentUser.user_id ? currentUser.user_id : 1;
+        const SESSION_KEY = `astro_lab_session_id_${currentUserId}`;
         let labSessionId = localStorage.getItem(SESSION_KEY) || null;
         const aiInput = document.getElementById('aiUserInput');
         const aiSendBtn = document.getElementById('aiSendBtn');
@@ -736,6 +742,7 @@
                         question: question,
                         session_id: labSessionId,
                         top_k: 3,
+                        user_id: currentUserId,
                     }),
                 });
 
@@ -789,41 +796,10 @@
 
                 if (!answer.trim()) {
                     answerEl.textContent = '(AI 助理沒有回應內容，請再試一次)';
-                } else {
-                    // 【關鍵修正】將對話紀錄寫入 localStorage，確保 profile.html 能夠呈現
-                  const currentUserStr = localStorage.getItem("astro_current_user");
-                    let currentUserId = localStorage.getItem("user_id") || "guest";
-                    let currentUserName = localStorage.getItem("username") || "訪客";
-
-                    if (currentUserStr) {
-                        try {
-                            const u = JSON.parse(currentUserStr);
-                            currentUserId = u.user_id || currentUserId;
-                            currentUserName = u.username || currentUserName;
-                        } catch (e) { }
-                    }
-
-                    // 依據使用者 ID 建立獨立的儲存 Key
-                    const storageKey = `astro_ai_chat_history_${currentUserId}`;
-                    const chatHistory = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-                    chatHistory.push({
-                        userId: currentUserId,
-                        user: currentUserName,
-                        question: question,
-                        answer: answer.trim(),
-                        time: new Date().toLocaleString()
-                    });
-                    localStorage.setItem(storageKey, JSON.stringify(chatHistory));
-
-                    chatHistory.push({
-                        user: currentUserName,
-                        question: question,
-                        answer: answer.trim(),
-                        time: new Date().toLocaleString()
-                    });
-                    localStorage.setItem("astro_ai_chat_history", JSON.stringify(chatHistory));
                 }
+                // 對話紀錄現在由後端 /api/chat/stream 直接依 user_id 寫入資料庫
+                // （見 chat_controller.py），profile.html 會即時向後端查詢，
+                // 不再需要另外寫一份到 localStorage。
             } catch (err) {
                 console.warn('chat/stream 失敗', err);
                 answerEl.textContent = '抱歉，AI 助理暫時無法回應，請確認後端伺服器是否已啟動。';
@@ -870,7 +846,6 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
         });
     </script>
-    <script src="auth.js"></script>
 </body>
 
 </html>

@@ -998,7 +998,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        user_id: 1,
+                        user_id: (getCurrentUser() && getCurrentUser().user_id) || 1,
                         quiz_type: state.level,
                         score: finalScore,
                         total_questions: total

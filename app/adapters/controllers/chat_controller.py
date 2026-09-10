@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from app.use_cases.rag_chat_use_case import RAGChatUseCase
+from app.infrastructure.database import database as db
 
 router = APIRouter()
 _use_case: Optional[RAGChatUseCase] = None
@@ -31,6 +32,21 @@ class ChatRequest(BaseModel):
     question: str
     session_id: Optional[str] = None
     top_k: Optional[int] = 3
+    user_id: Optional[int] = 1
+
+
+class GuestLoginRequest(BaseModel):
+    display_name: Optional[str] = None
+
+
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 class NarrateRequest(BaseModel):
@@ -84,6 +100,55 @@ def get_system_status():
         "status": "online",
         "service": "StarLearn Astro Platform",
         "ai_ready": _use_case is not None,
+    }
+
+
+@router.post("/auth/guest")
+def auth_guest(req: GuestLoginRequest):
+    """訪客登入：每次都建立一個獨立的訪客帳號，取得專屬 user_id"""
+    display_name = (req.display_name or "訪客研究員").strip() or "訪客研究員"
+    # 訪客帳號名稱要唯一，避免撞到 users.username 的 UNIQUE 限制
+    unique_username = f"guest_{os.urandom(4).hex()}"
+    user_id = db.create_user(unique_username, password=None, role_type="guest")
+    return {
+        "user_id": user_id,
+        "username": display_name,
+        "role": "guest",
+    }
+
+
+@router.post("/auth/register")
+def auth_register(req: RegisterRequest):
+    """建立帳號：真正寫入 users 資料表，密碼會雜湊儲存"""
+    username = req.username.strip()
+    password = req.password.strip()
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="帳號與密碼不能為空")
+
+    if db.get_user_by_username(username):
+        raise HTTPException(status_code=409, detail="這個使用者名稱已經被註冊了")
+
+    user_id = db.create_user(username, password=password, role_type="member")
+    return {
+        "user_id": user_id,
+        "username": username,
+        "role": "member",
+    }
+
+
+@router.post("/auth/login")
+def auth_login(req: LoginRequest):
+    """帳號密碼登入：驗證雜湊密碼是否正確"""
+    username = req.username.strip()
+    password = req.password.strip()
+    user = db.verify_password(username, password)
+    if not user:
+        raise HTTPException(status_code=401, detail="帳號或密碼錯誤")
+
+    return {
+        "user_id": user["user_id"],
+        "username": user["username"],
+        "role": user["role_type"],
     }
 
 
@@ -189,10 +254,13 @@ def chat_stream_endpoint(req: ChatRequest):
 
         # 👈 檢查 _db_repo 是否存在並執行寫入
         if _db_repo:
-            print(f"📦 [DB] 準備將對話寫入資料庫...")
+            print(f"📦 [DB] 準備將對話寫入資料庫... (user_id={req.user_id or 1})")
             try:
-                _db_repo.save_message(session_id, "user", req.question)
-                _db_repo.save_message(session_id, "assistant", "".join(full_answer))
+                uid = req.user_id or 1
+                _db_repo.save_message(session_id, "user", req.question, user_id=uid)
+                _db_repo.save_message(
+                    session_id, "assistant", "".join(full_answer), user_id=uid
+                )
                 print(f"✅ [DB] 成功將對話寫入資料庫！")
             except Exception as db_err:
                 print(f"❌ [DB] 寫入資料庫失敗，報錯原因: {db_err}")

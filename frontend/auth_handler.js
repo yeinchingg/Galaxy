@@ -1,126 +1,137 @@
-// frontend/auth_handler.js
-// login.html 專用的表單處理邏輯。
-// 註冊 / 登入 / 訪客登入 分別打 /api/auth/register、/api/auth/login、/api/auth/guest，
-// 成功後統一用 saveUserSession() 把使用者資料寫進 localStorage，
-// 存的格式跟 auth.js 的 getCurrentUser() 對齊。
+/**
+ * frontend/auth_handler.js
+ * 處理訪客進入、帳號註冊與登入
+ * -> 全部改為真正呼叫後端 API，取得資料庫中真實的 user_id，
+ *    不同帳號的資料才會在 DB 裡彼此分開。
+ */
 
+const STORAGE_KEY_USER = "astro_current_user";
+const API_BASE = window.location.origin;
+
+// 隨機產生訪客暱稱
 function rollGuestName() {
-    const adjectives = ["Stellar", "Cosmic", "Astral", "Solar", "Lunar", "Nebula", "Quantum", "Orbit"];
-    const nouns = ["Voyager", "Observer", "Explorer", "Pioneer", "Drifter", "Scout", "Seeker", "Astromer"];
-    const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-    const randomNum = Math.floor(Math.random() * 900) + 100;
-
-    const input = document.getElementById('guestNameInput');
+    const prefixes = ["探索者", "觀星者", "宇航員", "領航員", "旅行者", "星際研究員"];
+    const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const randomCode = Math.floor(1000 + Math.random() * 9000);
+    const input = document.getElementById("guestNameInput");
     if (input) {
-        input.value = `${randomAdj}_${randomNoun}_${randomNum}`;
+        input.value = `${randomPrefix}_${randomCode}`;
     }
 }
 
-/**
- * 統一儲存使用者工作階段資料。
- * 同時寫入 JSON 物件（主要格式，供 auth.js 的 getCurrentUser() 讀取）
- * 以及拆開的獨立 key（profile.html 目前直接讀這幾個 key，保留相容用）。
- */
-function saveUserSession(result) {
-    const userData = {
-        user_id: result.user_id,
-        username: result.username,
-        role_type: result.role_type,
+// 儲存登入資訊：統一格式，供 auth.js / profile.html / lab.html / quiz.html 共用
+function saveCurrentUser(data) {
+    const userObj = {
+        user_id: data.user_id,
+        username: data.username,
+        role: data.role,
+        loginTime: new Date().toISOString()
     };
-    localStorage.setItem('astro_current_user', JSON.stringify(userData));
-    localStorage.setItem('user_id', result.user_id);
-    localStorage.setItem('username', result.username);
-    localStorage.setItem('role_type', result.role_type);
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userObj));
+    return userObj;
 }
 
-/**
- * 共用的 POST /api/auth/xxx 呼叫邏輯，避免三個表單各自重複寫一份 fetch。
- */
-async function postAuth(endpoint, payload) {
-    const response = await fetch(`/api/auth/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    });
-    const result = await response.json().catch(() => ({}));
-    return { ok: response.ok, result };
-}
-
+// 訪客登入：呼叫後端建立一個獨立的訪客帳號（每次登入都有自己的 user_id）
 async function handleGuestLogin() {
-    const username = document.getElementById('guestNameInput')?.value.trim() || "";
-    if (!username) {
-        alert("請輸入或隨機產生訪客顯示名稱！");
-        return;
-    }
+    const input = document.getElementById("guestNameInput");
+    const displayName = input && input.value.trim() ? input.value.trim() : "訪客研究員";
 
     try {
-        const { ok, result } = await postAuth('guest', { username });
-        if (ok) {
-            saveUserSession(result);
-            window.location.href = '/index.html';
-        } else {
-            alert(result.detail || "訪客登入失敗");
-        }
-    } catch (error) {
-        console.error("Network error:", error);
-        alert("無法連線至伺服器。");
+        const res = await fetch(`${API_BASE}/api/auth/guest`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ display_name: displayName })
+        });
+        if (!res.ok) throw new Error("guest login failed");
+        const data = await res.json();
+        saveCurrentUser(data);
+        window.location.href = "index.html";
+    } catch (e) {
+        console.error("訪客登入失敗", e);
+        alert("訪客登入失敗，請確認伺服器是否已啟動！");
     }
 }
 
+// 註冊帳號：真正寫入資料庫的 users 表
 async function handleRegister() {
-    const username = document.getElementById('regUsername')?.value.trim() || "";
-    const password = document.getElementById('regPassword')?.value.trim() || "";
-    const errorMsg = document.getElementById('regErrorMsg');
+    const userInp = document.getElementById("regUsername");
+    const passInp = document.getElementById("regPassword");
+    const errDiv = document.getElementById("regErrorMsg");
+
+    const username = userInp ? userInp.value.trim() : "";
+    const password = passInp ? passInp.value.trim() : "";
 
     if (!username || !password) {
-        showError(errorMsg, "帳號與密碼皆不得為空！");
+        if (errDiv) {
+            errDiv.textContent = "請輸入使用者名稱與密碼！";
+            errDiv.style.display = "block";
+        }
         return;
     }
 
     try {
-        const { ok, result } = await postAuth('register', { username, password });
-        if (ok) {
-            saveUserSession(result);
-            window.location.href = '/index.html';
-        } else {
-            showError(errorMsg, result.detail || "註冊失敗");
+        const res = await fetch(`${API_BASE}/api/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            if (errDiv) {
+                errDiv.textContent = data.detail || "註冊失敗！";
+                errDiv.style.display = "block";
+            }
+            return;
         }
-    } catch (error) {
-        console.error("Network error:", error);
-        showError(errorMsg, "無法連線至伺服器。");
+        saveCurrentUser(data);
+        window.location.href = "index.html";
+    } catch (e) {
+        console.error("註冊失敗", e);
+        if (errDiv) {
+            errDiv.textContent = "無法連線到伺服器，請稍後再試！";
+            errDiv.style.display = "block";
+        }
     }
 }
 
+// 帳號密碼登入：呼叫後端驗證雜湊密碼
 async function handleLogin() {
-    const username = document.getElementById('loginUsername')?.value.trim() || "";
-    const password = document.getElementById('loginPassword')?.value.trim() || "";
-    const errorMsg = document.getElementById('loginErrorMsg');
+    const userInp = document.getElementById("loginUsername");
+    const passInp = document.getElementById("loginPassword");
+    const errDiv = document.getElementById("loginErrorMsg");
+
+    const username = userInp ? userInp.value.trim() : "";
+    const password = passInp ? passInp.value.trim() : "";
 
     if (!username || !password) {
-        showError(errorMsg, "請輸入帳號與密碼！");
+        if (errDiv) {
+            errDiv.textContent = "帳號與密碼不能為空！";
+            errDiv.style.display = "block";
+        }
         return;
     }
 
     try {
-        const { ok, result } = await postAuth('login', { username, password });
-        if (ok) {
-            saveUserSession(result);
-            window.location.href = '/index.html';
-        } else {
-            showError(errorMsg, result.detail || "帳號或密碼錯誤");
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            if (errDiv) {
+                errDiv.textContent = data.detail || "帳號或密碼錯誤！";
+                errDiv.style.display = "block";
+            }
+            return;
         }
-    } catch (error) {
-        console.error("Network error:", error);
-        showError(errorMsg, "無法連線至伺服器。");
-    }
-}
-
-function showError(element, message) {
-    if (element) {
-        element.style.display = 'block';
-        element.innerText = message;
-    } else {
-        alert(message);
+        saveCurrentUser(data);
+        window.location.href = "index.html";
+    } catch (e) {
+        console.error("登入失敗", e);
+        if (errDiv) {
+            errDiv.textContent = "無法連線到伺服器，請稍後再試！";
+            errDiv.style.display = "block";
+        }
     }
 }
