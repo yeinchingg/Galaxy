@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = window.location.origin;
 
 // ---------------------------------------------------------------
 // 1. 使用者 ID：存在 localStorage，讓「大綱推薦 / 行為追蹤」認得同一人
