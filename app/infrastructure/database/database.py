@@ -1,4 +1,5 @@
 # app/infrastructure/database.py
+import os
 import sqlite3
 import json
 from pathlib import Path
@@ -6,6 +7,9 @@ from contextlib import contextmanager
 from passlib.context import CryptContext
 from app.domain.interfaces import IDataRepository
 from typing import List, Dict, Optional, Any
+
+# 讀取環境變數 DATABASE_URL（Render 上設定的 Key）
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # 指向專案根目錄下的 astro_platform.db
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -16,14 +20,33 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 @contextmanager
 def get_conn():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    try:
-        yield conn
-        conn.commit()
-    finally:
-        conn.close()
+    if DATABASE_URL:
+        # 雲端 PostgreSQL 連線
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        
+        # Render 提供的 URL 開頭若是 postgres://，psycopg2 需轉為 postgresql://
+        url = DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+            
+        conn = psycopg2.connect(url, cursor_factory=RealDictCursor)
+        try:
+            yield conn
+            conn.commit()
+        finally:
+            conn.close()
+    else:
+        # 本地 SQLite 連線（未設定環境變數時）
+        import sqlite3
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        try:
+            yield conn
+            conn.commit()
+        finally:
+            conn.close()
 
 
 def init_db():
