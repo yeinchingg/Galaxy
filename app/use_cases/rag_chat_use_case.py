@@ -42,7 +42,7 @@ NO_CONTEXT_TEMPLATE = """{persona}
 {history_block}使用者的問題：{question}
 """
 
-HINT_TEMPLATE = """請根據以下狀態描述，用親切、像旁白解說的口吻產生一句簡短提示（30 字以內，不要條列、不要加引號）：
+HINT_TEMPLATE = """請根據以下狀態描述，用親切、像旁白解說的口吻產生一句簡短提示（30 字以內，不要條列、不要加引號和米字號，請注意不要出現空白）：
 {description}
 """
 

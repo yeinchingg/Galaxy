@@ -3,11 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>星空觀測儀 (Sky Observatory) | AstroResearch</title>
+    <title>星空觀測儀 (Sky Observatory) | Star Learn</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- 統一引入站內核心 CSS，內建 Material Symbols 離線字體與尺寸 Token -->
     <link rel="stylesheet" href="/static/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
     <style>
       body,
       html {
@@ -356,7 +359,7 @@
     <div class="crosshair"></div>
 
     <nav>
-      <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
+      <div class="nav-brand">🌌 <span>Star Learn</span> 平台</div>
       <ul class="nav-links">
         <li>
           <a href="index.html"
@@ -453,11 +456,17 @@
     </div>
 
     <!-- 方位羅盤刻度 -->
-    <div class="compass-bar mono">
-      <span>N (000°)</span>
-      <span>E (090°)</span>
-      <span>S (180°)</span>
-      <span>W (270°)</span>
+    <div class="compass-container">
+      <div class="compass-rose">
+        <div class="compass-needle" id="compassNeedle"></div>
+        <div class="compass-label">N</div>
+      </div>
+      <span
+        id="compassText"
+        class="mono"
+        style="font-size: 0.75rem; color: #38bdf8"
+        >北 000°</span
+      >
     </div>
 
     <!-- 右側純數據遙測卡片 -->

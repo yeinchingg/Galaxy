@@ -332,9 +332,17 @@ function updateLocationHud() {
 
 function recomputeEphemeris() {
   const now = new Date();
-  document.getElementById("hudUtcTime").textContent = now
-    .toISOString()
-    .slice(11, 19);
+  const timeOptions = {
+    timeZone: "Asia/Taipei",
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  };
+  document.getElementById("hudUtcTime").textContent = new Intl.DateTimeFormat(
+    "en-GB",
+    timeOptions,
+  ).format(now);
 
   celestialTargets.forEach((t) => scene.remove(t.mesh));
   celestialTargets = [];
@@ -430,7 +438,6 @@ function recomputeEphemeris() {
     `${visibleCount} / ${CELESTIAL_CATALOG.length} 今日可見`;
 }
 
-// 3. 建立 3D 模型實體（徹底告別黑球與假圖）
 function createCelestialEntity(item, isVisible) {
   const group = new THREE.Group();
   const loader = new THREE.TextureLoader();
@@ -768,8 +775,27 @@ function updateCameraOrientation() {
   const normAz = ((camLon % 360) + 360) % 360;
   document.getElementById("hudOrientation").textContent =
     `Alt: ${camLat >= 0 ? "+" : ""}${camLat.toFixed(1)}° | Az: ${normAz.toFixed(1)}°`;
-}
 
+  // 💡 動態更新指北針指針角度與下方方位文字
+  const needle = document.getElementById("compassNeedle");
+  const compassText = document.getElementById("compassText");
+  if (needle) {
+    // camLon 是相機的方位基準，讓指針隨著 camLon 進行旋轉指向北方
+    needle.style.transform = `rotate(${-camLon}deg)`;
+  }
+  if (compassText) {
+    let dirName = "北";
+    if (normAz >= 22.5 && normAz < 67.5) dirName = "東北";
+    else if (normAz >= 67.5 && normAz < 112.5) dirName = "東";
+    else if (normAz >= 112.5 && normAz < 157.5) dirName = "東南";
+    else if (normAz >= 157.5 && normAz < 202.5) dirName = "南";
+    else if (normAz >= 202.5 && normAz < 247.5) dirName = "西南";
+    else if (normAz >= 247.5 && normAz < 292.5) dirName = "西";
+    else if (normAz >= 292.5 && normAz < 337.5) dirName = "西北";
+
+    compassText.textContent = `${dirName} ${normAz.toFixed(0)}°`;
+  }
+}
 // 7. 動畫渲染迴圈
 function animate() {
   requestAnimationFrame(animate);

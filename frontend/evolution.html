@@ -297,10 +297,10 @@
     <canvas id="spaceCanvas"></canvas>
 
     <nav>
-      <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
+      <div class="nav-brand">🌌 <span>Star Learn</span> 平台</div>
       <ul class="nav-links">
         <li>
-          <a href="index.html" class="active"
+          <a href="index.html"
             ><span class="material-symbols-outlined">school</span>教學平台</a
           >
         </li>
@@ -317,7 +317,7 @@
           >
         </li>
         <li>
-          <a href="evolution.html"
+          <a href="evolution.html" class="active"
             ><span class="material-symbols-outlined">public</span>恆星演化史</a
           >
         </li>
@@ -683,7 +683,7 @@
 
       const solarTexture = createSolarTexture();
 
-      const surfaceGeo = new THREE.SphereGeometry(1.5, 128, 128);
+      const surfaceGeo = new THREE.SphereGeometry(0.5, 128, 128);
       const surfaceMat = new THREE.MeshStandardMaterial({
         color: 0xffd27d,
         roughness: 0.95,
@@ -696,7 +696,7 @@
       const surfaceStar = new THREE.Mesh(surfaceGeo, surfaceMat);
       scene.add(surfaceStar);
 
-      const glowGeo = new THREE.SphereGeometry(1.5, 64, 64);
+      const glowGeo = new THREE.SphereGeometry(0.5, 64, 64);
       const glowMat = new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
         transparent: true,

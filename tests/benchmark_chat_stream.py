@@ -29,7 +29,7 @@ import time
 import urllib.request
 
 BASE_URL = os.getenv("BENCHMARK_BASE_URL", "http://127.0.0.1:8000")
-ROUNDS = int(os.getenv("BENCHMARK_ROUNDS", "5"))
+ROUNDS = int(os.getenv("BENCHMARK_ROUNDS", "10"))
 QUESTION = os.getenv("BENCHMARK_QUESTION", "太陽的表面溫度大概是幾度？")
 
 

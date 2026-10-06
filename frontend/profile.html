@@ -7,6 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="/static/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
     <style>
       body {
         display: flex;
@@ -159,7 +163,6 @@
         margin-bottom: 4px;
       }
 
-      /* 將「刪除此則」移至單則對話框底部靠右，與時間分開，絕不遮蓋 */
       .chat-footer {
         display: flex;
         justify-content: flex-end;
@@ -206,10 +209,10 @@
     <canvas id="spaceCanvas"></canvas>
 
     <nav>
-      <div class="nav-brand">🌌 <span>AstroResearch</span> 平台</div>
+      <div class="nav-brand">🌌 <span>Star Learn</span> 平台</div>
       <ul class="nav-links">
         <li>
-          <a href="index.html" class="active"
+          <a href="index.html"
             ><span class="material-symbols-outlined">school</span>教學平台</a
           >
         </li>
@@ -246,7 +249,7 @@
           >
         </li>
         <li>
-          <a href="profile.html"
+          <a href="profile.html" class="active"
             ><span class="material-symbols-outlined">person</span>個人帳號</a
           >
         </li>
@@ -310,7 +313,6 @@
 
     <script src="/static/auth.js"></script>
     <script>
-      // 背景星空
       const canvas = document.getElementById("spaceCanvas");
       const ctx = canvas.getContext("2d");
       let width = (canvas.width = window.innerWidth);
@@ -347,7 +349,6 @@
       }
       animateSpace();
 
-      // 收合與展開切換
       function toggleChatHistory() {
         const content = document.getElementById("chatHistoryContent");
         const icon = document.getElementById("toggleIcon");
@@ -364,11 +365,6 @@
 
       const API_BASE = window.location.origin;
 
-      // 載入用戶資料與 AI 聊天紀錄
-      // 【修正】改讀 auth.js 實際寫入的 "astro_current_user"（原本讀的
-      // "astro_user_session" 這個 key 根本沒有任何地方會寫入，所以名稱
-      // 永遠停在「載入中...」）。聊天紀錄也改成向後端資料庫查詢，並依照
-      // 目前登入者的 user_id 過濾，不同帳號登入才會看到各自的紀錄。
       async function loadProfileData() {
         const user = getCurrentUser();
         if (user) {
@@ -407,7 +403,6 @@
           return;
         }
 
-        // 後端存的是逐則 user/assistant 訊息，這裡兩兩配對成一組 Q&A 方便顯示
         const pairs = [];
         for (let i = 0; i < messages.length; i++) {
           if (messages[i].role === "user") {
@@ -441,7 +436,7 @@
             div.className = "chat-item";
             div.innerHTML = `
                     <div class="chat-meta">
-                        <span>${escapeHtml(item.time)}</span>
+                        <span>${formatTimestamp(item.time)}</span>
                     </div>
                     <div class="chat-q">Q: ${escapeHtml(item.question)}</div>
                     <div class="chat-a">A: ${escapeHtml(item.answer)}</div>
@@ -483,7 +478,6 @@
         }
       }
 
-      // ---- 星海問答測驗紀錄 ----
       async function renderQuizHistory() {
         const container = document.getElementById("quizListContainer");
         container.innerHTML = '<div class="empty-chat">載入中...</div>';
@@ -509,11 +503,6 @@
 
         container.innerHTML = "";
         scores.forEach((item) => {
-          // 【修正】quiz.html 的 score 其實是「滿分 100 分制」的分數
-          // （每題配分 = 100 / 題數），不是答對題數，所以不能直接拿
-          // score ÷ total_questions 當正確率，那樣分母分子單位對不上，
-          // 會算出離譜的百分比（例如答對 1 題卻顯示 100%）。
-          // score 本身就已經等同「正確率」，答對題數則要反推回來。
           const accuracy = Math.round(item.score);
           const correctCount = item.total_questions
             ? Math.round((item.score / 100) * item.total_questions)
@@ -522,7 +511,7 @@
           div.className = "chat-item";
           div.innerHTML = `
                     <div class="chat-meta">
-                        <span>${escapeHtml(item.completed_at)}</span>
+                        <span>${formatTimestamp(item.completed_at)}</span>
                     </div>
                     <div class="chat-q">關卡：${escapeHtml(item.quiz_type)}</div>
                     <div class="chat-a">答對：${correctCount} ／ ${item.total_questions} 題（正確率 ${accuracy}%，得分 ${Math.round(item.score)} 分）</div>
@@ -567,6 +556,15 @@
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
+      }
+      function formatTimestamp(ts) {
+        if (!ts) return "";
+        // 處理空白取代為 T，並在結尾補上 Z
+        let isoStr = ts.replace(" ", "T");
+        if (!isoStr.endsWith("Z") && !isoStr.includes("+")) {
+          isoStr += "Z";
+        }
+        return new Date(isoStr).toLocaleString();
       }
 
       window.addEventListener("DOMContentLoaded", loadProfileData);
