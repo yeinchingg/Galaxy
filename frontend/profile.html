@@ -312,6 +312,7 @@
     </div>
 
     <script src="/static/auth.js"></script>
+    <script src="/static/datetime_utils.js"></script>
     <script>
       const canvas = document.getElementById("spaceCanvas");
       const ctx = canvas.getContext("2d");
@@ -371,7 +372,7 @@
           document.getElementById("userNameDisplay").textContent =
             user.username;
           document.getElementById("userTypeDisplay").textContent =
-            `帳號類型：${user.role === "guest" ? "訪客" : "註冊會員"} | 登入時間：${new Date(user.loginTime).toLocaleString()}`;
+           `帳號類型：${user.role === "guest" ? "訪客" : "註冊會員"} | 登入時間：${getFormattedTimeString(user.loginTime).timeStr}`;
         } else {
           document.getElementById("userNameDisplay").textContent = "未知用戶";
           document.getElementById("userTypeDisplay").textContent = "尚未登入";
@@ -556,15 +557,6 @@
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
-      }
-      function formatTimestamp(ts) {
-        if (!ts) return "";
-        // 處理空白取代為 T，並在結尾補上 Z
-        let isoStr = ts.replace(" ", "T");
-        if (!isoStr.endsWith("Z") && !isoStr.includes("+")) {
-          isoStr += "Z";
-        }
-        return new Date(isoStr).toLocaleString();
       }
 
       window.addEventListener("DOMContentLoaded", loadProfileData);

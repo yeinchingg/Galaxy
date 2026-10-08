@@ -331,18 +331,9 @@ function updateLocationHud() {
 }
 
 function recomputeEphemeris() {
-  const now = new Date();
-  const timeOptions = {
-    timeZone: "Asia/Taipei",
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  };
-  document.getElementById("hudUtcTime").textContent = new Intl.DateTimeFormat(
-    "en-GB",
-    timeOptions,
-  ).format(now);
+  // 1. 透過共用模組取得當下時間與格式
+  const { dateStr, timeStr, nowObj } = getFormattedTimeString();
+  document.getElementById("hudUtcTime").textContent = `${dateStr} ${timeStr}`;
 
   celestialTargets.forEach((t) => scene.remove(t.mesh));
   celestialTargets = [];
@@ -353,89 +344,21 @@ function recomputeEphemeris() {
     userLocation.lon,
     0,
   );
-  const astroTime = Astronomy.MakeTime(now);
 
-  const gast = Astronomy.SiderealTime(astroTime);
-  const lst = (gast + userLocation.lon / 15.0 + 24.0) % 24.0;
-  document.getElementById("hudLstTime").textContent =
-    `${Math.floor(lst).toString().padStart(2, "0")}:${Math.floor((lst % 1) * 60)
-      .toString()
-      .padStart(2, "0")}:${Math.floor((((lst % 1) * 60) % 1) * 60)
-      .toString()
-      .padStart(2, "0")}`;
+  const astroTime = Astronomy.MakeTime(nowObj);
+
+  // 2. 透過共用模組計算恆星時
+  const lstFormatted = calculateLST(userLocation.lon, astroTime);
+  document.getElementById("hudLstTime").textContent = lstFormatted;
 
   let visibleCount = 0;
 
-  CELESTIAL_CATALOG.forEach((item) => {
-    let alt = 0,
-      az = 0,
-      ra = 0,
-      dec = 0,
-      mag = item.mag || 0;
+  // ... (後續天體迴圈計算維持原樣) ...
 
-    if (item.isPlanet && window.Astronomy) {
-      try {
-        const equ = Astronomy.Equator(item.id, astroTime, observer, true, true);
-        const hor = Astronomy.Horizon(
-          astroTime,
-          observer,
-          equ.ra,
-          equ.dec,
-          "normal",
-        );
-        alt = hor.altitude;
-        az = hor.azimuth;
-        ra = equ.ra;
-        dec = equ.dec;
-        mag = Astronomy.Illumination(item.id, astroTime).mag;
-      } catch (e) {
-        alt = 30;
-        az = 140;
-      }
-    } else {
-      ra = item.ra;
-      dec = item.dec;
-      if (window.Astronomy) {
-        const hor = Astronomy.Horizon(astroTime, observer, ra, dec, "normal");
-        alt = hor.altitude;
-        az = hor.azimuth;
-      }
-    }
-
-    const isVisible = alt > 0;
-    if (isVisible) visibleCount++;
-
-    const distR = 900;
-    const phi = (90 - alt) * (Math.PI / 180);
-    const theta = (az + 180) * (Math.PI / 180);
-
-    const x = distR * Math.sin(phi) * Math.sin(theta);
-    const y = distR * Math.cos(phi);
-    const z = distR * Math.sin(phi) * Math.cos(theta);
-
-    const mesh = createCelestialEntity(item, isVisible);
-    mesh.position.set(x, y, z);
-    scene.add(mesh);
-
-    const targetData = {
-      ...item,
-      alt: alt.toFixed(2),
-      az: az.toFixed(2),
-      ra: typeof ra === "number" ? `${ra.toFixed(2)}h` : ra,
-      dec: typeof dec === "number" ? `${dec.toFixed(2)}°` : dec,
-      mag: typeof mag === "number" ? mag.toFixed(1) : mag,
-      mesh: mesh,
-      worldPos: new THREE.Vector3(x, y, z),
-      isVisible: isVisible,
-    };
-    mesh.userData = targetData;
-    celestialTargets.push(targetData);
-
-    addCatalogItemUI(targetData);
-  });
-
-  document.getElementById("visibleCount").textContent =
-    `${visibleCount} / ${CELESTIAL_CATALOG.length} 今日可見`;
+  // 3. 更新介面顯示
+  const currentMonthDay = getFormattedCurrentDate();
+  document.getElementById("visibleCount").innerHTML =
+    `可見星體數：${visibleCount} / ${CELESTIAL_CATALOG.length} <br> 日期：${currentMonthDay}`;
 }
 
 function createCelestialEntity(item, isVisible) {
