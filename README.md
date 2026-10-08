@@ -24,7 +24,7 @@
 
 
 ---
-
+[![Architecture diagram of yeinchingg/galaxy](https://gitdiagram.com/yeinchingg/galaxy/diagram.png)](https://gitdiagram.com/yeinchingg/galaxy?utm_source=readme&utm_medium=picture)
 ## 📖 專案簡介
 
 本專案旨在解決傳統天文物理學習門檻高、抽象難懂的問題。透過以下核心技術實現沉浸式學習：
@@ -207,5 +207,4 @@ python main.py
 * 📖 **天文百科知識庫**：`http://127.0.0.1:8000/wiki.html`
 * 📑 **互動式 API 文件**：`http://127.0.0.1:8000/docs`
 
----
 
