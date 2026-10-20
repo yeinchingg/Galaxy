@@ -1,26 +1,3 @@
-"""
-tests/benchmark_chat_stream.py
-
-量測 /api/chat/stream 目前的實際回應時間。
-不是 pytest 測試（檔名不是 test_ 開頭，pytest 掃描時會自動略過），
-是給人手動執行、觀察真實回應速度用的小工具。
-
-量兩個數字：
-1. TTFT (Time To First Token)：從送出請求，到收到第一個「真正回答內容」
-   （event 類型為預設/message 的 data 行，排除 session 與 done 事件）為止的秒數。
-   反映「使用者要等多久才看到 AI 開始打字」。
-2. Total time：整段回答串流完成的總時間。
-
-用法：
-    1. 另開一個終端機，先啟動後端：python main.py（監聽在 http://127.0.0.1:8000），
-       這個視窗保持開著不要關。
-    2. 在這個終端機執行：python tests/benchmark_chat_stream.py
-
-可用環境變數調整：
-    BENCHMARK_BASE_URL    後端網址，預設 http://127.0.0.1:8000
-    BENCHMARK_ROUNDS      要送幾次請求取平均，預設 5
-    BENCHMARK_QUESTION    測試用的問題文字
-"""
 
 import json
 import os
@@ -32,6 +9,9 @@ BASE_URL = os.getenv("BENCHMARK_BASE_URL", "http://127.0.0.1:8000")
 ROUNDS = int(os.getenv("BENCHMARK_ROUNDS", "10"))
 QUESTION = os.getenv("BENCHMARK_QUESTION", "太陽的表面溫度大概是幾度？")
 
+# 效能目標規範 (SLO)
+TARGET_TTFT_MEAN = 1.5  # 平均首字回應需小於 1.5 秒
+TARGET_TTFT_MAX = 2.0   # 單次最慢不得超過 2.0 秒
 
 def run_once(round_no: int) -> dict:
     payload = json.dumps(
