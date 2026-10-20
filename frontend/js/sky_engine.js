@@ -1,11 +1,3 @@
-/**
- * frontend/sky_engine.js
- * 專業擬真天文觀測儀：
- * - 修正軌道輔助線：改為精準繪製天文學中的「黃道軌跡線 (Ecliptic Path)」
- * - 支援全螢幕切換按鈕文字變更
- * - 點擊任意星球自動聚焦、放大並跳出右側卡片
- */
-
 let scene, camera, renderer, raycaster, mouse;
 let celestialTargets = [];
 let eclipticLineMesh = null;
