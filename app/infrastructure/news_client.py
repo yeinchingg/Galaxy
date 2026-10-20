@@ -1,4 +1,3 @@
-# app/infrastructure/news_client.py
 import time
 import requests
 
@@ -41,7 +40,6 @@ class SpaceflightNewsClient:
             print(f"⚠️ 外部新聞 API 抓取失敗，啟動降級機制: {e}")
             if self._cache["data"]:
                 return self._cache["data"][:limit]
-            # 離線或抓不到時的預設保底新聞
             return [
                 {
                     "title": "【系統公告】太空新聞資料庫同步中",

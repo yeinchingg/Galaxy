@@ -4,7 +4,8 @@ app/use_cases/rag_chat_use_case.py
 """
 
 from typing import Generator, List, Dict, Any, Optional
-from app.domain.interfaces import IAIService, IVectorStore, ISessionRepository
+from app.domain.interfaces.ai_interface import IAIService, IVectorStore
+from app.domain.interfaces.repository_interface import ISessionRepository
 
 # 相關性分數門檻
 HIGH_RELEVANCE_THRESHOLD = 0.55

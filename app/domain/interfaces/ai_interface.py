@@ -22,20 +22,3 @@ class IVectorStore(ABC):
         self, vector: List[float], top_k: int = 3
     ) -> List[Dict[str, Any]]:
         pass
-
-
-class IDataRepository(ABC):
-    @abstractmethod
-    def get_history(self, session_id: str) -> List[Dict[str, str]]:
-        pass
-
-    @abstractmethod
-    def save_message(self, session_id: str, role: str, content: str) -> None:
-        pass
-
-    @abstractmethod
-    def save_session(self, session_id: str, history: List[Dict[str, str]]) -> None:
-        pass
-
-
-ISessionRepository = IDataRepository

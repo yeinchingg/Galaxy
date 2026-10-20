@@ -1,11 +1,6 @@
-"""
-app/infrastructure/external_ai/pinecone_service.py
-外部基礎設施層：實作 Pinecone 向量檢索服務
-"""
-
 from typing import List, Dict, Any
 from pinecone import Pinecone
-from app.domain.interfaces import IVectorStore
+from app.domain.interfaces.ai_interface import IVectorStore
 
 
 class PineconeService(IVectorStore):

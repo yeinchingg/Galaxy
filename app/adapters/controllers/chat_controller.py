@@ -1,22 +1,19 @@
-"""
-app/adapters/controllers/chat_controller.py
-Clean Architecture - Controller / Adapter 層
-負責處理前端發起的所有 API 請求（AI 聊天、新聞、測驗紀錄、行為追蹤、歷史對話、星空觀測歷程）
-"""
-
 import os
 import requests
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-
 from app.use_cases.rag_chat_use_case import RAGChatUseCase
-from app.infrastructure.database import database as db
+from app.infrastructure.database.repository import (
+    create_user,
+    get_user_by_username,
+    verify_password,
+)
 
 router = APIRouter()
 _use_case: Optional[RAGChatUseCase] = None
-_db_repo = None  # 資料庫 Repo
+_db_repo = None
 
 
 def set_use_case(use_case: RAGChatUseCase):
@@ -27,7 +24,6 @@ def set_use_case(use_case: RAGChatUseCase):
         _db_repo = use_case.session_repo
 
 
-# ---------------- Schema 定義 ----------------
 class ChatRequest(BaseModel):
     question: str
     session_id: Optional[str] = None
@@ -60,13 +56,6 @@ class TrackRequest(BaseModel):
     params: Dict[str, Any] = {}
 
 
-class QuizScoreRequest(BaseModel):
-    user_id: int
-    quiz_type: str
-    score: int
-    total_questions: int = 10
-
-
 class BodyLogRequest(BaseModel):
     name: str
     body_type: str
@@ -76,7 +65,6 @@ class BodyLogRequest(BaseModel):
     user_id: Optional[str] = "1"
 
 
-# ---------------- 備援新聞池 ----------------
 NEWS_FALLBACK_POOL = [
     {
         "title": "韋伯太空望遠鏡發現早期遙遠星系新線索",
@@ -99,9 +87,6 @@ NEWS_FALLBACK_POOL = [
 ]
 
 
-# ---------------- API 端點 ----------------
-
-
 @router.get("/status")
 def get_system_status():
     """系統連線與 AI 模組狀態檢測"""
@@ -117,7 +102,7 @@ def auth_guest(req: GuestLoginRequest):
     """訪客登入"""
     display_name = (req.display_name or "訪客研究員").strip() or "訪客研究員"
     unique_username = f"guest_{os.urandom(4).hex()}"
-    user_id = db.create_user(unique_username, password=None, role_type="guest")
+    user_id = create_user(unique_username, password=None, role_type="guest")
     return {
         "user_id": user_id,
         "username": display_name,
@@ -133,11 +118,11 @@ def auth_register(req: RegisterRequest):
     if not username or not password:
         raise HTTPException(status_code=400, detail="帳號與密碼不能為空")
 
-    if db.get_user_by_username(username):
+    if get_user_by_username(username):
         raise HTTPException(status_code=409, detail="這個使用者名稱已經被註冊了")
 
     try:
-        user_id = db.create_user(username, password=password, role_type="member")
+        user_id = create_user(username, password=password, role_type="member")
     except Exception as e:
         print(f"❌ [DB] 建立帳號失敗: {e}")
         raise HTTPException(status_code=500, detail=f"建立帳號失敗：{e}")
@@ -154,7 +139,7 @@ def auth_login(req: LoginRequest):
     """帳號密碼登入"""
     username = req.username.strip()
     password = req.password.strip()
-    user = db.verify_password(username, password)
+    user = verify_password(username, password)
     if not user:
         raise HTTPException(status_code=401, detail="帳號或密碼錯誤")
 
@@ -200,50 +185,6 @@ def get_daily_knowledge():
     return {"status": "success", "data": get_news(4)}
 
 
-# --- 測驗成績相關端點 ---
-@router.post("/quiz/score")
-def save_quiz_score(req: QuizScoreRequest):
-    if not _db_repo:
-        raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
-
-    try:
-        score_id = _db_repo.save_quiz_score(
-            req.user_id, req.quiz_type, req.score, req.total_questions
-        )
-        return {"status": "success", "score_id": score_id}
-    except Exception as e:
-        print(f"❌ [DB] 儲存測驗成績出錯: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/quiz/history/{user_id}")
-def get_quiz_history(user_id: int):
-    if not _db_repo:
-        raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
-    return _db_repo.get_quiz_history(user_id)
-
-
-@router.delete("/quiz/history/{user_id}")
-def clear_quiz_history(user_id: int):
-    if not _db_repo:
-        raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
-    if hasattr(_db_repo, "clear_quiz_history"):
-        _db_repo.clear_quiz_history(user_id)
-        return {"status": "success"}
-    return {"status": "error", "message": "功能未支援"}
-
-
-@router.delete("/quiz/score/{score_id}")
-def delete_quiz_score(score_id: int, user_id: int = 1):
-    if not _db_repo:
-        raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
-    if hasattr(_db_repo, "delete_quiz_score"):
-        success = _db_repo.delete_quiz_score(score_id, user_id)
-        return {"status": "success", "deleted": success}
-    return {"status": "error", "message": "功能未支援"}
-
-
-# --- 聊天與 AI 相關端點 ---
 @router.post("/chat")
 def chat_endpoint(req: ChatRequest):
     if not _use_case:

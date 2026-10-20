@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from app.infrastructure.database.database import (
+    get_conn,
+)
+from app.infrastructure.database.repository import (
     create_user,
     get_user_by_username,
     verify_password,
-    get_conn,
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

@@ -1,8 +1,4 @@
 const API_BASE = window.location.origin;
-
-// ---------------------------------------------------------------
-// 1. 使用者 ID：存在 localStorage，讓「大綱推薦 / 行為追蹤」認得同一人
-// ---------------------------------------------------------------
 function getUserId() {
   let userId = localStorage.getItem("astronomy_user_id");
   if (!userId) {
@@ -14,9 +10,6 @@ function getUserId() {
 
 const USER_ID = getUserId();
 
-// ---------------------------------------------------------------
-// 2. 系統連線狀態（若頁面上有 #user-status-tag 才會顯示）
-// ---------------------------------------------------------------
 async function fetchStatus() {
   const tag = document.getElementById("user-status-tag");
   if (!tag) return;
@@ -31,11 +24,6 @@ async function fetchStatus() {
   }
 }
 
-// ---------------------------------------------------------------
-// 3. 今日天文新聞（若頁面上有 #news-scroll 才會顯示）
-//    卡片樣式沿用網站既有的 card-item 視覺語言（見 <style> 的 .news-card），
-//    而不是另外套一份獨立的 slider 元件系統。
-// ---------------------------------------------------------------
 async function fetchDailyKnowledge() {
   const container = document.getElementById("news-scroll");
   if (!container) return;
@@ -54,7 +42,6 @@ async function fetchDailyKnowledge() {
     list.forEach((news) => {
       const card = document.createElement("a");
       card.className = "news-card";
-      // 👈 點擊後直連到 NASA 官方頁面
       card.href = news.url || "https://www.nasa.gov";
       card.target = "_blank";
       card.rel = "noopener noreferrer";
@@ -74,9 +61,6 @@ async function fetchDailyKnowledge() {
   }
 }
 
-// ---------------------------------------------------------------
-// 4. 個人化課程大綱推薦（若頁面上有 #outline-recommendation 才會顯示）
-// ---------------------------------------------------------------
 async function fetchDynamicOutline() {
   const recEl = document.getElementById("outline-recommendation");
   if (!recEl) return;
@@ -97,9 +81,6 @@ async function fetchDynamicOutline() {
   }
 }
 
-// ---------------------------------------------------------------
-// 5. 使用者行為追蹤 + 模組導頁
-// ---------------------------------------------------------------
 async function trackAction(topic, action, params = {}) {
   try {
     await fetch(`${API_BASE}/api/track`, {
@@ -117,8 +98,6 @@ function navigateToModule(pageUrl, topic) {
   window.location.href = pageUrl;
 }
 
-// 幫所有 data-topic 的連結自動掛上追蹤事件，
-// 不用在每個 <a> 上寫一次 onclick="trackAction(...)"。
 function bindModuleTracking() {
   document.querySelectorAll("[data-topic]").forEach((el) => {
     el.addEventListener("click", (e) => {
@@ -134,9 +113,6 @@ function bindModuleTracking() {
   });
 }
 
-// ---------------------------------------------------------------
-// 進入點：頁面載入後統一初始化
-// ---------------------------------------------------------------
 window.addEventListener("DOMContentLoaded", () => {
   fetchStatus();
   fetchDailyKnowledge();

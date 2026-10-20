@@ -1,21 +1,20 @@
 /**
  * frontend/sky_engine.js
  * 專業擬真天文觀測儀：
- * - 修正光照平衡（告別過曝發白）
- * - 舒適特寫距離（不會再過大爆框）
- * - 首次 Zoom-in 快轉，特寫狀態下支援滑鼠手動 360 度旋轉星體
- * - 真實恆星光暈與星系動態透明盤面
+ * - 修正軌道輔助線：改為精準繪製天文學中的「黃道軌跡線 (Ecliptic Path)」
+ * - 支援全螢幕切換按鈕文字變更
+ * - 點擊任意星球自動聚焦、放大並跳出右側卡片
  */
 
 let scene, camera, renderer, raycaster, mouse;
 let celestialTargets = [];
+let eclipticLineMesh = null;
 let userLocation = { lat: 25.033, lon: 121.5654 };
 
 // 狀態控制
 let isInspecting = false;
 let inspectingTarget = null;
 let targetMeshToSpin = null;
-let isFirstInspection = false; // 是否初次點擊觸發快轉
 
 // 原始視角與相機位置
 const DEFAULT_CAM_POS = new THREE.Vector3(0, 0, 0.1);
@@ -27,233 +26,25 @@ let isDragging = false,
 
 // 本機貼圖路徑
 const LOCAL_TEX = {
-  milkyway: "/static/static/textures/8k_stars_milky_way.jpg",
-  sun: "/static/static/textures/8k_sun.jpg",
-  moon: "/static/static/textures/8k_moon.jpg",
-  mercury: "/static/static/textures/8k_mercury.jpg",
-  venus: "/static/static/textures/8k_venus_surface.jpg",
-  earth: "/static/static/textures/8k_earth_daymap.jpg",
-  mars: "/static/static/textures/8k_mars.jpg",
-  jupiter: "/static/static/textures/8k_jupiter.jpg",
-  saturn: "/static/static/textures/8k_saturn.jpg",
-  saturnRing: "/static/static/textures/8k_saturn_ring_alpha.png",
-  uranus: "/static/static/textures/2k_uranus.jpg",
-  neptune: "/static/static/textures/2k_neptune.jpg",
+  milkyway: "/textures/8k_stars_milky_way.jpg",
+  sun: "/textures/8k_sun.jpg",
+  moon: "/textures/8k_moon.jpg",
+  mercury: "/textures/8k_mercury.jpg",
+  venus: "/textures/8k_venus_surface.jpg",
+  earth: "/textures/8k_earth_daymap.jpg",
+  mars: "/textures/8k_mars.jpg",
+  jupiter: "/textures/8k_jupiter.jpg",
+  saturn: "/textures/8k_saturn.jpg",
+  saturnRing: "/textures/8k_saturn_ring_alpha.png",
+  uranus: "/textures/2k_uranus.jpg",
+  neptune: "/textures/2k_neptune.jpg",
 };
 
-// 天體資料庫
-const CELESTIAL_CATALOG = [
-  {
-    id: "Sun",
-    name: "太陽 (Sun)",
-    type: "G2V 主序恆星",
-    isPlanet: true,
-    mass: "1.00 M☉",
-    radius: "1.00 R☉",
-    dist: "1.00 AU",
-    hab: "太陽系母星，表面有效溫度 5,778 K，由核心強烈氫融合反應維繫熱核平衡。",
-    size: 20,
-    isDisc: false,
-    isStar: true,
-    tex: LOCAL_TEX.sun,
-    photo:
-      "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001435/GSFC_20171208_Archive_e001435~orig.jpg",
-  },
-  {
-    id: "Mercury",
-    name: "水星 (Mercury)",
-    type: "類地行星",
-    isPlanet: true,
-    mass: "0.055 M⊕",
-    radius: "0.383 R⊕",
-    dist: "0.39 AU",
-    hab: "極端晝夜溫差 (-180°C ~ 430°C)，表面布滿撞擊坑，無實質大氣層保護。",
-    size: 7,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.mercury,
-    photo: "https://images-assets.nasa.gov/image/PIA15160/PIA15160~orig.jpg",
-  },
-  {
-    id: "Venus",
-    name: "金星 (Venus)",
-    type: "類地行星",
-    isPlanet: true,
-    mass: "0.815 M⊕",
-    radius: "0.949 R⊕",
-    dist: "0.72 AU",
-    hab: "失控溫室效應，表面高達 465°C，濃密硫酸雲層伴隨 92 大氣壓高壓環境。",
-    size: 10,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.venus,
-    photo: "https://images-assets.nasa.gov/image/PIA00104/PIA00104~orig.jpg",
-  },
-  {
-    id: "Moon",
-    name: "月球 (Moon)",
-    type: "天然衛星 (潮汐鎖定)",
-    isPlanet: true,
-    mass: "0.012 M⊕",
-    radius: "0.272 R⊕",
-    dist: "384,400 km",
-    hab: "表面無大氣層保護，極端溫差達 250°C，極區永久陰影坑蘊含大量水冰沉積物。",
-    size: 8,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.moon,
-    photo:
-      "https://images-assets.nasa.gov/image/as11-40-5903/as11-40-5903~orig.jpg",
-  },
-  {
-    id: "Mars",
-    name: "火星 (Mars)",
-    type: "類地行星",
-    isPlanet: true,
-    mass: "0.107 M⊕",
-    radius: "0.532 R⊕",
-    dist: "1.52 AU",
-    hab: "大氣壓約 6 hPa，地表富含氧化鐵與極冠乾冰，已證實遠古曾具備豐富湖泊水系。",
-    size: 9,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.mars,
-    photo: "https://images-assets.nasa.gov/image/PIA04591/PIA04591~orig.jpg",
-  },
-  {
-    id: "Jupiter",
-    name: "木星 (Jupiter)",
-    type: "氣體巨行星",
-    isPlanet: true,
-    mass: "317.8 M⊕",
-    radius: "11.21 R⊕",
-    dist: "5.20 AU",
-    hab: "無固態表面，強烈磁層與大紅斑風暴，衛星歐羅巴內部蘊含龐大次表層全球海洋。",
-    size: 18,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.jupiter,
-    photo: "https://images-assets.nasa.gov/image/PIA22946/PIA22946~orig.jpg",
-  },
-  {
-    id: "Saturn",
-    name: "土星 (Saturn)",
-    type: "環狀氣體巨行星",
-    isPlanet: true,
-    mass: "95.2 M⊕",
-    radius: "9.45 R⊕",
-    dist: "9.58 AU",
-    hab: "由水冰微粒構成的宏偉環系，衛星泰坦擁有濃密氮氣大氣與液態甲烷湖泊循環。",
-    size: 15,
-    isDisc: false,
-    isStar: false,
-    hasRing: true,
-    tex: LOCAL_TEX.saturn,
-    ringTex: LOCAL_TEX.saturnRing,
-    photo: "https://images-assets.nasa.gov/image/PIA18273/PIA18273~orig.jpg",
-  },
-  {
-    id: "Uranus",
-    name: "天王星 (Uranus)",
-    type: "冰巨行星",
-    isPlanet: true,
-    mass: "14.5 M⊕",
-    radius: "4.01 R⊕",
-    dist: "19.2 AU",
-    hab: "自轉軸橫躺傾斜 97.8 度，富含水、氨與甲烷冰，大氣極端寒冷最低達 49 K。",
-    size: 12,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.uranus,
-    photo: "https://images-assets.nasa.gov/image/PIA18182/PIA18182~orig.jpg",
-  },
-  {
-    id: "Neptune",
-    name: "海王星 (Neptune)",
-    type: "冰巨行星",
-    isPlanet: true,
-    mass: "17.1 M⊕",
-    radius: "3.88 R⊕",
-    dist: "30.1 AU",
-    hab: "大氣擁有高達時速 2,100 公里的超音速狂風與神秘大黑斑風暴。",
-    size: 12,
-    isDisc: false,
-    isStar: false,
-    tex: LOCAL_TEX.neptune,
-    photo: "https://images-assets.nasa.gov/image/PIA01492/PIA01492~orig.jpg",
-  },
-  // ✨ 深空星系與星雲（以自生成高品質螺旋紋理確保絕不黑球、絕不破圖）
-  {
-    id: "M31",
-    name: "仙女座大星系 (M31)",
-    type: "螺旋星系 (Spiral Galaxy)",
-    ra: 0.712,
-    dec: 41.27,
-    mag: 3.44,
-    mass: "1.5×10¹² M☉",
-    radius: "110,000 ly",
-    dist: "2.54 百萬光年",
-    hab: "本星系群最大螺旋星系，直徑逾 22 萬光年，上兆顆恆星正圍繞超大質量黑洞公轉。",
-    size: 24,
-    isDisc: true,
-    isStar: false,
-    photo: "https://images-assets.nasa.gov/image/PIA15416/PIA15416~orig.jpg",
-  },
-  {
-    id: "M42",
-    name: "獵戶座大星雲 (M42)",
-    type: "發射星雲 (Diffuse Nebula)",
-    ra: 5.588,
-    dec: -5.39,
-    mag: 4.0,
-    mass: "2,000 M☉",
-    radius: "12 ly",
-    dist: "1,344 ly",
-    hab: "活躍的恆星育嬰室，強烈紫外線激發周圍氫氣發出粉紅色光芒。",
-    size: 20,
-    isDisc: true,
-    isStar: false,
-    photo: "https://images-assets.nasa.gov/image/PIA08653/PIA08653~orig.jpg",
-  },
-  // ✨ 知名恆星（專屬高溫發光體）
-  {
-    id: "Sirius",
-    name: "天狼星 (Sirius)",
-    type: "A1V 藍白主序星",
-    ra: 6.752,
-    dec: -16.716,
-    mag: -1.46,
-    mass: "2.06 M☉",
-    radius: "1.71 R☉",
-    dist: "8.6 ly",
-    hab: "全天最亮恆星，伴有一顆超高密度白矮星伴星 (天狼星 B)。",
-    size: 10,
-    isDisc: false,
-    isStar: true,
-    starColor: 0x99ccff,
-    photo:
-      "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001830/GSFC_20171208_Archive_e001830~orig.jpg",
-  },
-  {
-    id: "Betelgeuse",
-    name: "參宿四 (Betelgeuse)",
-    type: "M1-2Ia 紅超巨星",
-    ra: 5.919,
-    dec: 7.407,
-    mag: 0.5,
-    mass: "16.5 M☉",
-    radius: "764 R☉",
-    dist: "642 ly",
-    hab: "已至演化末期，體積可吞沒木星軌道，數萬年內將發生超新星爆發。",
-    size: 14,
-    isDisc: false,
-    isStar: true,
-    starColor: 0xff5533,
-    photo: "https://images-assets.nasa.gov/image/PIA23687/PIA23687~orig.jpg",
-  },
-];
+let CELESTIAL_CATALOG = [];
 
-// 1. 初始化 Three.js
+// ==========================================
+// 1. 初始化 Three.js 與核心邏輯
+// ==========================================
 function initSkyEngine() {
   const canvas = document.getElementById("skyCanvas");
   scene = new THREE.Scene();
@@ -284,7 +75,7 @@ function initSkyEngine() {
   animate();
 }
 
-// 建立 360° 本機真實銀河天球 + 擬真太空光照
+// 建立 360° 本機真實銀河天球
 function createMilkyWayDome() {
   const loader = new THREE.TextureLoader();
   loader.load(LOCAL_TEX.milkyway, (texture) => {
@@ -295,16 +86,11 @@ function createMilkyWayDome() {
     scene.add(new THREE.Mesh(domeGeo, domeMat));
   });
 
-  // 🌟 光照修正：深邃太空環境光（0.35 不過曝）+ 相機補光（0.6）
-  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-
-  const camLight = new THREE.DirectionalLight(0xffffff, 0.7);
-  camLight.position.set(0, 0, 1);
-  camera.add(camLight);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
   scene.add(camera);
 }
 
-// 2. Astronomy Engine 計算地平座標
+// 2. 計算地平座標與黃道軌跡
 function setupGeolocationAndCalculateEphemeris() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
@@ -330,13 +116,31 @@ function updateLocationHud() {
     `${Math.abs(userLocation.lat).toFixed(2)}°${userLocation.lat >= 0 ? "N" : "S"}, ${Math.abs(userLocation.lon).toFixed(2)}°${userLocation.lon >= 0 ? "E" : "W"}`;
 }
 
+// 輔助函式：將黃經轉換為赤經赤緯
+function eclipticToEquatorial(lambdaDeg) {
+  const EPSILON = 23.439291 * (Math.PI / 180); // 黃赤交角
+  const l = lambdaDeg * (Math.PI / 180);
+  const sinL = Math.sin(l);
+  const cosL = Math.cos(l);
+
+  let ra = Math.atan2(sinL * Math.cos(EPSILON), cosL) * (180 / Math.PI);
+  if (ra < 0) ra += 360;
+  ra = ra / 15; // 轉為小時 (0-24)
+
+  const dec = Math.asin(Math.sin(EPSILON) * sinL) * (180 / Math.PI);
+  return { ra, dec };
+}
+
 function recomputeEphemeris() {
-  // 1. 透過共用模組取得當下時間與格式
   const { dateStr, timeStr, nowObj } = getFormattedTimeString();
   document.getElementById("hudUtcTime").textContent = `${dateStr} ${timeStr}`;
 
   celestialTargets.forEach((t) => scene.remove(t.mesh));
   celestialTargets = [];
+  if (eclipticLineMesh) {
+    scene.remove(eclipticLineMesh);
+    eclipticLineMesh = null;
+  }
   document.getElementById("catalogListContainer").innerHTML = "";
 
   const observer = new Astronomy.Observer(
@@ -346,28 +150,154 @@ function recomputeEphemeris() {
   );
 
   const astroTime = Astronomy.MakeTime(nowObj);
-
-  // 2. 透過共用模組計算恆星時
   const lstFormatted = calculateLST(userLocation.lon, astroTime);
   document.getElementById("hudLstTime").textContent = lstFormatted;
 
   let visibleCount = 0;
+  const distanceToSky = 1200;
 
-  // ... (後續天體迴圈計算維持原樣) ...
+  // 🌟 1. 計算並繪製真實的「黃道軌跡線 (Ecliptic Path)」
+  const eclipticPoints = [];
+  for (let lon = 0; lon <= 360; lon += 3) {
+    const eq = eclipticToEquatorial(lon);
+    const horiz = Astronomy.Horizon(
+      astroTime,
+      observer,
+      eq.ra,
+      eq.dec,
+      "normal",
+    );
+    if (horiz.altitude > -10) {
+      // 涵蓋在地平線附近的軌跡
+      const altRad = THREE.MathUtils.degToRad(horiz.altitude);
+      const azRad = THREE.MathUtils.degToRad(horiz.azimuth);
+      const x = distanceToSky * Math.cos(altRad) * Math.sin(azRad);
+      const y = distanceToSky * Math.sin(altRad);
+      const z = distanceToSky * Math.cos(altRad) * Math.cos(azRad);
+      eclipticPoints.push(new THREE.Vector3(x, y, z));
+    }
+  }
 
-  // 3. 更新介面顯示
+  if (eclipticPoints.length > 1) {
+    const eclipticGeo = new THREE.BufferGeometry().setFromPoints(
+      eclipticPoints,
+    );
+    const eclipticMat = new THREE.LineDashedMaterial({
+      color: 0x38bdf8,
+      dashSize: 12,
+      gapSize: 8,
+      transparent: true,
+      opacity: 0.45,
+    });
+    eclipticLineMesh = new THREE.Line(eclipticGeo, eclipticMat);
+    eclipticLineMesh.computeLineDistances();
+    scene.add(eclipticLineMesh);
+  }
+
+  // 🌟 2. 放置各大天體
+  CELESTIAL_CATALOG.forEach((item) => {
+    let alt = 0,
+      az = 0,
+      raStr = "--",
+      decStr = "--";
+    let isVisible = false;
+
+    if (item.isPlanet) {
+      const body = Astronomy.Body[item.id];
+      const eq = Astronomy.Equator(body, astroTime, observer, true, true);
+      const horiz = Astronomy.Horizon(
+        astroTime,
+        observer,
+        eq.ra,
+        eq.dec,
+        "normal",
+      );
+      alt = horiz.altitude;
+      az = horiz.azimuth;
+      isVisible = alt > -5;
+      raStr = eq.ra.toFixed(2);
+      decStr = eq.dec.toFixed(2);
+    } else {
+      const horiz = Astronomy.Horizon(
+        astroTime,
+        observer,
+        item.ra,
+        item.dec,
+        "normal",
+      );
+      alt = horiz.altitude;
+      az = horiz.azimuth;
+      isVisible = alt > -5;
+      raStr = item.ra.toFixed(2);
+      decStr = item.dec.toFixed(2);
+    }
+
+    const altRad = THREE.MathUtils.degToRad(alt);
+    const azRad = THREE.MathUtils.degToRad(az);
+
+    const x = distanceToSky * Math.cos(altRad) * Math.sin(azRad);
+    const y = distanceToSky * Math.sin(altRad);
+    const z = distanceToSky * Math.cos(altRad) * Math.cos(azRad);
+
+    const worldPos = new THREE.Vector3(x, y, z);
+    const mesh = createCelestialEntity(item, isVisible);
+    mesh.position.copy(worldPos);
+    scene.add(mesh);
+
+    const targetData = {
+      ...item,
+      alt: alt.toFixed(1),
+      az: az.toFixed(1),
+      ra: raStr,
+      dec: decStr,
+      isVisible,
+      worldPos,
+      mesh,
+    };
+
+    celestialTargets.push(targetData);
+    if (isVisible) visibleCount++;
+    addCatalogItemUI(targetData);
+  });
+
   const currentMonthDay = getFormattedCurrentDate();
   document.getElementById("visibleCount").innerHTML =
     `可見星體數：${visibleCount} / ${CELESTIAL_CATALOG.length} <br> 日期：${currentMonthDay}`;
 }
 
+// 建立天體 3D 實體
 function createCelestialEntity(item, isVisible) {
   const group = new THREE.Group();
   const loader = new THREE.TextureLoader();
   let visualMesh;
 
-  if (item.isDisc) {
-    // ✨ 星系 / 星雲：程序化動態星雲透明螺旋盤（絕不再黑球破圖）
+  if (item.id === "Sun") {
+    const geom = new THREE.SphereGeometry(item.size, 32, 32);
+    const mat = new THREE.MeshBasicMaterial({ map: loader.load(item.tex) });
+    visualMesh = new THREE.Mesh(geom, mat);
+    group.add(visualMesh);
+
+    const haloCanvas = document.createElement("canvas");
+    haloCanvas.width = 128;
+    haloCanvas.height = 128;
+    const hCtx = haloCanvas.getContext("2d");
+    const hGrad = hCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    hGrad.addColorStop(0, "rgba(255, 255, 200, 0.9)");
+    hGrad.addColorStop(0.3, "rgba(255, 150, 50, 0.4)");
+    hGrad.addColorStop(0.6, "rgba(255, 100, 0, 0.1)");
+    hGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+    hCtx.fillStyle = hGrad;
+    hCtx.fillRect(0, 0, 128, 128);
+    const haloSprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(haloCanvas),
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
+    haloSprite.scale.set(item.size * 6, item.size * 6, 1);
+    group.add(haloSprite);
+  } else if (item.isDisc) {
     const canvas = document.createElement("canvas");
     canvas.width = 256;
     canvas.height = 256;
@@ -401,19 +331,13 @@ function createCelestialEntity(item, isVisible) {
     visualMesh.lookAt(0, 0, 0);
     group.add(visualMesh);
   } else if (item.isStar) {
-    // ✨ 恆星（天狼星、參宿四、太陽）：專屬高溫發光材質
     const geom = new THREE.SphereGeometry(item.size, 32, 32);
-    let mat;
-    if (item.tex) {
-      const tex = loader.load(item.tex);
-      mat = new THREE.MeshBasicMaterial({ map: tex });
-    } else {
-      mat = new THREE.MeshBasicMaterial({ color: item.starColor || 0xffffff });
-    }
+    let mat = item.tex
+      ? new THREE.MeshBasicMaterial({ map: loader.load(item.tex) })
+      : new THREE.MeshBasicMaterial({ color: item.starColor || 0xffffff });
     visualMesh = new THREE.Mesh(geom, mat);
     group.add(visualMesh);
 
-    // 恆星外層光暈 Sprite
     const haloCanvas = document.createElement("canvas");
     haloCanvas.width = 64;
     haloCanvas.height = 64;
@@ -440,30 +364,28 @@ function createCelestialEntity(item, isVisible) {
     haloSprite.scale.set(item.size * 3.5, item.size * 3.5, 1);
     group.add(haloSprite);
   } else {
-    // ✨ 行星：真實 NASA 貼圖 + Standard 立體陰影材質（粗糙度提升，不反光泛白）
     const geom = new THREE.SphereGeometry(item.size, 32, 32);
-    const tex = loader.load(item.tex);
-    const mat = new THREE.MeshStandardMaterial({
-      map: tex,
-      roughness: 0.85,
-      metalness: 0.05,
-    });
+    const matOpts = {};
+    if (item.tex) {
+      matOpts.map = loader.load(item.tex);
+    } else {
+      matOpts.color = 0xaaaaaa;
+    }
+    const mat = new THREE.MeshBasicMaterial(matOpts);
     visualMesh = new THREE.Mesh(geom, mat);
     group.add(visualMesh);
 
-    // 土星光環
-    if (item.hasRing) {
+    if (item.hasRing && item.ringTex) {
       const ringGeo = new THREE.RingGeometry(
         item.size * 1.35,
         item.size * 2.3,
         64,
       );
-      const ringTex = loader.load(item.ringTex);
       const ringMat = new THREE.MeshBasicMaterial({
-        map: ringTex,
+        map: loader.load(item.ringTex),
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.9,
       });
       const ring = new THREE.Mesh(ringGeo, ringMat);
       ring.rotation.x = Math.PI / 2.2;
@@ -471,23 +393,15 @@ function createCelestialEntity(item, isVisible) {
     }
   }
 
-  // 瞄準指示光環
-  const ringGeo = new THREE.RingGeometry(item.size * 1.3, item.size * 1.45, 32);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: isVisible ? 0x38bdf8 : 0xf43f5e,
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: isVisible ? 0.5 : 0.2,
-  });
-  const targetRing = new THREE.Mesh(ringGeo, ringMat);
-  targetRing.lookAt(0, 0, 0);
-  group.add(targetRing);
-
-  group.userData = { visualRef: visualMesh };
+  group.userData = {
+    visualRef: visualMesh,
+    name: item.name,
+    targetData: item,
+  };
   return group;
 }
 
-// 4. 左側清單
+// 介面清單與點擊聚焦
 function addCatalogItemUI(data) {
   const list = document.getElementById("catalogListContainer");
   const div = document.createElement("div");
@@ -506,46 +420,31 @@ function addCatalogItemUI(data) {
   list.appendChild(div);
 }
 
-// 5. ✨ Zoom-In 與手動/自動自轉控制核心
 function zoomInToCelestial(data) {
-  // 檢查是否已在觀測同一個目標（若是，則不重複加速）
-  const isSameTarget =
-    isInspecting && inspectingTarget && inspectingTarget.id === data.id;
-
   isInspecting = true;
   inspectingTarget = data;
-  targetMeshToSpin = data.mesh.userData.visualRef || data.mesh;
+  targetMeshToSpin =
+    data.mesh.userData.visualRef || data.mesh.children[0] || data.mesh;
 
   document.getElementById("resetViewBtn").style.display = "inline-flex";
 
-  // 🌟 距離修正：改為 5.0 倍半徑，絕不再滿版爆框！
   const targetPos = data.worldPos;
   const direction = targetPos.clone().normalize();
-  const approachDistance = data.size * 5.0;
+  const approachDistance = data.size * 6.0;
   const endCameraPos = targetPos
     .clone()
     .sub(direction.clone().multiplyScalar(approachDistance));
 
-  // 相機平滑推入
   new TWEEN.Tween(camera.position)
     .to(endCameraPos, 1100)
     .easing(TWEEN.Easing.Cubic.Out)
     .onUpdate(() => camera.lookAt(targetPos))
     .start();
 
-  // 🌟 只有「首次放大」才快轉展示 720 度，之後點擊絕不重複加速！
-  if (!isSameTarget && targetMeshToSpin) {
-    new TWEEN.Tween(targetMeshToSpin.rotation)
-      .to({ y: targetMeshToSpin.rotation.y + Math.PI * 4 }, 2000)
-      .easing(TWEEN.Easing.Quadratic.Out)
-      .start();
-  }
-
   openTelemetryCard(data);
   logObservation(data);
 }
 
-// 退回全天視角
 function resetCameraToSky() {
   isInspecting = false;
   inspectingTarget = null;
@@ -565,9 +464,7 @@ function openTelemetryCard(data) {
   const card = document.getElementById("telemetryCard");
   document.getElementById("targetName").textContent = data.name;
   document.getElementById("targetType").textContent = data.type;
-
-  const photoEl = document.getElementById("realPhotoImg");
-  photoEl.src =
+  document.getElementById("realPhotoImg").src =
     data.photo ||
     "https://images-assets.nasa.gov/image/PIA04591/PIA04591~orig.jpg";
 
@@ -576,12 +473,10 @@ function openTelemetryCard(data) {
   document.getElementById("valAz").textContent = `${data.az}°`;
   document.getElementById("valRA").textContent = data.ra;
   document.getElementById("valDec").textContent = data.dec;
-
   document.getElementById("valMag").textContent = `${data.mag} mag`;
   document.getElementById("valDist").textContent = data.dist;
   document.getElementById("valMass").textContent = data.mass;
   document.getElementById("valRadius").textContent = data.radius;
-
   document.getElementById("valDigest").textContent = data.hab;
 
   card.classList.add("open");
@@ -592,7 +487,6 @@ async function logObservation(data) {
     typeof getCurrentUser === "function" ? getCurrentUser() : null;
   const uid =
     currentUser && currentUser.user_id ? String(currentUser.user_id) : "1";
-
   try {
     await fetch("/api/sky/observe", {
       method: "POST",
@@ -609,16 +503,51 @@ async function logObservation(data) {
   } catch (e) {}
 }
 
-// 6. ✨ 雙軌滑鼠互動：全景時轉全天球；特寫時滑鼠直接旋轉星球
+// ==========================================
+// 3. 互動控制與全螢幕切換邏輯
+// ==========================================
+function toggleFullscreen() {
+  const fsIcon = document.getElementById("fsIcon");
+  const fsText = document.getElementById("fsText");
+
+  if (!document.fullscreenElement) {
+    document.documentElement
+      .requestFullscreen()
+      .then(() => {
+        fsIcon.textContent = "close_fullscreen";
+        fsText.textContent = "返回視窗大小";
+      })
+      .catch(() => {});
+  } else {
+    document
+      .exitFullscreen()
+      .then(() => {
+        fsIcon.textContent = "fullscreen";
+        fsText.textContent = "全螢幕投影模式";
+      })
+      .catch(() => {});
+  }
+}
+
+document.addEventListener("fullscreenchange", () => {
+  const fsIcon = document.getElementById("fsIcon");
+  const fsText = document.getElementById("fsText");
+  if (!document.fullscreenElement) {
+    fsIcon.textContent = "fullscreen";
+    fsText.textContent = "全螢幕投影模式";
+  } else {
+    fsIcon.textContent = "close_fullscreen";
+    fsText.textContent = "返回視窗大小";
+  }
+});
+
 function setupControls() {
   const canvas = document.getElementById("skyCanvas");
-
   canvas.addEventListener("mousedown", (e) => {
     isDragging = true;
     prevMouseX = e.clientX;
     prevMouseY = e.clientY;
   });
-
   window.addEventListener("mouseup", () => (isDragging = false));
 
   canvas.addEventListener("mousemove", (e) => {
@@ -627,29 +556,18 @@ function setupControls() {
     const deltaY = e.clientY - prevMouseY;
 
     if (isInspecting && targetMeshToSpin) {
-      // 🌟 核心修正：已在特寫模式時，滑鼠拖曳直接控制星球 360 度旋轉！
       targetMeshToSpin.rotation.y += deltaX * 0.008;
       targetMeshToSpin.rotation.x += deltaY * 0.008;
     } else {
-      // 全天漫遊模式：拖曳全景視角
       camLon -= deltaX * 0.16;
       camLat = Math.max(-89, Math.min(89, camLat + deltaY * 0.16));
       updateCameraOrientation();
     }
-
     prevMouseX = e.clientX;
     prevMouseY = e.clientY;
   });
 
   canvas.addEventListener("click", onCanvasClick);
-
-  document.getElementById("fullscreenBtn").addEventListener("click", () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen();
-    }
-  });
 
   window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -671,11 +589,15 @@ function onCanvasClick(e) {
 
   if (intersects.length > 0) {
     let hit = intersects[0].object;
-    while (hit.parent && !hit.userData.name) {
+    while (hit.parent && !hit.parent.userData.name) {
       hit = hit.parent;
     }
-    if (hit.userData && hit.userData.name) {
-      zoomInToCelestial(hit.userData);
+    if (hit.parent && hit.parent.userData.targetData) {
+      const clickedData = hit.parent.userData.targetData;
+      const targetObj = celestialTargets.find((t) => t.id === clickedData.id);
+      if (targetObj) {
+        zoomInToCelestial(targetObj);
+      }
     }
   }
 }
@@ -685,7 +607,6 @@ function updateCameraOrientation() {
     camera.lookAt(inspectingTarget.worldPos);
     return;
   }
-
   const phi = THREE.MathUtils.degToRad(90 - camLat);
   const theta = THREE.MathUtils.degToRad(camLon);
   const target = new THREE.Vector3(
@@ -699,13 +620,9 @@ function updateCameraOrientation() {
   document.getElementById("hudOrientation").textContent =
     `Alt: ${camLat >= 0 ? "+" : ""}${camLat.toFixed(1)}° | Az: ${normAz.toFixed(1)}°`;
 
-  // 💡 動態更新指北針指針角度與下方方位文字
   const needle = document.getElementById("compassNeedle");
   const compassText = document.getElementById("compassText");
-  if (needle) {
-    // camLon 是相機的方位基準，讓指針隨著 camLon 進行旋轉指向北方
-    needle.style.transform = `rotate(${-camLon}deg)`;
-  }
+  if (needle) needle.style.transform = `rotate(${-camLon}deg)`;
   if (compassText) {
     let dirName = "北";
     if (normAz >= 22.5 && normAz < 67.5) dirName = "東北";
@@ -715,23 +632,34 @@ function updateCameraOrientation() {
     else if (normAz >= 202.5 && normAz < 247.5) dirName = "西南";
     else if (normAz >= 247.5 && normAz < 292.5) dirName = "西";
     else if (normAz >= 292.5 && normAz < 337.5) dirName = "西北";
-
     compassText.textContent = `${dirName} ${normAz.toFixed(0)}°`;
   }
 }
-// 7. 動畫渲染迴圈
+
 function animate() {
   requestAnimationFrame(animate);
   TWEEN.update();
-
-  // 恆常極緩自轉（未手動拖曳時維持生動動態）
   if (targetMeshToSpin && !isDragging) {
     targetMeshToSpin.rotation.y += 0.0015;
   }
-
   renderer.render(scene, camera);
 }
 
+// ==========================================
+// 初始化載入
+// ==========================================
+async function loadCatalogAndInit() {
+  try {
+    const response = await fetch("/api/sky/catalog");
+    const data = await response.json();
+    CELESTIAL_CATALOG = data.catalog;
+    initSkyEngine();
+  } catch (error) {
+    console.error("無法取得天體目錄資料：", error);
+    initSkyEngine();
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
-  initSkyEngine();
+  loadCatalogAndInit();
 });

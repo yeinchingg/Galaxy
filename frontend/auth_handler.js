@@ -1,14 +1,6 @@
-/**
- * frontend/auth_handler.js
- * 處理訪客進入、帳號註冊與登入
- * -> 全部改為真正呼叫後端 API，取得資料庫中真實的 user_id，
- *    不同帳號的資料才會在 DB 裡彼此分開。
- */
-
 const STORAGE_KEY_USER = "astro_current_user";
 const API_BASE = window.location.origin;
 
-// 隨機產生訪客暱稱
 function rollGuestName() {
   const prefixes = [
     "探索者",
@@ -26,7 +18,6 @@ function rollGuestName() {
   }
 }
 
-// 儲存登入資訊：統一格式，供 auth.js / profile.html / lab.html / quiz.html 共用
 function saveCurrentUser(data) {
   const userObj = {
     user_id: data.user_id,
@@ -38,7 +29,6 @@ function saveCurrentUser(data) {
   return userObj;
 }
 
-// 訪客登入：呼叫後端建立一個獨立的訪客帳號（每次登入都有自己的 user_id）
 async function handleGuestLogin() {
   const input = document.getElementById("guestNameInput");
   const displayName =
@@ -59,8 +49,6 @@ async function handleGuestLogin() {
     alert("訪客登入失敗，請確認伺服器是否已啟動！");
   }
 }
-
-// 註冊帳號：真正寫入資料庫的 users 表
 async function handleRegister() {
   const userInp = document.getElementById("regUsername");
   const passInp = document.getElementById("regPassword");
@@ -102,7 +90,6 @@ async function handleRegister() {
   }
 }
 
-// 帳號密碼登入：呼叫後端驗證雜湊密碼
 async function handleLogin() {
   const userInp = document.getElementById("loginUsername");
   const passInp = document.getElementById("loginPassword");

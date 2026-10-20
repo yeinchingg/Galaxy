@@ -1,5 +1,4 @@
 const WIKI_URL_MAP = {
-  // 🪐 太陽系相關 (ID 1 ~ 22)
   "https://openstax.org/l/30proprorx": {
     id: "ID 1",
     title: "太陽 (The Sun)",
@@ -420,7 +419,6 @@ const WIKI_URL_MAP = {
     relatedTopicName: "反射星雲與星際塵埃 / H II 區與電離氫光譜[cite: 1]",
   },
 
-  // 🌌 星系、黑洞、星雲 (ID 47 ~ 78)
   "https://openstax.org/l/30gaiastars": {
     id: "ID 47",
     title: "銀河系 (Milky Way Galaxy)",
@@ -869,7 +867,6 @@ const WIKI_URL_MAP = {
     relatedTopicName: "法蘭克·德雷克與 SETI 搜尋歷史[cite: 1]",
   },
 
-  // 🔭 觀測儀器、天文台與太空任務 (ID 301 ~ 311)
   "https://science.nasa.gov/mission/hubble/": {
     id: "ID 301",
     title: "哈伯太空望遠鏡 (HST)",

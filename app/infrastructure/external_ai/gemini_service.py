@@ -1,23 +1,15 @@
-"""
-app/infrastructure/external_ai/gemini_service.py
-外部基礎設施層：對齊當前可用之 Gemini 模型與備援機制
-"""
-
 from typing import List, Generator, Union
 from google import genai
 from google.genai import types
-from app.domain.interfaces import IAIService
+from app.domain.interfaces.ai_interface import IAIService
 
-# ✅ 使用帳號實測可用的模型清單，避免 503 塞車與 404 過期問題
+
 GENERATION_MODELS = [
     "gemini-flash-lite-latest",  # 備援：最新輕量版 Flash-Lite
     "gemini-2.5-flash",  # 首選：穩定版 2.5 Flash
     "gemini-flash-latest",  # 備援：最新 Flash 別名
 ]
 EMBEDDING_MODEL = "gemini-embedding-001"
-
-# 單一請求的逾時時間（毫秒）。避免某個 key/模型卡住時，
-# 依序重試造成整體對話延遲被無限放大。
 REQUEST_TIMEOUT_MS = 15_000
 
 
@@ -36,9 +28,6 @@ class GeminiService(IAIService):
         self.current_key_index = 0
         self.embedding_model = EMBEDDING_MODEL
         self.target_dimension = target_dimension
-
-        # 每個 key 各自快取一個 Client，避免每次呼叫都重新建立
-        # （省去重複的 client 初始化開銷），並統一套用逾時設定。
         http_options = types.HttpOptions(timeout=REQUEST_TIMEOUT_MS)
         self._clients: List[genai.Client] = [
             genai.Client(api_key=key, http_options=http_options)

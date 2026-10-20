@@ -1,14 +1,9 @@
-/* ============================================================
-   theme.css — 全站共用樣式與設計 Token 控制檔
-   ============================================================ */
-
-/* ---------------- 1. 字體引入 ---------------- */
 @import url("https://fonts.googleapis.com/css2?family=Iansui&family=LXGW+WenKai+TC&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap");
 
 @font-face {
   font-family: "Iceland";
-  src: url("/static/fonts/Iceland-Regular.ttf") format("truetype");
+  src: url("/fonts/Iceland-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -16,7 +11,7 @@
 
 @font-face {
   font-family: "LXGW Marker Gothic";
-  src: url("/static/fonts/LXGWMarkerGothic-Regular.ttf") format("truetype");
+  src: url("/fonts/LXGWMarkerGothic-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -24,13 +19,12 @@
 
 @font-face {
   font-family: "Material Symbols Outlined";
-  src: url("/static/fonts/MaterialSymbolsOutlined.woff2") format("woff2");
+  src: url("/fonts/MaterialSymbolsOutlined.woff2") format("woff2");
   font-weight: 100 700;
   font-style: normal;
   font-display: block;
 }
 
-/* ---------------- 2. 全站設計 Token ---------------- */
 :root {
   --bg-color: #030712;
   --card-bg: rgba(17, 24, 39, 0.7);
@@ -58,7 +52,6 @@
   --icon-module: 34px;
 }
 
-/* ---------------- 3. 基礎 Reset 與共用版面 ---------------- */
 html {
   scroll-behavior: smooth;
 }
@@ -86,7 +79,6 @@ body {
   pointer-events: none;
 }
 
-/* ---------------- 4. 頂部導覽列 ---------------- */
 nav {
   width: 100%;
   height: 64px;
@@ -159,7 +151,6 @@ nav {
   color: var(--accent);
 }
 
-/* ---------------- 5. 共用元件（Badge / Panel） ---------------- */
 .badge {
   font-size: 0.75rem;
   padding: 3px 10px;
@@ -296,9 +287,6 @@ html body .mono {
   color: var(--icon-color);
 }
 
-/* ============================================================
-   7. 赫羅圖觀測站 (hr.html) 專用寬版與固定尺寸固定規範
-   ============================================================ */
 .hr-container {
   margin-top: 84px !important;
   width: 100% !important;
@@ -358,12 +346,8 @@ html body .mono {
   flex-direction: column !important;
   gap: 16px !important;
   height: 600px !important;
-  /* 💡 固定右側欄位總高度 */
 }
 
-/* ============================================================
-   8. 響應式佈局 (RWD) 與裝置樣態規範
-   ============================================================ */
 img,
 video,
 canvas {
@@ -371,7 +355,6 @@ canvas {
   height: auto;
 }
 
-/* 平板尺寸（寬度 1024px 以下） */
 @media (max-width: 1024px) {
   nav {
     padding: 0 20px !important;
@@ -400,7 +383,6 @@ canvas {
   }
 }
 
-/* 手機小螢幕尺寸（寬度 768px 以下） */
 @media (max-width: 768px) {
   nav {
     padding: 0 15px !important;
@@ -420,7 +402,6 @@ canvas {
   }
 }
 
-/* 極低高度畫面（高度 600px 以下） */
 @media (max-height: 600px) {
   nav {
     position: relative !important;

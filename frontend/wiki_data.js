@@ -1,5 +1,4 @@
 const wikiData = [
-  // 🪐 1. 太陽系天體與行星
   {
     id: 1,
     cat: "solarsystem",

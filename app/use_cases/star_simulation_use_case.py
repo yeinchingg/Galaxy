@@ -1,14 +1,8 @@
-"""
-app/use_cases/star_simulation_use_case.py
-應用案例層：調度物理領域模型，執行恆星演化模擬運算並回傳強型態 DTO (Pydantic Model)
-"""
-
 from typing import Optional
 from pydantic import BaseModel, Field
 from app.domain.star_physics import StarPhysicsCalculator
 
 
-# --- 定義強型態 DTO (Pydantic Models) ---
 class StarColorDTO(BaseModel):
     spectral_type: str = Field(..., description="光譜型 (如 O, B, A, F, G, K, M)")
     hex_code: str = Field(..., description="對應的 HEX 色碼")
@@ -81,7 +75,6 @@ class StarSimulationUseCase:
             )
         )
 
-        # 計算當前有效溫度與外觀顏色
         if current_l is not None and current_r and current_r > 0:
             current_temp = 5778 * (current_l / (current_r**2)) ** 0.25
         else:
@@ -89,7 +82,6 @@ class StarSimulationUseCase:
 
         current_color_props = self.calculator.temp_to_color(current_temp)
 
-        # 透過 DTO 封裝回傳，享有 Pydantic 的型態保護與自動序列化
         return StarEvolutionResponseDTO(
             **base_dto.model_dump(),
             age_gyr=age_gyr,
