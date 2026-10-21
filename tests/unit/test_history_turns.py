@@ -1,6 +1,8 @@
 """
 tests/unit/test_history_turns.py
-驗證 HISTORY_TURNS 設定值，以及 _build_history_block 的實際行為與耗時。
+test_history_turns_is_set_to_two（防止參數倒退回歸測試）
+test_history_block_only_includes_last_two_turns（滑動視窗精準度驗證）
+test_build_history_block_timing_and_size（字串組裝開銷與耗時量測）    
 """
 
 from unittest.mock import MagicMock

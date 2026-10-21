@@ -1,13 +1,9 @@
 """
 tests/unit/test_gemini_service_perf.py
-效能相關單元測試：驗證「client 快取」與「timeout 設定」兩項優化確實生效。
-
-這些測試不會打真正的 Gemini API，而是把 google.genai.Client 換成假物件，
-確保：
-1. Client 只在 GeminiService 初始化時建立一次（每組 key 一個），
-   之後每次呼叫都是重複使用同一個物件，不會重新建立。
-2. 每個 Client 建立時都有帶上 http_options.timeout，
-   避免某次 API 呼叫卡住時無限期等待。
+1. test_client_created_once_per_key_not_per_call（驗證 Key 快取與輪替）
+2. test_timeout_configured_on_every_client（驗證逾時保護）
+3. test_get_next_client_is_fast（驗證輪替取用速度）
+ python -m pytest tests/unit/test_gemini_service_perf.py -v -s
 """
 
 import time

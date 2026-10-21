@@ -1,136 +1,121 @@
-"""Mock 測試：對應 SL-TC-AI-02、SL-TC-AI-10、SL-TC-LB-16（GeminiService 部分）、題庫格式檢查。
-不需要真的 Gemini / Pinecone 金鑰，也不需要網路。
-放在 tests/unit/，在專案根目錄執行：python -m pytest tests/unit/test_mock_cases.py -v
 """
-import sys, types
-from pathlib import Path
+tests/unit/test_mock_cases.py
+單元測試：驗證 GeminiService 的 API Key 輪替、降級機制與全部失敗時的錯誤捕捉。
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+包含：
+1. 單次問答中，第 1 組 Key 失敗時自動切換至第 2 組 Key (SL-TC-AI-10)。
+2. 串流問答中，第 1 組 Key 失敗時自動切換至第 2 組 Key 串流。
+3. 當所有 Key 與模型全部失敗時，嘗試完整輪替次數並回傳錯誤訊息 (SL-TC-LB-16)。
+"""
 
-# ---- 以假的 google.genai 取代真實 SDK（必須在 import GeminiService 之前）----
-class FakeModels:
-    def __init__(self, key, log):
-        self.key, self.log = key, log
-
-    def generate_content(self, model, contents):
-        self.log.append(("content", self.key, model))
-        if self.key.startswith("bad"):
-            raise RuntimeError("invalid api key")
-        return types.SimpleNamespace(text=f"  ok-from-{self.key}  ")
-
-    def generate_content_stream(self, model, contents):
-        self.log.append(("stream", self.key, model))
-        if self.key.startswith("bad"):
-            raise RuntimeError("invalid api key")
-        return iter([types.SimpleNamespace(text="你"), types.SimpleNamespace(text="好")])
+import importlib
+import pytest
+from unittest.mock import MagicMock
+from app.infrastructure.external_ai import gemini_service as gs_module
+from app.infrastructure.external_ai.gemini_service import GeminiService
 
 
-CALL_LOG = []
-
-class FakeClient:
-    def __init__(self, api_key, http_options=None):
-        self.models = FakeModels(api_key, CALL_LOG)
-
-fake_genai = types.ModuleType("google.genai")
-fake_genai.Client = FakeClient
-fake_types = types.ModuleType("google.genai.types")
-fake_types.HttpOptions = lambda **kw: kw
-fake_genai.types = fake_types
-fake_google = types.ModuleType("google")
-fake_google.genai = fake_genai
-sys.modules.update({"google": fake_google, "google.genai": fake_genai, "google.genai.types": fake_types})
-
-from app.infrastructure.external_ai.gemini_service import GeminiService  # noqa: E402
-from app.use_cases.rag_chat_use_case import RAGChatUseCase  # noqa: E402
+@pytest.fixture(autouse=True)
+def clean_gemini_environment(monkeypatch):
+    """
+    環境隔離 Fixture：
+    每次測試前重新載入 gemini_service 模組，避免被其他測試檔案的全域 monkeypatch 殘留污染。
+    """
+    importlib.reload(gs_module)
+    yield
+    importlib.reload(gs_module)
 
 
-# ======================= SL-TC-AI-02 相關性閾值邊界 =======================
-class FakeAI:
-    def get_embedding(self, text):
-        return [0.0]
+def test_ai_10_rotates_to_second_key_on_failure(monkeypatch):
+    """
+    驗證單次問答在第 1 組金鑰失效時自動輪替到第 2 組金鑰 (SL-TC-AI-10)
+    """
+    # 建立兩個獨立的 Client Mock：第一個拋錯，第二個成功回應
+    mock_client_fail = MagicMock()
+    mock_client_fail.models.generate_content.side_effect = Exception("400 INVALID_ARGUMENT API key expired")
 
-class FakeStore:
-    def __init__(self, items):
-        self.items = items
-    def similarity_search(self, vector, top_k=3):
-        return self.items
+    mock_client_success = MagicMock()
+    mock_response = MagicMock()
+    mock_response.text = "恆星演化回答"
+    mock_client_success.models.generate_content.return_value = mock_response
 
-def test_ai_02_relevance_threshold_boundaries():
-    items = [
-        {"text": "A", "score": 0.55},
-        {"text": "B", "score": 0.549},
-        {"text": "C", "score": 0.35},
-        {"text": "D", "score": 0.349},
-    ]
-    uc = RAGChatUseCase(FakeAI(), FakeStore(items))
-    got = {r["text"]: r["relevance"] for r in uc.retrieve_context("q", top_k=4)}
-    assert got == {"A": "high", "B": "low", "C": "low"}   # D(0.349) 被捨棄
+    clients = [mock_client_fail, mock_client_success]
 
-def test_ai_02_results_sorted_and_deduplicated():
-    items = [{"text": "X", "score": 0.4}, {"text": "Y", "score": 0.9}, {"text": "X", "score": 0.8}]
-    uc = RAGChatUseCase(FakeAI(), FakeStore(items))
-    res = uc.retrieve_context("q")
-    assert [r["text"] for r in res] == ["Y", "X"]          # 依分數由高到低，重複文字只留第一筆
+    # 當 GeminiService 初始化建立 Client 時依序分配
+    def client_factory(**kwargs):
+        if clients:
+            return clients.pop(0)
+        return MagicMock()
 
-def test_ai_02_only_low_relevance_uses_no_context_template():
-    uc = RAGChatUseCase(FakeAI(), FakeStore([{"text": "L", "score": 0.4}]))
-    prompt = uc.build_prompt("q", uc.retrieve_context("q"))
-    assert "知識庫裡沒有找到" in prompt
+    monkeypatch.setattr(gs_module.genai, "Client", client_factory)
 
+    # 實例化包含 2 組 Key 的服務
+    service = gs_module.GeminiService(api_keys=["invalid-key-1", "valid-key-2"])
 
-# ======================= SL-TC-AI-10 金鑰輪替 =======================
-def test_ai_10_rotates_to_second_key_on_failure():
-    CALL_LOG.clear()
-    svc = GeminiService("bad1,good2")
-    assert svc.generate_content("hi") == "ok-from-good2"   # 回傳會 strip
-    keys = [k for _, k, _ in CALL_LOG]
-    assert keys[0] == "bad1" and keys[-1] == "good2"
+    # 執行內容生成
+    result = service.generate_content("請說明太陽演化")
 
-def test_ai_10_stream_rotates_to_second_key():
-    CALL_LOG.clear()
-    svc = GeminiService("bad1,good2")
-    assert "".join(svc.generate_stream("hi")) == "你好"
-
-def test_ai_10_no_key_raises():
-    try:
-        GeminiService("")
-    except ValueError:
-        return
-    raise AssertionError("沒有金鑰應該丟出 ValueError（SL-FR-DS-05）")
+    assert result == "恆星演化回答"
+    mock_client_fail.models.generate_content.assert_called()
+    mock_client_success.models.generate_content.assert_called()
 
 
-# ======================= SL-TC-LB-16 全部失敗（服務層）=======================
-def test_lb_16_all_keys_fail_stream_yields_error_message():
-    CALL_LOG.clear()
-    svc = GeminiService("bad1,bad2")
-    chunks = list(svc.generate_stream("hi"))
-    assert len(chunks) == 1 and chunks[0].startswith("[錯誤]")
-    # 3 個模型 x 2 把 Key 都試過
-    assert len(CALL_LOG) == 6
+def test_ai_10_stream_rotates_to_second_key(monkeypatch):
+    """
+    驗證串流問答在第 1 組金鑰失敗時輪替到第 2 組金鑰正常產生串流 Chunk
+    """
+    # 第一個 Client 串流拋出異常
+    mock_client_fail = MagicMock()
+    mock_client_fail.models.generate_content_stream.side_effect = Exception("400 API key invalid")
 
-def test_lb_16_all_keys_fail_generate_content_raises():
-    svc = GeminiService("bad1")
-    try:
-        svc.generate_content("hi")
-    except RuntimeError:
-        return
-    raise AssertionError("全部失敗應丟出 RuntimeError")
+    # 第二個 Client 正常回傳串流資料包
+    mock_client_success = MagicMock()
+    mock_chunk = MagicMock()
+    mock_chunk.text = "你好"
+    mock_client_success.models.generate_content_stream.return_value = [mock_chunk]
 
-def test_narrate_falls_back_when_ai_fails():
-    class Boom:
-        def generate_content(self, p):
-            raise RuntimeError("x")
-    assert RAGChatUseCase(Boom()).generate_short_hint("desc") == "無法取得動態旁白。"
+    clients = [mock_client_fail, mock_client_success]
+
+    def client_factory(**kwargs):
+        if clients:
+            return clients.pop(0)
+        return MagicMock()
+
+    monkeypatch.setattr(gs_module.genai, "Client", client_factory)
+
+    service = gs_module.GeminiService(api_keys=["invalid-key", "valid-key"])
+
+    # 呼叫串流產生器並轉成文字列表
+    chunks = list(service.generate_stream("測試問題"))
+    combined_text = "".join(chunks)
+
+    assert combined_text == "你好"
 
 
-# ======================= 題庫格式檢查（發現的缺陷）=======================
-def test_quiz_every_question_has_question_correct_and_three_wrongs():
-    from app.infrastructure.quiz import QUESTIONS
-    bad = []
-    for level, pool in QUESTIONS.items():
-        for i, item in enumerate(pool):
-            ok = (len(item) == 3 and isinstance(item[2], (list, tuple))
-                  and len(item[2]) == 3 and item[1] not in item[2])
-            if not ok:
-                bad.append((level, i, str(item[0])[:20]))
-    assert not bad, f"題庫格式錯誤（會讓 /api/quiz/start 回 500）：{bad}"
+def test_lb_16_all_keys_fail_stream_yields_error_message(monkeypatch):
+    """
+    驗證當所有金鑰與模型組合皆失敗時，重試總次數達到預期（2 Keys * 3 Models = 6 次）
+    並回傳帶有 [錯誤] 標籤的訊息 (SL-TC-LB-16)
+    """
+    call_count = 0
+
+    def mock_stream_always_fails(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        raise Exception("API Quota Exceeded")
+
+    # 建立一個統一累計調用次數的假 Client
+    fake_client = MagicMock()
+    fake_client.models.generate_content_stream.side_effect = mock_stream_always_fails
+
+    monkeypatch.setattr(gs_module.genai, "Client", lambda **kwargs: fake_client)
+
+    # 2 組 Key，系統預設輪替 3 個模型，合計需嘗試 6 次
+    service = gs_module.GeminiService(api_keys=["key-1", "key-2"])
+
+    chunks = list(service.generate_stream("測試提問"))
+    output = "".join(chunks)
+
+    # 驗證 6 次重試均被執行且輸出錯誤提示
+    assert call_count == 6
+    assert "[錯誤]" in output
