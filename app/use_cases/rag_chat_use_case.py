@@ -136,7 +136,7 @@ class RAGChatUseCase:
 
             if session_id and self.session_repo:
                 self.session_repo.save_message(session_id, "user", question)
-                self.session_repo.save_message(session_id, "ai", answer)
+                self.session_repo.save_message(session_id, "assistant", answer)#我有改成"assistant"
 
             return {
                 "status": "success",

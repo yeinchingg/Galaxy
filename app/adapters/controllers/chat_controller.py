@@ -164,7 +164,7 @@ def get_news(limit: int = 6):
                 news_items.append(
                     {
                         "title": item.get("title", "無標題"),
-                        "sub_title": (item.get("summary", "") or "")[:110] + "...",
+                        "sub_title": (item.get("summary", "") or "")[:107] + "...",
                         "image_url": item.get("image_url")
                         or "https://via.placeholder.com/300x180",
                         "url": item.get("url", "#"),

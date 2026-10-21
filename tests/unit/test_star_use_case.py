@@ -7,7 +7,7 @@ def test_simulation_use_case_main_sequence():
         mass=1.0, metallicity=1.0, rotation=0.0, age_gyr=4.6
     )
 
-    assert result["stage"] == "main_sequence"
-    assert result["age_gyr"] == 4.6
-    assert result["current_temperature_k"] is not None
-    assert result["current_color"]["spectral_type"] == "G"
+    assert result.stage == "main_sequence"
+    assert result.age_gyr == 4.6
+    assert result.current_temperature_k is not None
+    assert result.current_color.spectral_type == "G"
