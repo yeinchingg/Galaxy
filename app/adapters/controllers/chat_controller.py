@@ -10,7 +10,8 @@ from app.infrastructure.database.repository import (
     get_user_by_username,
     verify_password,
 )
-
+from fastapi import Header
+from app.adapters.controllers.auth_controller import verify_token_header, create_access_token
 router = APIRouter()
 _use_case: Optional[RAGChatUseCase] = None
 _db_repo = None
@@ -99,20 +100,21 @@ def get_system_status():
 
 @router.post("/auth/guest")
 def auth_guest(req: GuestLoginRequest):
-    """訪客登入"""
     display_name = (req.display_name or "訪客研究員").strip() or "訪客研究員"
     unique_username = f"guest_{os.urandom(4).hex()}"
     user_id = create_user(unique_username, password=None, role_type="guest")
+    token = create_access_token(
+        {"user_id": user_id, "username": display_name})  # 👈 產生 token
     return {
         "user_id": user_id,
         "username": display_name,
         "role": "guest",
+        "token": token,  # 👈 回傳 token
     }
 
 
 @router.post("/auth/register")
 def auth_register(req: RegisterRequest):
-    """建立會員帳號"""
     username = req.username.strip()
     password = req.password.strip()
     if not username or not password:
@@ -123,6 +125,8 @@ def auth_register(req: RegisterRequest):
 
     try:
         user_id = create_user(username, password=password, role_type="member")
+        token = create_access_token(
+            {"user_id": user_id, "username": username})  
     except Exception as e:
         print(f"❌ [DB] 建立帳號失敗: {e}")
         raise HTTPException(status_code=500, detail=f"建立帳號失敗：{e}")
@@ -131,24 +135,26 @@ def auth_register(req: RegisterRequest):
         "user_id": user_id,
         "username": username,
         "role": "member",
+        "token": token,  
     }
 
 
 @router.post("/auth/login")
 def auth_login(req: LoginRequest):
-    """帳號密碼登入"""
     username = req.username.strip()
     password = req.password.strip()
     user = verify_password(username, password)
     if not user:
         raise HTTPException(status_code=401, detail="帳號或密碼錯誤")
 
+    token = create_access_token(
+        {"user_id": user["user_id"], "username": user["username"]})
     return {
         "user_id": user["user_id"],
         "username": user["username"],
         "role": user["role_type"],
+        "token": token, 
     }
-
 
 @router.get("/news")
 def get_news(limit: int = 6):
@@ -238,7 +244,8 @@ def chat_stream_endpoint(req: ChatRequest):
 
 
 @router.get("/chat/history")
-def get_chat_history_endpoint(user_id: int = 1):
+def get_chat_history_endpoint(authorization: str = Header(None)):
+    user_id = verify_token_header(authorization)  # 呼叫驗證並解出 user_id
     if not _db_repo:
         raise HTTPException(status_code=500, detail="資料庫 Repo 尚未初始化")
     if hasattr(_db_repo, "get_chat_history"):
@@ -247,7 +254,8 @@ def get_chat_history_endpoint(user_id: int = 1):
 
 
 @router.delete("/chat/message/{message_id}")
-def delete_chat_message(message_id: int, user_id: int = 1):
+def delete_chat_message(message_id: int, authorization: str = Header(None)):
+    user_id = verify_token_header(authorization)
     if _db_repo and hasattr(_db_repo, "delete_message"):
         success = _db_repo.delete_message(message_id, user_id)
         return {"status": "success", "deleted": success}
@@ -255,7 +263,8 @@ def delete_chat_message(message_id: int, user_id: int = 1):
 
 
 @router.delete("/chat/history")
-def clear_all_chat_history(user_id: int = 1):
+def clear_all_chat_history(authorization: str = Header(None)):
+    user_id = verify_token_header(authorization)
     if _db_repo and hasattr(_db_repo, "clear_chat_history"):
         _db_repo.clear_chat_history(user_id)
         return {"status": "success"}
@@ -273,9 +282,12 @@ def narrate_endpoint(req: NarrateRequest):
 @router.post("/track")
 def track_user_action(req: TrackRequest):
     if _db_repo and hasattr(_db_repo, "log_interaction"):
-        _db_repo.log_interaction(req.user_id, req.topic, req.action, req.params)
+        try:
+            uid = int(req.user_id) if str(req.user_id).isdigit() else 1
+            _db_repo.log_interaction(uid, req.topic, req.action, req.params)
+        except Exception as e:
+            print(f"⚠️ Track 紀錄失敗: {e}")
     return {"status": "tracked"}
-
 
 @router.get("/outline/{user_id}")
 def get_outline(user_id: str):

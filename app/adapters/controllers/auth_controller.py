@@ -1,15 +1,41 @@
-from fastapi import APIRouter, HTTPException, status
+from dotenv import load_dotenv
+import os
+import jwt
+from datetime import datetime, timedelta
+from fastapi import APIRouter, HTTPException, status, Header
 from pydantic import BaseModel, Field
-from app.infrastructure.database.database import (
-    get_conn,
-)
 from app.infrastructure.database.repository import (
     create_user,
     get_user_by_username,
     verify_password,
 )
-
+from datetime import datetime, timedelta, timezone
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+load_dotenv()  
+
+SECRET_KEY = os.getenv("JWT_SECRET", "your_fallback_secret_key")
+ALGORITHM = "HS256"
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=7)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_token_header(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401, detail="未提供有效授權憑證 (Missing Token)")
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("user_id")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token 已過期，請重新登入")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="無效的 Token")
 
 
 class UserAuthRequest(BaseModel):
@@ -26,19 +52,23 @@ def register_user(data: UserAuthRequest):
     existing_user = get_user_by_username(data.username)
     if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="此使用者名稱已被註冊，請選擇其他名稱。",
+            status_code=status.HTTP_409_CONFLICT,
+            detail="這個使用者名稱已經被註冊了",
         )
     try:
         user_id = create_user(
-            username=data.username, password=data.password, role_type="registered"
+            username=data.username, password=data.password, role_type="member"
         )
+        # 註冊成功後順便產生 Token
+        token = create_access_token(
+            {"user_id": user_id, "username": data.username})
         return {
             "status": "success",
             "message": "註冊成功",
             "user_id": user_id,
             "username": data.username,
-            "role_type": "registered",
+            "role": "member",
+            "token": token,  # <--- 加上 token
         }
     except Exception as e:
         raise HTTPException(
@@ -52,14 +82,18 @@ def login_user(data: UserAuthRequest):
     user = verify_password(data.username, data.password)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="使用者名稱或密碼錯誤。"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="帳號或密碼錯誤。"
         )
+    # 登入成功產生 Token
+    token = create_access_token(
+        {"user_id": user["user_id"], "username": user["username"]})
     return {
         "status": "success",
         "message": "登入成功",
         "user_id": user["user_id"],
         "username": user["username"],
-        "role_type": user["role_type"],
+        "role": user["role_type"],
+        "token": token,  # <--- 加上 token
     }
 
 
@@ -67,55 +101,31 @@ def login_user(data: UserAuthRequest):
 def guest_login(data: GuestLoginRequest):
     user = get_user_by_username(data.username)
     if user:
+        token = create_access_token(
+            {"user_id": user["user_id"], "username": user["username"]})
         return {
             "status": "success",
             "message": "訪客登入成功",
             "user_id": user["user_id"],
             "username": user["username"],
-            "role_type": user["role_type"],
+            "role": "guest",
+            "token": token,
         }
     try:
-        user_id = create_user(username=data.username, password=None, role_type="guest")
+        user_id = create_user(username=data.username,
+                              password=None, role_type="guest")
+        token = create_access_token(
+            {"user_id": user_id, "username": data.username})
         return {
             "status": "success",
             "message": "訪客帳號建立並登入成功",
             "user_id": user_id,
             "username": data.username,
-            "role_type": "guest",
+            "role": "guest",
+            "token": token,
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"訪客登入初始化失敗: {str(e)}",
         )
-
-
-@router.get("/profile/{user_id}", summary="取得使用者個人檔案與相關紀錄")
-def get_user_profile(user_id: int):
-    """
-    根據 user_id 查詢對應的使用者基本資料、測驗歷史與互動紀錄，確保多使用者資料完全隔離。
-    """
-    with get_conn() as conn:
-        user = conn.execute(
-            "SELECT user_id, username, role_type, created_at FROM users WHERE user_id = ?",
-            (user_id,),
-        ).fetchone()
-
-        if not user:
-            raise HTTPException(status_code=404, detail="找不到此使用者")
-
-        quizzes = conn.execute(
-            "SELECT * FROM quiz_scores WHERE user_id = ? ORDER BY completed_at DESC",
-            (user_id,),
-        ).fetchall()
-
-        interactions = conn.execute(
-            "SELECT * FROM interactions WHERE user_id = ? ORDER BY ts DESC LIMIT 20",
-            (user_id,),
-        ).fetchall()
-
-        return {
-            "user": dict(user),
-            "quiz_history": [dict(q) for q in quizzes],
-            "interactions": [dict(i) for i in interactions],
-        }

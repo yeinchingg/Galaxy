@@ -1002,73 +1002,96 @@
       }
 
       /* ================= 結算 (串接後端 API 取得統計結果) ================= */
-      async function finishQuiz() {
-        const elapsedSec = Math.round((Date.now() - state.startedAt) / 1000);
+      /* ================= 結算 (串接後端 API 取得統計結果) ================= */
+        async function finishQuiz() {
+          const elapsedSec = Math.round((Date.now() - state.startedAt) / 1000);
 
-        try {
-          const res = await fetch("/api/quiz/finish", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              user_id:
-                (getCurrentUser &&
-                  getCurrentUser() &&
-                  getCurrentUser().user_id) ||
-                1,
-              level: state.level,
-              correct_count: state.correctCount,
-              total: state.set.length,
-              elapsed_sec: elapsedSec,
-              score: state.score,
-            }),
-          });
-          const summary = await res.json();
+          // 取得帶有 JWT Token 的 headers 函式（確保 quiz.html 內有定義 getAuthHeaders）
+          function getAuthHeaders() {
+            const headers = { "Content-Type": "application/json" };
+            const rawUser = localStorage.getItem("astro_current_user");
+            if (rawUser) {
+              try {
+                const user = JSON.parse(rawUser);
+                if (user && user.token) {
+                  headers["Authorization"] = `Bearer ${user.token}`;
+                }
+              } catch (e) { }
+            }
+            return headers;
+          }
 
-          document.getElementById("resultTitle").textContent = summary.title;
-          document.getElementById("resultSub").textContent = summary.sub;
-          document.getElementById("rScore").textContent = summary.finalScore;
-          document.getElementById("rCorrect").textContent =
-            state.correctCount + "/" + summary.total;
-          document.getElementById("rAccuracy").textContent =
-            summary.accuracy + "%";
-          document.getElementById("rTime").textContent =
-            summary.elapsedSec + "s";
+          const user = getCurrentUser ? getCurrentUser() : null;
+          const userId = user && user.user_id ? user.user_id : 1;
 
-          const reviewList = document.getElementById("reviewList");
-          reviewList.innerHTML = "";
-          state.answers.forEach((a, i) => {
-            const row = document.createElement("div");
-            row.className =
-              "review-item " + (a.isCorrect ? "correct" : "wrong");
-            const icon = a.isCorrect ? "check_circle" : "cancel";
-            const missLine = a.isCorrect
-              ? ""
-              : '<div class="ra">你的答案：<span class="miss">' +
+          try {
+            const res = await fetch("/api/quiz/finish", {
+              method: "POST",
+              headers: getAuthHeaders(), 
+              body: JSON.stringify({
+                user_id: userId,
+                level: state.level,
+                correct_count: state.correctCount,
+                total: state.set.length,
+                elapsed_sec: elapsedSec,
+                score: state.score,
+              }),
+            });
+
+            if (res.status === 401) {
+              alert("登入憑證已過期，請重新登入");
+              localStorage.removeItem("astro_current_user");
+              window.location.href = "login.html";
+              return;
+            }
+
+            const summary = await res.json();
+
+            document.getElementById("resultTitle").textContent = summary.title;
+            document.getElementById("resultSub").textContent = summary.sub;
+            document.getElementById("rScore").textContent = summary.finalScore;
+            document.getElementById("rCorrect").textContent =
+              state.correctCount + "/" + summary.total;
+            document.getElementById("rAccuracy").textContent =
+              summary.accuracy + "%";
+            document.getElementById("rTime").textContent =
+              summary.elapsedSec + "s";
+
+            const reviewList = document.getElementById("reviewList");
+            reviewList.innerHTML = "";
+            state.answers.forEach((a, i) => {
+              const row = document.createElement("div");
+              row.className =
+                "review-item " + (a.isCorrect ? "correct" : "wrong");
+              const icon = a.isCorrect ? "check_circle" : "cancel";
+              const missLine = a.isCorrect
+                ? ""
+                : '<div class="ra">你的答案：<span class="miss">' +
                 (a.chosen ?? "（未作答）") +
                 "</span></div>";
-            row.innerHTML =
-              '<span class="material-symbols-outlined">' +
-              icon +
-              "</span>" +
-              "<div>" +
-              '<div class="rq">' +
-              (i + 1) +
-              ". " +
-              a.question +
-              "</div>" +
-              '<div class="ra">正確答案：<b>' +
-              a.correct +
-              "</b></div>" +
-              missLine +
-              "</div>";
-            reviewList.appendChild(row);
-          });
+              row.innerHTML =
+                '<span class="material-symbols-outlined">' +
+                icon +
+                "</span>" +
+                "<div>" +
+                '<div class="rq">' +
+                (i + 1) +
+                ". " +
+                a.question +
+                "</div>" +
+                '<div class="ra">正確答案：<b>' +
+                a.correct +
+                "</b></div>" +
+                missLine +
+                "</div>";
+              reviewList.appendChild(row);
+            });
 
-          showScreen("results");
-        } catch (err) {
-          console.error("結算失敗:", err);
+            showScreen("results");
+          } catch (err) {
+            console.error("結算失敗:", err);
+          }
         }
-      }
 
       function restartLevel() {
         startLevel(state.level);

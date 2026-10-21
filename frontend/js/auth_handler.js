@@ -23,10 +23,10 @@ function saveCurrentUser(data) {
     user_id: data.user_id,
     username: data.username,
     role: data.role,
+    token: data.token,
     loginTime: new Date().toISOString(),
   };
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userObj));
-  return userObj;
 }
 
 async function handleGuestLogin() {

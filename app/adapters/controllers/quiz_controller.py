@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from typing import List, Optional
 from app.use_cases.quiz_use_case import QuizUseCase
 from app.infrastructure.database.repository import SQLiteRepository
+from app.adapters.controllers.auth_controller import verify_token_header
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
 _db_repo = SQLiteRepository()
@@ -36,7 +37,9 @@ def api_check_answer(data: AnswerCheckRequest):
 
 
 @router.post("/finish")
-def api_finish_quiz(data: FinishRequest):
+def api_finish_quiz(data: FinishRequest, authorization: str = Header(None)):
+    user_id = verify_token_header(authorization)
+
     summary = QuizUseCase.finalize_quiz(
         data.correct_count, data.total, data.elapsed_sec, data.score
     )
@@ -44,7 +47,7 @@ def api_finish_quiz(data: FinishRequest):
     try:
         quiz_type = f"Level {data.level}"
         _db_repo.save_quiz_score(
-            user_id=data.user_id,
+            user_id=user_id, 
             quiz_type=quiz_type,
             score=int(data.score),
             total_questions=data.total,
@@ -56,17 +59,21 @@ def api_finish_quiz(data: FinishRequest):
 
 
 @router.get("/history/{user_id}")
-def get_quiz_history(user_id: int):
-    return _db_repo.get_quiz_history(user_id)
+def get_quiz_history(user_id: int, authorization: str = Header(None)):
+    token_user_id = verify_token_header(authorization)
+    # 實務上可以核對 token_user_id 與路徑上的 user_id 是否相符
+    return _db_repo.get_quiz_history(token_user_id)
 
 
 @router.delete("/history/{user_id}")
-def clear_quiz_history(user_id: int):
-    _db_repo.clear_quiz_history(user_id)
+def clear_quiz_history(user_id: int, authorization: str = Header(None)):
+    token_user_id = verify_token_header(authorization)
+    _db_repo.clear_quiz_history(token_user_id)
     return {"status": "success"}
 
 
 @router.delete("/score/{score_id}")
-def delete_quiz_score(score_id: int, user_id: int = 1):
-    success = _db_repo.delete_quiz_score(score_id, user_id)
+def delete_quiz_score(score_id: int, user_id: int = 1, authorization: str = Header(None)):
+    token_user_id = verify_token_header(authorization)
+    success = _db_repo.delete_quiz_score(score_id, token_user_id)
     return {"status": "success", "deleted": success}
